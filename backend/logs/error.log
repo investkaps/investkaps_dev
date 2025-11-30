@@ -1,0 +1,1649 @@
+2025-10-28 18:09:35 error: Error searching stocks: Cannot read properties of undefined (reading 'toUpperCase')
+2025-10-28 18:09:35 error: Error searching stocks: Cannot read properties of undefined (reading 'toUpperCase')
+2025-10-28 18:09:35 error: Error searching stocks: Cannot read properties of undefined (reading 'toUpperCase')
+2025-10-28 18:09:36 error: Error searching stocks: Cannot read properties of undefined (reading 'toUpperCase')
+2025-10-28 18:09:37 error: Error searching stocks: Cannot read properties of undefined (reading 'toUpperCase')
+2025-10-28 18:09:37 error: Error searching stocks: Cannot read properties of undefined (reading 'toUpperCase')
+2025-10-28 18:09:38 error: Error searching stocks: Cannot read properties of undefined (reading 'toUpperCase')
+2025-11-02 20:33:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-02 20:33:00 error: Error getting quote: Request failed with status code 403
+2025-11-02 20:33:00 error: Error getting stock price: Request failed with status code 403
+2025-11-02 20:33:32 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-02 20:33:32 error: Error getting quote: Request failed with status code 403
+2025-11-02 20:33:32 error: Error getting stock price: Request failed with status code 403
+2025-11-02 20:34:12 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-02 20:34:12 error: Error getting quote: Request failed with status code 403
+2025-11-02 20:34:12 error: Error getting stock price: Request failed with status code 403
+2025-11-03 21:37:44 error: Error sending email: Missing credentials for "PLAIN"
+2025-11-03 21:37:44 error: Error sending subscription confirmation email: Missing credentials for "PLAIN"
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:37 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:39:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:53 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:54 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:55 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:56 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:57 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:43:58 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:38 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:39 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:40 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:41 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:42 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:43 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:46:44 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:49:59 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:00 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:01 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:02 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:03 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:04 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:05 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:06 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 00:50:07 error: Error verifying user with Clerk: Too Many Requests
+2025-11-04 12:15:00 error: Error getting Zerodha access token: No active Zerodha access token found. Please set token from admin panel.
+2025-11-04 12:15:00 error: Zerodha API request failed:
+2025-11-04 12:15:00 error: Error getting quote: No active Zerodha access token found. Please set token from admin panel.
+2025-11-04 12:15:00 error: Failed to update price for CIANAGRO.BSE:
+2025-11-04 13:13:35 error: Error deleting subscription: subscription.remove is not a function
+2025-11-04 13:45:30 error: Error in updateAllStockPrices: getaddrinfo ENOTFOUND ac-kaxxiej-shard-00-00.c0nai7r.mongodb.net
+2025-11-04 15:21:16 error: Error sending email: Missing credentials for "PLAIN"
+2025-11-04 15:21:16 error: Error sending subscription confirmation email: Missing credentials for "PLAIN"
+2025-11-05 13:45:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-05 13:45:00 error: Error getting quote: Request failed with status code 403
+2025-11-05 13:45:00 error: Failed to update price for RELIANCE:
+2025-11-05 14:00:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-05 14:00:00 error: Error getting quote: Request failed with status code 403
+2025-11-05 14:00:00 error: Failed to update price for RELIANCE:
+2025-11-05 14:04:38 error: Error sending email: Missing credentials for "PLAIN"
+2025-11-05 14:04:38 error: Error sending subscription confirmation email: Missing credentials for "PLAIN"
+2025-11-05 14:04:45 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-05 14:04:45 error: Error getting quote: Request failed with status code 403
+2025-11-05 14:04:45 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-05 14:04:45 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-05 14:04:45 error: Error getting quote: Request failed with status code 403
+2025-11-05 14:04:45 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-05 14:15:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-05 14:15:00 error: Error getting quote: Request failed with status code 403
+2025-11-05 14:15:00 error: Failed to update price for RELIANCE:
+2025-11-05 14:20:30 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-05 14:20:30 error: Error getting quote: Request failed with status code 403
+2025-11-05 14:20:30 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-05 14:20:31 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-05 14:20:31 error: Error getting quote: Request failed with status code 403
+2025-11-05 14:20:31 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-05 14:21:44 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-05 14:21:44 error: Error getting quote: Request failed with status code 403
+2025-11-05 14:21:44 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-05 14:21:44 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-05 14:21:45 error: Error getting quote: Request failed with status code 403
+2025-11-05 14:21:45 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-05 14:30:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-05 14:30:00 error: Error getting quote: Request failed with status code 403
+2025-11-05 14:30:01 error: Failed to update price for RELIANCE:
+2025-11-05 14:45:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-05 14:45:00 error: Error getting quote: Request failed with status code 403
+2025-11-05 14:45:00 error: Failed to update price for RELIANCE:
+2025-11-05 15:00:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-05 15:00:00 error: Error getting quote: Request failed with status code 403
+2025-11-05 15:00:00 error: Failed to update price for RELIANCE:
+2025-11-05 15:04:38 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-05 15:04:38 error: Error getting quote: Request failed with status code 403
+2025-11-05 15:04:38 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-05 15:04:38 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-05 15:04:38 error: Error getting quote: Request failed with status code 403
+2025-11-05 15:04:38 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-05 15:29:27 error: Failed to send recommendation to user 6909bcf62d29de75e7e8eb50: notificationService.sendRecommendationNotification is not a function
+2025-11-05 15:29:27 error: Failed to send recommendation to user 690b06236b2c6c683308daff: notificationService.sendRecommendationNotification is not a function
+2025-11-19 19:18:37 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:18:37 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:18:37 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:18:37 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:18:37 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:18:37 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:19:32 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:19:32 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:19:32 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:19:32 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:19:32 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:19:32 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:19:32 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:19:32 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:19:32 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:19:32 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:19:32 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:19:32 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:20:28 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:20:28 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:20:28 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:20:28 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:20:28 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:20:28 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:20:28 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:20:28 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:20:28 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:20:29 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:20:29 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:20:29 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:21:09 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:21:09 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:21:09 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:21:09 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:21:09 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:21:09 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:21:09 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:21:09 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:21:09 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:21:09 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:21:09 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:21:09 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:22:04 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:22:04 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:22:04 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:22:04 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:22:04 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:22:04 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:22:05 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:22:05 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:22:05 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:22:05 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:22:05 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:22:05 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:24:03 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:24:03 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:24:03 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:24:03 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:24:03 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:24:03 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:24:04 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:24:04 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:24:04 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:24:04 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:24:04 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:24:04 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:26:46 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:26:46 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:26:46 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:26:46 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:26:46 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:26:46 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:26:46 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:26:46 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:26:46 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:26:46 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:26:46 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:26:46 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:50:41 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:50:41 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:50:41 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:50:41 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:50:41 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:50:41 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:51:30 error: Failed to send recommendation to user 6909bcf62d29de75e7e8eb50: notificationService.sendRecommendationNotification is not a function
+2025-11-19 19:51:30 error: Failed to send recommendation to user 690b06236b2c6c683308daff: notificationService.sendRecommendationNotification is not a function
+2025-11-19 19:51:31 error: Failed to send recommendation to user 6909bcf62d29de75e7e8eb50: notificationService.sendRecommendationNotification is not a function
+2025-11-19 19:51:31 error: Failed to send recommendation to user 690b06236b2c6c683308daff: notificationService.sendRecommendationNotification is not a function
+2025-11-19 19:51:35 error: Failed to send recommendation to user 6909bcf62d29de75e7e8eb50: notificationService.sendRecommendationNotification is not a function
+2025-11-19 19:51:35 error: Failed to send recommendation to user 690b06236b2c6c683308daff: notificationService.sendRecommendationNotification is not a function
+2025-11-19 19:59:58 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:59:58 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:59:58 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:59:58 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:59:58 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:59:58 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:59:58 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:59:58 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:59:58 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-19 19:59:58 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-19 19:59:58 error: Error getting quote: Request failed with status code 403
+2025-11-19 19:59:58 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-19 20:22:16 error: Failed to send recommendation to user 6909bcf62d29de75e7e8eb50: notificationService.sendRecommendationNotification is not a function
+2025-11-19 20:22:16 error: Failed to send recommendation to user 690b06236b2c6c683308daff: notificationService.sendRecommendationNotification is not a function
+2025-11-20 11:30:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-20 11:30:00 error: Error getting quote: Request failed with status code 403
+2025-11-20 11:30:00 error: Failed to update price for TCS1:
+2025-11-20 11:30:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-20 11:30:00 error: Error getting quote: Request failed with status code 403
+2025-11-20 11:30:00 error: Failed to update price for RELIANCE:
+2025-11-20 11:45:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-20 11:45:01 error: Error getting quote: Request failed with status code 403
+2025-11-20 11:45:01 error: Failed to update price for TCS1:
+2025-11-20 11:45:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-20 11:45:01 error: Error getting quote: Request failed with status code 403
+2025-11-20 11:45:01 error: Failed to update price for RELIANCE:
+2025-11-22 19:01:19 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-22 19:01:19 error: Error getting quote: Request failed with status code 403
+2025-11-22 19:01:19 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-22 19:01:19 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-22 19:01:19 error: Error getting quote: Request failed with status code 403
+2025-11-22 19:01:19 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-22 19:01:19 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-22 19:01:19 error: Error getting quote: Request failed with status code 403
+2025-11-22 19:01:19 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-22 19:01:19 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-22 19:01:19 error: Error getting quote: Request failed with status code 403
+2025-11-22 19:01:19 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:00:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:00:00 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:00:00 error: Failed to update price for TCS:
+2025-11-24 13:00:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:00:01 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:00:01 error: Failed to update price for TCS1:
+2025-11-24 13:00:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:00:01 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:00:01 error: Failed to update price for RELIANCE:
+2025-11-24 13:01:10 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:10 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:10 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:01:10 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:10 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:10 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:01:10 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:10 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:10 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:01:10 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:10 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:10 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:01:10 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:10 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:10 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:01:11 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:11 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:11 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:01:11 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:11 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:11 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:01:11 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:11 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:11 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:01:51 error: Error sending email: Missing credentials for "PLAIN"
+2025-11-24 13:01:51 error: Error sending subscription confirmation email: Missing credentials for "PLAIN"
+2025-11-24 13:01:57 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:57 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:57 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:01:57 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:57 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:57 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:01:58 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:58 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:58 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:01:58 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:58 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:58 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:01:58 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:58 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:58 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:01:58 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:58 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:58 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:01:59 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:59 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:59 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:01:59 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:01:59 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:01:59 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:14 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:14 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:14 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:14 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:14 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:14 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:14 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:14 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:14 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:14 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:15 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:15 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:15 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:15 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:15 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:15 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:15 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:15 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:15 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:15 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:16 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:16 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:16 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:16 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:45 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:45 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:45 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:45 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:45 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:45 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:45 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:45 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:45 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:45 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:45 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:45 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:46 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:46 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:46 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:46 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:46 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:46 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:47 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:47 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:47 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:02:47 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:02:47 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:02:47 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:03:31 error: Failed to send recommendation to user 6909bcf62d29de75e7e8eb50: notificationService.sendRecommendationNotification is not a function
+2025-11-24 13:03:40 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:03:40 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:03:40 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:03:40 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:03:40 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:03:40 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:03:40 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:03:40 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:03:41 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:03:41 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:03:41 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:03:41 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:03:41 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:03:41 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:03:41 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:03:42 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:03:42 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:03:42 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:03:42 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:03:42 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:03:42 error: Failed to refresh price for TCS1: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:03:42 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-24 13:03:42 error: Error getting quote: Request failed with status code 403
+2025-11-24 13:03:42 error: Failed to refresh price for RELIANCE: Request failed with status code 403 Request failed with status code 403
+2025-11-24 13:11:55 error: Failed to send recommendation to user 6909bcf62d29de75e7e8eb50: notificationService.sendRecommendationNotification is not a function
+2025-11-24 14:19:33 error: [ESIGN ROUTE] Error fetching document status: Cast to ObjectId failed for value "null" (type string) at path "_id" for model "Document"
+2025-11-25 12:36:14 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-25 12:36:14 error: Error getting quote: Request failed with status code 403
+2025-11-25 12:36:14 error: ✗ ERROR: Failed to refresh price for TCS: Request failed with status code 403
+2025-11-25 12:36:14 error: Error stack: AxiosError: Request failed with status code 403
+    at settle (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:2090:12)
+    at Unzip.handleStreamEnd (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:3207:11)
+    at Unzip.emit (node:events:536:35)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at Axios.request (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:4317:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeZerodhaRequest (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\utils\zerodhaService.js:52:22)
+    at async Object.getQuote (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\utils\zerodhaService.js:75:22)
+    at async refreshStockPrices (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\controllers\stockRecommendationController.js:841:27)
+2025-11-25 12:36:14 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-25 12:36:14 error: Error getting quote: Request failed with status code 403
+2025-11-25 12:36:14 error: ✗ ERROR: Failed to refresh price for TCS: Request failed with status code 403
+2025-11-25 12:36:14 error: Error stack: AxiosError: Request failed with status code 403
+    at settle (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:2090:12)
+    at Unzip.handleStreamEnd (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:3207:11)
+    at Unzip.emit (node:events:536:35)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at Axios.request (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:4317:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeZerodhaRequest (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\utils\zerodhaService.js:52:22)
+    at async Object.getQuote (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\utils\zerodhaService.js:75:22)
+    at async refreshStockPrices (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\controllers\stockRecommendationController.js:841:27)
+2025-11-25 12:42:54 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-25 12:42:54 error: Error getting quote: Request failed with status code 403
+2025-11-25 12:42:54 error: ✗ ERROR: Failed to refresh price for TCS: Request failed with status code 403
+2025-11-25 12:42:54 error: Error stack: AxiosError: Request failed with status code 403
+    at settle (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:2090:12)
+    at Unzip.handleStreamEnd (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:3207:11)
+    at Unzip.emit (node:events:536:35)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at Axios.request (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:4317:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeZerodhaRequest (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\utils\zerodhaService.js:52:22)
+    at async Object.getQuote (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\utils\zerodhaService.js:75:22)
+    at async refreshStockPrices (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\controllers\stockRecommendationController.js:841:27)
+2025-11-25 12:42:54 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-25 12:42:54 error: Error getting quote: Request failed with status code 403
+2025-11-25 12:42:54 error: ✗ ERROR: Failed to refresh price for TCS: Request failed with status code 403
+2025-11-25 12:42:54 error: Error stack: AxiosError: Request failed with status code 403
+    at settle (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:2090:12)
+    at Unzip.handleStreamEnd (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:3207:11)
+    at Unzip.emit (node:events:536:35)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at Axios.request (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:4317:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeZerodhaRequest (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\utils\zerodhaService.js:52:22)
+    at async Object.getQuote (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\utils\zerodhaService.js:75:22)
+    at async refreshStockPrices (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\controllers\stockRecommendationController.js:841:27)
+2025-11-25 12:45:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-25 12:45:01 error: Error getting quote: Request failed with status code 403
+2025-11-25 12:45:01 error: Failed to update price for TCS:
+2025-11-25 12:55:55 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-25 12:55:55 error: Error getting quote: Request failed with status code 403
+2025-11-25 12:55:55 error: ✗ ERROR: Failed to refresh price for TCS: Request failed with status code 403
+2025-11-25 12:55:55 error: Error stack: AxiosError: Request failed with status code 403
+    at settle (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:2090:12)
+    at Unzip.handleStreamEnd (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:3207:11)
+    at Unzip.emit (node:events:536:35)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at Axios.request (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:4317:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeZerodhaRequest (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\utils\zerodhaService.js:52:22)
+    at async Object.getQuote (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\utils\zerodhaService.js:75:22)
+    at async refreshStockPrices (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\controllers\stockRecommendationController.js:841:27)
+2025-11-25 12:55:55 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-25 12:55:55 error: Error getting quote: Request failed with status code 403
+2025-11-25 12:55:55 error: ✗ ERROR: Failed to refresh price for TCS: Request failed with status code 403
+2025-11-25 12:55:55 error: Error stack: AxiosError: Request failed with status code 403
+    at settle (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:2090:12)
+    at Unzip.handleStreamEnd (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:3207:11)
+    at Unzip.emit (node:events:536:35)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at Axios.request (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\node_modules\axios\dist\node\axios.cjs:4317:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async makeZerodhaRequest (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\utils\zerodhaService.js:52:22)
+    at async Object.getQuote (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\utils\zerodhaService.js:75:22)
+    at async refreshStockPrices (C:\Users\aiman\OneDrive\Desktop\InvestKaps\backend\controllers\stockRecommendationController.js:841:27)
+2025-11-25 13:00:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-11-25 13:00:00 error: Error getting quote: Request failed with status code 403
+2025-11-25 13:00:00 error: Failed to update price for TCS:

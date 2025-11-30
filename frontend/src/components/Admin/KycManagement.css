@@ -1,0 +1,214 @@
+.admin-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.admin-button {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.admin-button:hover {
+  background-color: #0b5ed7;
+}
+
+.admin-button.refresh {
+  background-color: #6c757d;
+}
+
+.admin-button.refresh:hover {
+  background-color: #5c636a;
+}
+
+.admin-empty-state {
+  padding: 40px;
+  text-align: center;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.admin-table-container {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.admin-action-button {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.admin-action-button:hover {
+  background-color: #0b5ed7;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.verified {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.status-badge.failed {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+.status-badge.pending {
+  background-color: #fff3cd;
+  color: #664d03;
+}
+
+/* Modal styles */
+.admin-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.admin-modal-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.admin-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.admin-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.admin-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6c757d;
+}
+
+.admin-modal-close:hover {
+  color: #343a40;
+}
+
+.admin-modal-body {
+  padding: 24px;
+}
+
+.admin-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-detail-group {
+  margin-bottom: 24px;
+}
+
+.admin-detail-group h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #495057;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 8px;
+}
+
+.admin-detail-row {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.admin-detail-label {
+  width: 150px;
+  font-weight: 500;
+  color: #6c757d;
+}
+
+.admin-detail-value {
+  flex: 1;
+}
+
+.admin-detail-value.error {
+  color: #842029;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border-left-color: #0d6efd;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.admin-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.admin-error {
+  background-color: #f8d7da;
+  color: #842029;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.admin-error button {
+  margin-top: 12px;
+  background-color: #842029;
+}
+
+.admin-error button:hover {
+  background-color: #6e1a22;
+}

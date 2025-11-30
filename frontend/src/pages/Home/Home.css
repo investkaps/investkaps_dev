@@ -1,0 +1,256 @@
+.home-page {
+  overflow-x: hidden;
+}
+
+/* Investment Section */
+.investment-section {
+  padding: 100px 0;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.investment-section::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.investment-section::after {
+  content: '';
+  position: absolute;
+  bottom: -25%;
+  right: -8%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.investment-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.section-label {
+  display: inline-block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6366f1;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1.5rem;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 50px;
+}
+
+.section-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.section-description {
+  font-size: 1.125rem;
+  color: #64748b;
+  max-width: 650px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.investment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.investment-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.investment-card.animate-in {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.investment-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #6366f1, #ec4899);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.3s ease;
+}
+
+.investment-card:hover::before {
+  transform: scaleY(1);
+}
+
+.investment-card.animate-in:hover {
+  transform: scale(1) translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+  border-color: transparent;
+}
+
+.investment-number {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  line-height: 1;
+  z-index: 0;
+}
+
+.investment-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  position: relative;
+  z-index: 1;
+}
+
+.investment-icon svg {
+  width: 32px;
+  height: 32px;
+  color: #ffffff;
+}
+
+.investment-title {
+  font-size: 1.375rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #0f172a;
+  position: relative;
+  z-index: 1;
+  line-height: 1.4;
+}
+
+.investment-description {
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  font-size: 0.9375rem;
+  position: relative;
+  z-index: 1;
+}
+
+.investment-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6366f1;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.investment-link svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.investment-link:hover {
+  color: #4f46e5;
+}
+
+.investment-link:hover svg {
+  transform: translateX(4px);
+}
+
+/* Responsive styles */
+@media screen and (max-width: 768px) {
+  .investment-section {
+    padding: 60px 0;
+  }
+
+  .section-title {
+    font-size: 2.5rem;
+  }
+
+  .section-description {
+    font-size: 1.125rem;
+  }
+
+  .investment-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .investment-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .investment-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .investment-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .investment-number {
+    font-size: 2.5rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .section-title {
+    font-size: 2rem;
+  }
+
+  .section-description {
+    font-size: 1rem;
+  }
+
+  .investment-container {
+    padding: 0 1rem;
+  }
+
+  .investment-card {
+    padding: 1.5rem;
+  }
+}

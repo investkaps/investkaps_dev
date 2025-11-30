@@ -1,0 +1,125 @@
+.payment-success-container {
+  max-width: 600px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  position: relative;
+  z-index: 1000000;
+}
+
+.success-icon {
+  color: #4CAF50;
+  margin-bottom: 1rem;
+}
+
+.payment-success-container h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.success-message {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  color: #666;
+}
+
+.payment-details {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid #eee;
+}
+
+.detail-row:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.label {
+  font-weight: 600;
+  color: #555;
+}
+
+.value {
+  color: #333;
+  word-break: break-all;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.action-button {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.action-button.primary {
+  background-color: #3399cc;
+  color: white;
+}
+
+.action-button.primary:hover {
+  background-color: #2980b9;
+}
+
+.action-button.secondary {
+  background-color: #f1f1f1;
+  color: #333;
+}
+
+.action-button.secondary:hover {
+  background-color: #e1e1e1;
+}
+
+.receipt-note {
+  font-size: 0.9rem;
+  color: #777;
+  margin-top: 1rem;
+}
+
+/* Error state styling */
+.payment-success-container.error {
+  border-top: 4px solid #f44336;
+}
+
+.payment-success-container.error h1 {
+  color: #f44336;
+}
+
+@media (max-width: 768px) {
+  .payment-success-container {
+    margin: 2rem 1rem;
+    padding: 1.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .action-button {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}

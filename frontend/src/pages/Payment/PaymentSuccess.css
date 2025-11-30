@@ -1,0 +1,22 @@
+.payment-success-container{
+  min-height:70vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:transparent;
+}
+.payment-success-card{
+  max-width:720px;
+  width:100%;
+  border-radius:12px;
+  padding:28px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.08);
+  background:#fff;
+  text-align:center;
+}
+.payment-success-card h2{margin:0 0 12px 0;}
+.payment-success-card p{margin:6px 0;}
+.actions{display:flex;gap:12px;justify-content:center;margin-top:16px;}
+.btn{padding:8px 14px;border-radius:8px;border:none;cursor:pointer;background:#0b73ff;color:#fff;}
+.btn.secondary{background:#e6eefc;color:#0b3a66;}
