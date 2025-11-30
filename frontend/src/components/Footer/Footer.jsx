@@ -24,6 +24,7 @@ const Footer = () => {
               <li><Link to="/privacy-policy" onClick={scrollToTop}>Privacy Policy</Link></li>
               <li><Link to="/disclaimer" onClick={scrollToTop}>Disclaimer</Link></li>
               <li><Link to="/terms-and-conditions" onClick={scrollToTop}>Terms and Conditions</Link></li>
+              <li><Link to="/investor-charter" onClick={scrollToTop}>Investor Charter</Link></li>
               <li><Link to="/valid-upi" onClick={scrollToTop}>Valid UPI</Link></li>
               <li><Link to="/faqs" onClick={scrollToTop}>FAQs</Link></li>
               <li><Link to="/complaints-and-audit" onClick={scrollToTop}>Complaints and Audit</Link></li>
