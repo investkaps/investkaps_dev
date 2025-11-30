@@ -145,6 +145,7 @@ function App() {
                     <Route path="/grievance-redressal" element={<GrievanceRedressal />} />
                     <Route path="/cancellations-and-refunds" element={<CancellationsRefunds />} />
                     <Route path="/terms-and-conditions" element={<TermsConditions />} />
+                    <Route path="/investor-charter" element={<InvestorCharter />} />
                     <Route path="/complaints-and-audit" element={<InvestorCharter />} />
                     <Route path="/valid-upi" element={<ValidUPI />} />
                     <Route path="/complaints-data" element={<ComplaintsData />} />
