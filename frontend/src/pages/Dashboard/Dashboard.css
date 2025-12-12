@@ -1395,11 +1395,13 @@ input.verified {
 }
 
 .price-item .value.target {
-  color: #198754;
+  color: #198754 !important;
+  opacity: 1 !important;
 }
 
 .price-item .value.stoploss {
-  color: #dc3545;
+  color: #dc3545 !important;
+  opacity: 1 !important;
 }
 
 .rec-description {

@@ -6,6 +6,7 @@ const SubscriptionManagement = () => {
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const [editingSubscription, setEditingSubscription] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -27,6 +28,7 @@ const SubscriptionManagement = () => {
     },
     currency: 'INR',
     features: [],
+    telegramChatId: '',
     isActive: true
   });
   const [newFeature, setNewFeature] = useState({ name: '', included: true, description: '' });
@@ -232,6 +234,8 @@ const SubscriptionManagement = () => {
         await adminAPI.addStrategiesToSubscription(subscriptionId, selectedStrategies);
       }
       
+      setSuccessMessage(`Subscription ${editingSubscription ? 'updated' : 'created'} successfully!`);
+      setTimeout(() => setSuccessMessage(null), 3000);
       fetchSubscriptions();
       closeModal();
     } catch (err) {
@@ -296,6 +300,12 @@ const SubscriptionManagement = () => {
       {error && (
         <div className="admin-error">
           {error}
+        </div>
+      )}
+      
+      {successMessage && (
+        <div className="admin-success">
+          {successMessage}
         </div>
       )}
       

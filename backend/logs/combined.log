@@ -2869,3 +2869,102 @@
 2025-12-09 16:05:31 info: E-Signing API available at http://localhost:5000/api/esign
 2025-12-09 16:22:43 error: Failed to send recommendation to user 6909bcf62d29de75e7e8eb50: notificationService.sendRecommendationNotification is not a function
 2025-12-09 16:22:43 error: Failed to send recommendation to user 692a9cb37a9e84691d9c580a: notificationService.sendRecommendationNotification is not a function
+2025-12-12 17:10:27 info: Server running on port 5000
+2025-12-12 17:10:27 info: E-Signing API available at http://localhost:5000/api/esign
+2025-12-12 17:30:42 info: KYC Request: PAN=RARPS6224N, email=psguyjzaxtkodoxcbj@nespj.com
+2025-12-12 17:30:42 info: User found in request: userId=693bffd1c53011c556942382, email=psguyjzaxtkodoxcbj@nespj.com
+2025-12-12 17:30:46 info: KYC response contained email: aiman.singh30@gmail.com (not using for identification)
+2025-12-12 17:30:47 info: Updated user 693bffd1c53011c556942382 with KYC verification 693c03eec53011c556942404
+2025-12-12 17:32:36 info: ========== STARTING PRICE REFRESH ==========
+2025-12-12 17:32:36 info: Looking for recommendations that need price update (older than 2025-12-12T11:52:36.463Z)
+2025-12-12 17:32:36 info: ========== STARTING PRICE REFRESH ==========
+2025-12-12 17:32:36 info: Looking for recommendations that need price update (older than 2025-12-12T11:52:36.470Z)
+2025-12-12 17:32:36 info: Found 4 recommendations to refresh
+2025-12-12 17:32:36 info: Starting to process 4 recommendations...
+2025-12-12 17:32:36 info: 
+--- Processing: SCI (ID: 692aa4d87a9e84691d9c5a1e) ---
+2025-12-12 17:32:36 info: Original symbol: SCI, Exchange: NSE
+2025-12-12 17:32:36 info: Fetching price for instrument: NSE:SCI
+2025-12-12 17:32:36 info: Found 4 recommendations to refresh
+2025-12-12 17:32:36 info: Starting to process 4 recommendations...
+2025-12-12 17:32:36 info: 
+--- Processing: SCI (ID: 692aa4d87a9e84691d9c5a1e) ---
+2025-12-12 17:32:36 info: Original symbol: SCI, Exchange: NSE
+2025-12-12 17:32:36 info: Fetching price for instrument: NSE:SCI
+2025-12-12 17:32:36 info: Quote response received for NSE:SCI
+2025-12-12 17:32:36 info: Quote data keys: status, data
+2025-12-12 17:32:36 info: Quote response received for NSE:SCI
+2025-12-12 17:32:36 info: Quote data keys: status, data
+2025-12-12 17:32:36 info: ✓ SUCCESS: SCI price updated from ₹226.5 to ₹225.42
+2025-12-12 17:32:36 info: 
+--- Processing: TCS (ID: 692aa4187a9e84691d9c597f) ---
+2025-12-12 17:32:36 info: Original symbol: TCS, Exchange: NSE
+2025-12-12 17:32:36 info: Fetching price for instrument: NSE:TCS
+2025-12-12 17:32:36 info: ✓ SUCCESS: SCI price updated from ₹226.5 to ₹225.42
+2025-12-12 17:32:36 info: 
+--- Processing: TCS (ID: 692aa4187a9e84691d9c597f) ---
+2025-12-12 17:32:36 info: Original symbol: TCS, Exchange: NSE
+2025-12-12 17:32:36 info: Fetching price for instrument: NSE:TCS
+2025-12-12 17:32:36 info: Quote response received for NSE:TCS
+2025-12-12 17:32:36 info: Quote data keys: status, data
+2025-12-12 17:32:36 info: Quote response received for NSE:TCS
+2025-12-12 17:32:36 info: Quote data keys: status, data
+2025-12-12 17:32:36 info: ✓ SUCCESS: TCS price updated from ₹3205.1 to ₹3220.5
+2025-12-12 17:32:36 info: 
+--- Processing: INFY (ID: 692aa22c7a9e84691d9c58f2) ---
+2025-12-12 17:32:36 info: Original symbol: INFY, Exchange: NSE
+2025-12-12 17:32:36 info: Fetching price for instrument: NSE:INFY
+2025-12-12 17:32:36 info: ✓ SUCCESS: TCS price updated from ₹3205.1 to ₹3220.5
+2025-12-12 17:32:36 info: 
+--- Processing: INFY (ID: 692aa22c7a9e84691d9c58f2) ---
+2025-12-12 17:32:36 info: Original symbol: INFY, Exchange: NSE
+2025-12-12 17:32:36 info: Fetching price for instrument: NSE:INFY
+2025-12-12 17:32:37 info: Quote response received for NSE:INFY
+2025-12-12 17:32:37 info: Quote data keys: status, data
+2025-12-12 17:32:37 info: Quote response received for NSE:INFY
+2025-12-12 17:32:37 info: Quote data keys: status, data
+2025-12-12 17:32:37 info: ✓ SUCCESS: INFY price updated from ₹1597 to ₹1598.2
+2025-12-12 17:32:37 info: 
+--- Processing: TCS (ID: 69240c43749133df7207e6fb) ---
+2025-12-12 17:32:37 info: Original symbol: TCS, Exchange: NSE
+2025-12-12 17:32:37 info: Fetching price for instrument: NSE:TCS
+2025-12-12 17:32:37 info: ✓ SUCCESS: INFY price updated from ₹1597 to ₹1598.2
+2025-12-12 17:32:37 info: 
+--- Processing: TCS (ID: 69240c43749133df7207e6fb) ---
+2025-12-12 17:32:37 info: Original symbol: TCS, Exchange: NSE
+2025-12-12 17:32:37 info: Fetching price for instrument: NSE:TCS
+2025-12-12 17:32:37 info: Quote response received for NSE:TCS
+2025-12-12 17:32:37 info: Quote data keys: status, data
+2025-12-12 17:32:37 info: Quote response received for NSE:TCS
+2025-12-12 17:32:37 info: Quote data keys: status, data
+2025-12-12 17:32:37 info: ✓ SUCCESS: TCS price updated from ₹3208 to ₹3220.5
+2025-12-12 17:32:37 info: 
+========== PRICE REFRESH COMPLETE ==========
+2025-12-12 17:32:37 info: Total processed: 4
+2025-12-12 17:32:37 info: Successfully updated: 4
+2025-12-12 17:32:37 info: Failed: 0
+2025-12-12 17:32:37 info: Fetching all updated recommendations...
+2025-12-12 17:32:37 info: ✓ SUCCESS: TCS price updated from ₹3208 to ₹3220.5
+2025-12-12 17:32:37 info: 
+========== PRICE REFRESH COMPLETE ==========
+2025-12-12 17:32:37 info: Total processed: 4
+2025-12-12 17:32:37 info: Successfully updated: 4
+2025-12-12 17:32:37 info: Failed: 0
+2025-12-12 17:32:37 info: Fetching all updated recommendations...
+2025-12-12 17:32:37 info: Returning 4 recommendations to frontend
+2025-12-12 17:32:37 info: Returning 4 recommendations to frontend
+2025-12-12 17:37:46 error: Failed to send recommendation to user 6909bcf62d29de75e7e8eb50: notificationService.sendRecommendationNotification is not a function
+2025-12-12 17:40:16 info: Server running on port 5000
+2025-12-12 17:40:16 info: E-Signing API available at http://localhost:5000/api/esign
+2025-12-12 17:52:42 info: Server running on port 5000
+2025-12-12 17:52:42 info: E-Signing API available at http://localhost:5000/api/esign
+2025-12-12 17:52:56 info: Server running on port 5000
+2025-12-12 17:52:56 info: E-Signing API available at http://localhost:5000/api/esign
+2025-12-12 17:53:08 info: Server running on port 5000
+2025-12-12 17:53:08 info: E-Signing API available at http://localhost:5000/api/esign
+2025-12-12 17:53:21 info: Server running on port 5000
+2025-12-12 17:53:21 info: E-Signing API available at http://localhost:5000/api/esign
+2025-12-12 17:54:46 error: Failed to send recommendation to user 6909bcf62d29de75e7e8eb50: notificationService.sendRecommendationNotification is not a function
+2025-12-12 17:54:46 info: Telegram bot initialized successfully
+2025-12-12 17:54:47 info: Stock recommendation sent to Telegram chat -1002879123670: TCS
+2025-12-12 17:54:47 info: Recommendation sent to Telegram chat -1002879123670: TCS

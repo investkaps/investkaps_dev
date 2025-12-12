@@ -123,6 +123,7 @@ exports.createSubscription = async (req, res) => {
       tradingOptions,
       currency,
       features,
+      telegramChatId,
       isActive,
       displayOrder
     } = req.body;
@@ -144,6 +145,7 @@ exports.createSubscription = async (req, res) => {
       tradingOptions: tradingOptions || {},
       currency: currency || 'INR',
       features: features || [],
+      telegramChatId: telegramChatId || null,
       isActive: isActive !== undefined ? isActive : true,
       displayOrder: displayOrder || 0,
       strategies: [] // Initialize with empty strategies array
@@ -174,6 +176,7 @@ exports.updateSubscription = async (req, res) => {
       currency,
       features,
       strategies,
+      telegramChatId,
       isActive,
       displayOrder
     } = req.body;
@@ -198,6 +201,7 @@ exports.updateSubscription = async (req, res) => {
       currency: currency || subscription.currency,
       features: features || subscription.features,
       strategies: strategies !== undefined ? strategies : subscription.strategies,
+      telegramChatId: telegramChatId !== undefined ? telegramChatId : subscription.telegramChatId,
       isActive: isActive !== undefined ? isActive : subscription.isActive,
       displayOrder: displayOrder !== undefined ? displayOrder : subscription.displayOrder,
       updatedAt: Date.now()
