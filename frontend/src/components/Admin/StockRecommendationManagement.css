@@ -3,11 +3,11 @@
 }
 
 .recommendation-form-container {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
   margin-bottom: 20px;
-  border: 1px solid #dee2e6;
+  border: 1px solid #e5e7eb;
 }
 
 .recommendation-form {
@@ -30,20 +30,30 @@
 }
 
 .form-group label {
-  font-weight: 500;
-  margin-bottom: 5px;
-  color: #495057;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #374151;
+  font-size: 14px;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-  padding: 8px 12px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
   font-size: 14px;
-  color: #333; /* Ensure text is visible */
-  background-color: #fff; /* Ensure background is white */
+  color: #1f2937;
+  background-color: #ffffff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .form-group textarea {
@@ -63,16 +73,50 @@
 
 .form-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.admin-button {
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
 }
 
 .admin-button.primary {
-  background-color: #0d6efd;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.admin-button.primary:hover {
+  background-color: #1d4ed8;
 }
 
 .admin-button.secondary {
-  background-color: #6c757d;
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.admin-button.secondary:hover {
+  background-color: #4b5563;
 }
 
 .admin-button.pdf {

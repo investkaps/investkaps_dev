@@ -131,7 +131,22 @@
 }
 
 .checklist-item.disabled {
-  opacity: 0.6;
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.checklist-item.disabled .checklist-content {
+  pointer-events: none;
+  user-select: none;
+}
+
+.checklist-item.disabled input,
+.checklist-item.disabled button,
+.checklist-item.disabled a,
+.checklist-item.disabled select,
+.checklist-item.disabled textarea {
+  pointer-events: none;
   cursor: not-allowed;
 }
 
@@ -239,7 +254,7 @@
   font-size: 0.9rem;
 }
 
-.form-group input {
+.form-group input:not(.otp-input) {
   padding: 0.75rem;
   border-radius: 8px;
   border: 1px solid #ced4da;
@@ -247,7 +262,7 @@
   transition: border-color 0.3s ease;
 }
 
-.form-group input:focus {
+.form-group input:not(.otp-input):focus {
   outline: none;
   border-color: #0d6efd;
   box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
@@ -261,6 +276,20 @@
 .otp-form .form-group label {
   text-align: center;
   margin-bottom: 0.5rem;
+}
+
+/* Force OTP inputs to be square */
+.otp-form .otp-input-container .otp-input {
+  width: 48px !important;
+  height: 48px !important;
+  padding: 0 !important;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.otp-form .button-group {
+  justify-content: center;
 }
 
 .otp-info {
@@ -982,6 +1011,16 @@
 .input-status.info {
   background-color: #cfe2ff;
   color: #084298;
+}
+
+.input-status.error {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+.input-status.success {
+  background-color: #d1e7dd;
+  color: #0f5132;
 }
 
 .status-spinner {

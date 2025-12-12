@@ -34,6 +34,14 @@ const StockRecommendationSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  targetPrice2: {
+    type: Number,
+    required: false
+  },
+  targetPrice3: {
+    type: Number,
+    required: false
+  },
   stopLoss: {
     type: Number,
     required: false

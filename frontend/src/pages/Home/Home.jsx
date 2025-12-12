@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import './Home.css';
 import Hero from '../../components/Hero/Hero';
 import CTA from '../../components/CTA/CTA';
@@ -29,22 +30,77 @@ const Home = () => {
     return () => observer.disconnect();
   }, []);
 
+  // Animation variants for sections
+  const sectionVariants = {
+    hidden: { opacity: 0, y: 60 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        duration: 0.8, 
+        ease: [0.25, 0.46, 0.45, 0.94]
+      }
+    }
+  };
+
+  const headerVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        duration: 0.6, 
+        ease: "easeOut"
+      }
+    }
+  };
+
   return (
     <div className="home-page">
       <Hero />
 
+      {/* Transition Divider: Hero to Features */}
+      <div className="section-transition">
+        <div className="transition-wave">
+          <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+            <path d="M0,64 C480,150 960,-20 1440,64 L1440,120 L0,120 Z" fill="#ffffff"></path>
+          </svg>
+        </div>
+      </div>
+
       <Features />
+
+      {/* Transition Divider: Features to Investment */}
+      <div className="section-transition section-transition-alt">
+        <div className="transition-connector">
+          <div className="connector-line"></div>
+          <div className="connector-dot"></div>
+          <div className="connector-line"></div>
+        </div>
+      </div>
       
       {/* Investment Options Section */}
-      <section className="investment-section">
+      <motion.section 
+        className="investment-section"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={sectionVariants}
+      >
         <div className="investment-container">
-          <div className="section-header">
+          <motion.div 
+            className="section-header"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={headerVariants}
+          >
             <span className="section-label">Investment Options</span>
             <h2 className="section-title">Diversified Investment Opportunities</h2>
             <p className="section-description">
               Expert guidance across multiple asset classes to help you build and grow your investment portfolio
             </p>
-          </div>
+          </motion.div>
           
           <div className="investment-grid">
             <div 
@@ -122,7 +178,17 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
+
+      {/* Transition Divider: Investment to CTA */}
+      <div className="section-transition section-transition-cta">
+        <div className="transition-gradient"></div>
+        <div className="transition-particles">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
       
       <CTA />
     </div>

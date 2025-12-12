@@ -159,6 +159,20 @@ body.is-about .navbar.scrolled .logo-text {
   align-items: center;
 }
 
+.navbar-logo a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 10px;
+}
+
+.logo-image {
+  height: 40px;
+  width: auto;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
 .logo-text {
   font-size: 1.8rem;
   font-weight: 700;
@@ -167,10 +181,6 @@ body.is-about .navbar.scrolled .logo-text {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   transition: all 0.3s ease;
-}
-
-.navbar-logo a {
-  text-decoration: none;
 }
 
 .nav-menu {

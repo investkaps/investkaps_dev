@@ -8,6 +8,7 @@ const zerodhaService = require('../utils/zerodhaService');
 const { generateStockReportPDF } = require('../utils/pdfGenerator');
 const { uploadPDF, deletePDF } = require('../config/cloudinary');
 const { sendRecommendationToTelegram } = require('../services/telegramService');
+const Subscription = require('../model/Subscription');
 
 /**
  * Create a new stock recommendation
@@ -22,6 +23,8 @@ const createRecommendation = async (req, res) => {
       stockName,
       currentPrice,
       targetPrice,
+      targetPrice2,
+      targetPrice3,
       stopLoss,
       recommendationType,
       timeFrame,
@@ -40,6 +43,8 @@ const createRecommendation = async (req, res) => {
       stockName,
       currentPrice,
       targetPrice,
+      targetPrice2,
+      targetPrice3,
       stopLoss,
       recommendationType,
       timeFrame,
@@ -59,10 +64,17 @@ const createRecommendation = async (req, res) => {
     if (status === 'published') {
       await sendRecommendationToUsers(recommendation._id);
       
-      // Send to Telegram group
+      // Send to Telegram - fetch subscriptions that have the target strategies
       try {
-        await sendRecommendationToTelegram(recommendation);
-        logger.info(`Recommendation sent to Telegram: ${recommendation.stockSymbol}`);
+        const subscriptions = await Subscription.find({
+          strategies: { $in: targetStrategies },
+          telegramChatId: { $exists: true, $ne: null, $ne: '' }
+        });
+        
+        for (const subscription of subscriptions) {
+          await sendRecommendationToTelegram(recommendation, subscription.telegramChatId);
+          logger.info(`Recommendation sent to Telegram chat ${subscription.telegramChatId}: ${recommendation.stockSymbol}`);
+        }
       } catch (telegramError) {
         logger.error('Failed to send to Telegram:', telegramError);
         // Don't fail the request if Telegram fails
@@ -188,10 +200,17 @@ const updateRecommendation = async (req, res) => {
     if (willBePublished) {
       await sendRecommendationToUsers(recommendation._id);
       
-      // Send to Telegram group
+      // Send to Telegram - fetch subscriptions that have the target strategies
       try {
-        await sendRecommendationToTelegram(recommendation);
-        logger.info(`Recommendation sent to Telegram: ${recommendation.stockSymbol}`);
+        const subscriptions = await Subscription.find({
+          strategies: { $in: recommendation.targetStrategies },
+          telegramChatId: { $exists: true, $ne: null, $ne: '' }
+        });
+        
+        for (const subscription of subscriptions) {
+          await sendRecommendationToTelegram(recommendation, subscription.telegramChatId);
+          logger.info(`Recommendation sent to Telegram chat ${subscription.telegramChatId}: ${recommendation.stockSymbol}`);
+        }
       } catch (telegramError) {
         logger.error('Failed to send to Telegram:', telegramError);
         // Don't fail the request if Telegram fails
@@ -622,11 +641,30 @@ const getStockPrice = async (req, res) => {
     
     const quote = quoteData.data[instrument];
     
+    // Try to get the stock name from instruments data
+    let stockName = symbol; // Default to symbol
+    try {
+      const instruments = await zerodhaService.searchInstruments(symbol, exchange);
+      if (instruments && instruments.length > 0) {
+        // Find exact match for the symbol
+        const exactMatch = instruments.find(inst => 
+          inst.tradingsymbol && inst.tradingsymbol.toUpperCase() === symbol.toUpperCase()
+        );
+        if (exactMatch && exactMatch.name) {
+          stockName = exactMatch.name;
+        }
+      }
+    } catch (instrumentError) {
+      // If fetching instrument name fails, just use the symbol
+      logger.warn('Could not fetch instrument name:', instrumentError.message);
+    }
+    
     res.status(200).json({
       success: true,
       data: {
         symbol: symbol,
         exchange: exchange,
+        stockName: stockName,
         lastPrice: quote.last_price,
         ohlc: quote.ohlc,
         change: quote.change,

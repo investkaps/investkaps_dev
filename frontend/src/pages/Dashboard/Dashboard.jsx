@@ -34,8 +34,8 @@ const Dashboard = () => {
   }, [currentUser, isAdmin, isAdminUser]);
   
   const [steps, setSteps] = useState({
-    phone: { completed: false, active: true, expanded: true },
-    kyc: { completed: false, active: false, expanded: false },
+    kyc: { completed: false, active: true, expanded: true },
+    phone: { completed: false, active: false, expanded: false },
     signing: { completed: false, active: false, expanded: false },
     payment: { completed: false, active: false, expanded: false }
   });
@@ -60,6 +60,8 @@ const Dashboard = () => {
   const [panStatus, setPanStatus] = useState({
     checking: false,
     verified: false,
+    validated: false, // PAN checked and doesn't exist for another user
+    existsForOther: false, // PAN already exists for another user
     message: ''
   });
   
@@ -164,10 +166,13 @@ const Dashboard = () => {
                 isAlreadyVerified: true
               });
               
+              // KYC done - unlock all other steps
               setSteps(prevSteps => ({
                 ...prevSteps,
                 kyc: { ...prevSteps.kyc, completed: true },
-                signing: { ...prevSteps.signing, active: true }
+                phone: { ...prevSteps.phone, active: true },
+                signing: { ...prevSteps.signing, active: true },
+                payment: { ...prevSteps.payment, active: true }
               }));
               
               isVerified = true;
@@ -189,10 +194,13 @@ const Dashboard = () => {
                 isAlreadyVerified: true
               });
               
+              // KYC done - unlock all other steps
               setSteps(prevSteps => ({
                 ...prevSteps,
                 kyc: { ...prevSteps.kyc, completed: true },
-                signing: { ...prevSteps.signing, active: true }
+                phone: { ...prevSteps.phone, active: true },
+                signing: { ...prevSteps.signing, active: true },
+                payment: { ...prevSteps.payment, active: true }
               }));
               
               isVerified = true;
@@ -225,8 +233,7 @@ const Dashboard = () => {
         if (response.success && response.phoneVerified) {
           setSteps(prevSteps => ({
             ...prevSteps,
-            phone: { ...prevSteps.phone, completed: true },
-            kyc: { ...prevSteps.kyc, active: true }
+            phone: { ...prevSteps.phone, completed: true }
           }));
           setPhoneForm({ phone: response.phone || '', otp: '' });
         }
@@ -363,48 +370,66 @@ const Dashboard = () => {
     if (name === 'pan' && value.match(/[A-Z]{5}[0-9]{4}[A-Z]{1}/)) {
       try {
         // Show checking status
-        setPanStatus({ checking: true, verified: false, message: 'Checking PAN...' });
+        setPanStatus({ checking: true, verified: false, validated: false, existsForOther: false, message: 'Checking PAN...' });
         
         const panCheckResult = await kycAPI.checkPANExists(value);
         
         if (panCheckResult.exists && panCheckResult.isVerified) {
-          // PAN already exists and is verified
-          setPanStatus({ 
-            checking: false, 
-            verified: true, 
-            message: 'PAN already verified in our system' 
-          });
+          // Check if this PAN belongs to the current user
+          const isCurrentUser = panCheckResult.user && 
+            (panCheckResult.user.email === currentUser?.email || 
+             panCheckResult.user.id === currentUser?.id);
           
-          setKycResult({
-            success: true,
-            message: panCheckResult.message,
-            isAlreadyVerified: true,
-            data: null // We don't have the full data here
-          });
-          
-          // Update steps to mark KYC as completed
-          setSteps(prevSteps => ({
-            ...prevSteps,
-            kyc: { ...prevSteps.kyc, completed: true },
-            signing: { ...prevSteps.signing, active: true }
-          }));
+          if (isCurrentUser) {
+            // PAN belongs to current user - mark as verified
+            setPanStatus({ 
+              checking: false, 
+              verified: true,
+              validated: true,
+              existsForOther: false,
+              message: 'PAN already verified for your account' 
+            });
+            
+            setKycResult({
+              success: true,
+              message: panCheckResult.message,
+              isAlreadyVerified: true,
+              data: null
+            });
+            
+            // Update steps to mark KYC as completed
+            setSteps(prevSteps => ({
+              ...prevSteps,
+              kyc: { ...prevSteps.kyc, completed: true },
+              signing: { ...prevSteps.signing, active: true }
+            }));
+          } else {
+            // PAN belongs to another user - show error
+            setPanStatus({ 
+              checking: false, 
+              verified: false,
+              validated: false,
+              existsForOther: true,
+              message: 'This PAN number is already registered with another account' 
+            });
+          }
         } else {
-          // PAN not verified yet
+          // PAN not verified yet - user can proceed
           setPanStatus({ 
             checking: false, 
-            verified: false, 
-            message: panCheckResult.exists ? 
-              'PAN found but verification needed' : 
-              'PAN not found in our system' 
+            verified: false,
+            validated: true, // PAN is available, user can proceed
+            existsForOther: false,
+            message: 'PAN available - please enter your date of birth' 
           });
         }
       } catch (error) {
         // Silently handle errors - we'll do the full verification later
-        setPanStatus({ checking: false, verified: false, message: '' });
+        setPanStatus({ checking: false, verified: false, validated: false, existsForOther: false, message: '' });
       }
     } else if (name === 'pan') {
       // Reset PAN status if input doesn't match pattern
-      setPanStatus({ checking: false, verified: false, message: '' });
+      setPanStatus({ checking: false, verified: false, validated: false, existsForOther: false, message: '' });
     }
   };
   
@@ -435,11 +460,13 @@ const Dashboard = () => {
           setKycResult(data);
         }
         
-        // Update steps directly instead of using completeStep
+        // KYC done - unlock all other steps
         setSteps(prevSteps => ({
           ...prevSteps,
           kyc: { ...prevSteps.kyc, completed: true },
-          signing: { ...prevSteps.signing, active: true }
+          phone: { ...prevSteps.phone, active: true },
+          signing: { ...prevSteps.signing, active: true },
+          payment: { ...prevSteps.payment, active: true }
         }));
         
         // Mark KYC check as completed
@@ -755,14 +782,171 @@ const Dashboard = () => {
           <div className="checklist-container">
             <h2>Setup Checklist</h2>
             <div className="checklist">
-              {/* Phone Verification Step */}
-              <div className={`checklist-item ${steps.phone.completed ? 'completed' : ''} expanded`}>
+              {/* KYC Verification Step - Now Step 1 */}
+              <div className={`checklist-item ${steps.kyc.completed ? 'completed' : ''} expanded`}>
+                <div className="checklist-header">
+                  <div className="checklist-status">
+                    {steps.kyc.completed ? (
+                      <span className="status-icon completed">✓</span>
+                    ) : (
+                      <span className="status-icon pending">1</span>
+                    )}
+                  </div>
+                  <div className="checklist-title">
+                    <h3>KYC Verification</h3>
+                    <p>Complete your Know Your Customer verification</p>
+                  </div>
+                </div>
+                
+                <div className="checklist-content">
+                    {!steps.kyc.completed ? (
+                      <div className="step-form">
+                        {error && <div className="error-message">{error}</div>}
+                        
+                        <form onSubmit={handleKycSubmit} className="kyc-form">
+                          <div className="form-group">
+                            <label htmlFor="pan">PAN Card Number</label>
+                            <div className="input-with-status">
+                              <input
+                                type="text"
+                                id="pan"
+                                name="pan"
+                                value={kycForm.pan}
+                                onChange={handleKycInputChange}
+                                placeholder="Enter your PAN number"
+                                required
+                                pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                                title="Valid PAN format: ABCDE1234F"
+                                className={panStatus.verified ? 'verified' : ''}
+                              />
+                              {panStatus.checking && (
+                                <div className="input-status checking">
+                                  <span className="status-spinner"></span>
+                                  {panStatus.message}
+                                </div>
+                              )}
+                              {!panStatus.checking && panStatus.verified && (
+                                <div className="input-status verified">
+                                  <span className="status-icon">✓</span>
+                                  {panStatus.message}
+                                </div>
+                              )}
+                              {!panStatus.checking && panStatus.existsForOther && (
+                                <div className="input-status error">
+                                  <span className="status-icon">✕</span>
+                                  {panStatus.message}
+                                </div>
+                              )}
+                              {!panStatus.checking && panStatus.validated && !panStatus.verified && (
+                                <div className="input-status success">
+                                  <span className="status-icon">✓</span>
+                                  {panStatus.message}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Only show DOB field after PAN is validated */}
+                          {panStatus.validated && !panStatus.verified && (
+                            <div className="form-group">
+                              <label htmlFor="dob">Date of Birth</label>
+                              <input
+                                type="text"
+                                id="dob"
+                                name="dob"
+                                value={kycForm.dob}
+                                onChange={handleKycInputChange}
+                                placeholder="DD-MM-YYYY"
+                                required
+                                pattern="\d{2}-\d{2}-\d{4}"
+                                title="Format: DD-MM-YYYY"
+                              />
+                            </div>
+                          )}
+                          
+                          <div className="button-group">
+                            <button 
+                              type="submit" 
+                              className="primary-btn" 
+                              disabled={isLoading || panStatus.existsForOther || (!panStatus.validated && !panStatus.verified)}
+                            >
+                              {isLoading ? 'Verifying...' : 'Verify KYC'}
+                            </button>
+                            
+                            {isAdminUser && (
+                              <button
+                                type="button"
+                                className="secondary-btn bypass-btn"
+                                onClick={async () => {
+                                  setIsLoading(true);
+                                  try {
+                                    // Call the dedicated bypass endpoint
+                                    const response = await kycAPI.bypassKYC();
+                                    
+                                    if (response.success || response.isAlreadyVerified) {
+                                      // KYC done - unlock all other steps
+                                      setSteps(prevSteps => ({
+                                        ...prevSteps,
+                                        kyc: { ...prevSteps.kyc, completed: true },
+                                        phone: { ...prevSteps.phone, active: true },
+                                        signing: { ...prevSteps.signing, active: true },
+                                        payment: { ...prevSteps.payment, active: true }
+                                      }));
+                                      setKycCheckCompleted(true);
+                                      setKycResult({
+                                        success: true,
+                                        message: response.message || 'KYC verification bypassed (Admin)',
+                                        data: response.data,
+                                        isAlreadyVerified: true
+                                      });
+                                    } else {
+                                      alert('Failed to bypass KYC: ' + (response.error || 'Unknown error'));
+                                    }
+                                  } catch (err) {
+                                    console.error('Error bypassing KYC:', err);
+                                    alert('Error bypassing KYC: ' + err.message);
+                                  } finally {
+                                    setIsLoading(false);
+                                  }
+                                }}
+                                disabled={isLoading}
+                              >
+                                {isLoading ? 'Processing...' : 'Bypass KYC (Admin)'}
+                              </button>
+                            )}
+                          </div>
+                        </form>
+                      </div>
+                    ) : (
+                      <div className="step-result">
+                        <div className="success-message">
+                          <h4>
+                            {kycResult?.isAdminBypass ? 'Admin Verification Bypass' : 
+                              kycResult?.isAlreadyVerified ? 'KYC Already Verified' : 
+                              'KYC Verification Successful'}
+                          </h4>
+                          {kycResult?.message && <p>{kycResult.message}</p>}
+                          {kycResult?.isAdminBypass && (
+                            <p className="admin-note">
+                              As an admin, you can skip the verification process. You can still complete it if needed.
+                            </p>
+                          )}
+                        </div>
+                        
+                        {/* KYC Details section removed */}
+                      </div>
+                    )}
+                </div>
+              </div>
+              
+              {/* Phone Verification Step - Now Step 2 */}
+              <div className={`checklist-item ${steps.phone.completed ? 'completed' : ''} expanded ${!steps.kyc.completed ? 'disabled' : ''}`}>
                 <div className="checklist-header">
                   <div className="checklist-status">
                     {steps.phone.completed ? (
                       <span className="status-icon completed">✓</span>
                     ) : (
-                      <span className="status-icon pending">1</span>
+                      <span className="status-icon pending">2</span>
                     )}
                   </div>
                   <div className="checklist-title">
@@ -810,8 +994,7 @@ const Dashboard = () => {
                                 onClick={() => {
                                   setSteps(prevSteps => ({
                                     ...prevSteps,
-                                    phone: { ...prevSteps.phone, completed: true },
-                                    kyc: { ...prevSteps.kyc, active: true, expanded: true }
+                                    phone: { ...prevSteps.phone, completed: true }
                                   }));
                                 }}
                                 disabled={phoneLoading}
@@ -869,152 +1052,7 @@ const Dashboard = () => {
                 </div>
               </div>
               
-              {/* KYC Verification Step */}
-              <div className={`checklist-item ${steps.kyc.completed ? 'completed' : ''} expanded ${!steps.phone.completed ? 'disabled' : ''}`}>
-                <div className="checklist-header">
-                  <div className="checklist-status">
-                    {steps.kyc.completed ? (
-                      <span className="status-icon completed">✓</span>
-                    ) : (
-                      <span className="status-icon pending">2</span>
-                    )}
-                  </div>
-                  <div className="checklist-title">
-                    <h3>KYC Verification</h3>
-                    <p>Complete your Know Your Customer verification</p>
-                  </div>
-                </div>
-                
-                <div className="checklist-content">
-                    {!steps.kyc.completed ? (
-                      <div className="step-form">
-                        {error && <div className="error-message">{error}</div>}
-                        
-                        <form onSubmit={handleKycSubmit} className="kyc-form">
-                          <div className="form-group">
-                            <label htmlFor="pan">PAN Card Number</label>
-                            <div className="input-with-status">
-                              <input
-                                type="text"
-                                id="pan"
-                                name="pan"
-                                value={kycForm.pan}
-                                onChange={handleKycInputChange}
-                                placeholder="Enter your PAN number"
-                                required
-                                pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
-                                title="Valid PAN format: ABCDE1234F"
-                                className={panStatus.verified ? 'verified' : ''}
-                              />
-                              {panStatus.checking && (
-                                <div className="input-status checking">
-                                  <span className="status-spinner"></span>
-                                  {panStatus.message}
-                                </div>
-                              )}
-                              {!panStatus.checking && panStatus.verified && (
-                                <div className="input-status verified">
-                                  <span className="status-icon">✓</span>
-                                  {panStatus.message}
-                                </div>
-                              )}
-                              {!panStatus.checking && !panStatus.verified && panStatus.message && (
-                                <div className="input-status info">
-                                  <span className="status-icon">ℹ</span>
-                                  {panStatus.message}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="form-group">
-                            <label htmlFor="dob">Date of Birth</label>
-                            <input
-                              type="text"
-                              id="dob"
-                              name="dob"
-                              value={kycForm.dob}
-                              onChange={handleKycInputChange}
-                              placeholder="DD-MM-YYYY"
-                              required
-                              pattern="\d{2}-\d{2}-\d{4}"
-                              title="Format: DD-MM-YYYY"
-                            />
-                          </div>
-                          
-                          <div className="button-group">
-                            <button 
-                              type="submit" 
-                              className="primary-btn" 
-                              disabled={isLoading}
-                            >
-                              {isLoading ? 'Verifying...' : 'Verify KYC'}
-                            </button>
-                            
-                            {isAdminUser && (
-                              <button
-                                type="button"
-                                className="secondary-btn bypass-btn"
-                                onClick={async () => {
-                                  setIsLoading(true);
-                                  try {
-                                    // Call the dedicated bypass endpoint
-                                    const response = await kycAPI.bypassKYC();
-                                    
-                                    if (response.success || response.isAlreadyVerified) {
-                                      setSteps(prevSteps => ({
-                                        ...prevSteps,
-                                        kyc: { ...prevSteps.kyc, completed: true },
-                                        signing: { ...prevSteps.signing, active: true }
-                                      }));
-                                      setKycCheckCompleted(true);
-                                      setKycResult({
-                                        success: true,
-                                        message: response.message || 'KYC verification bypassed (Admin)',
-                                        data: response.data,
-                                        isAlreadyVerified: true
-                                      });
-                                    } else {
-                                      alert('Failed to bypass KYC: ' + (response.error || 'Unknown error'));
-                                    }
-                                  } catch (err) {
-                                    console.error('Error bypassing KYC:', err);
-                                    alert('Error bypassing KYC: ' + err.message);
-                                  } finally {
-                                    setIsLoading(false);
-                                  }
-                                }}
-                                disabled={isLoading}
-                              >
-                                {isLoading ? 'Processing...' : 'Bypass KYC (Admin)'}
-                              </button>
-                            )}
-                          </div>
-                        </form>
-                      </div>
-                    ) : (
-                      <div className="step-result">
-                        <div className="success-message">
-                          <h4>
-                            {kycResult?.isAdminBypass ? 'Admin Verification Bypass' : 
-                              kycResult?.isAlreadyVerified ? 'KYC Already Verified' : 
-                              'KYC Verification Successful'}
-                          </h4>
-                          {kycResult?.message && <p>{kycResult.message}</p>}
-                          {kycResult?.isAdminBypass && (
-                            <p className="admin-note">
-                              As an admin, you can skip the verification process. You can still complete it if needed.
-                            </p>
-                          )}
-                        </div>
-                        
-                        {/* KYC Details section removed */}
-                      </div>
-                    )}
-                </div>
-              </div>
-              
-              {/* E-Signing Step */}
+              {/* E-Signing Step - Now Step 3 */}
               <div className={`checklist-item ${steps.signing.completed ? 'completed' : ''} expanded ${!steps.kyc.completed ? 'disabled' : ''}`}>
                 <div className="checklist-header">
                   <div className="checklist-status">
@@ -1190,8 +1228,8 @@ const Dashboard = () => {
                 </div>
               </div>
               
-              {/* Payment Step */}
-              <div className={`checklist-item ${steps.payment.completed ? 'completed' : ''} expanded ${!steps.signing.completed ? 'disabled' : ''}`}>
+              {/* Payment Step - Now Step 4 */}
+              <div className={`checklist-item ${steps.payment.completed ? 'completed' : ''} expanded ${!steps.kyc.completed ? 'disabled' : ''}`}>
                 <div className="checklist-header">
                   <div className="checklist-status">
                     {steps.payment.completed ? (

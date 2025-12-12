@@ -12,7 +12,10 @@ const Footer = () => {
       <div className="footer-container">
         <div className="footer-top">
           <div className="footer-column">
-            <h3 className="footer-title">InvestKaps</h3>
+            <div className="footer-brand">
+              <img src="/logo.png" alt="InvestKaps" className="footer-logo" />
+              <h3 className="footer-title">InvestKaps</h3>
+            </div>
             <p className="footer-description">
               Your trusted partner for smart investments and financial growth. We help you build wealth through strategic investment opportunities.
             </p>
@@ -77,6 +80,24 @@ const Footer = () => {
                 aria-label="YouTube"
               >
                 <i className="fab fa-youtube"></i>
+              </a>
+              <a 
+                href="https://t.me/investkaps" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                aria-label="Telegram"
+                className="telegram-link"
+              >
+                <i className="fab fa-telegram-plane"></i>
+              </a>
+              <a 
+                href="https://chat.whatsapp.com/FiBsnseWfMe8Cub2Gt3r9I" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                aria-label="WhatsApp"
+                className="whatsapp-link"
+              >
+                <i className="fab fa-whatsapp"></i>
               </a>
             </div>
           </div>

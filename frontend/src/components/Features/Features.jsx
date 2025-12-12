@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import './Features.css';
 
 const Features = () => {
@@ -107,16 +108,45 @@ const Features = () => {
     }
   ];
 
+  const headerVariants = {
+    hidden: { opacity: 0, y: 40 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.7,
+        ease: [0.25, 0.46, 0.45, 0.94]
+      }
+    }
+  };
+
+  const labelVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }
+  };
+
   return (
     <section className="features-section" ref={sectionRef}>
       <div className="features-container">
-        <div className="section-header">
-          <span className="section-label">Why Choose Us</span>
-          <h2 className="section-title">Investment Excellence</h2>
-          <p className="section-description">
+        <motion.div 
+          className="section-header"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+        >
+          <motion.span className="section-label" variants={labelVariants}>Why Choose Us</motion.span>
+          <motion.h2 className="section-title" variants={headerVariants}>Investment Excellence</motion.h2>
+          <motion.p className="section-description" variants={headerVariants}>
             Empowering investors with professional advisory services and cutting-edge technology
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         <div className="features-grid">
           {features.map((feature, index) => (

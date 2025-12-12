@@ -2,10 +2,161 @@
   overflow-x: hidden;
 }
 
+/* ===== Section Transitions ===== */
+.section-transition {
+  position: relative;
+  height: 80px;
+  margin-top: -80px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.transition-wave {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.transition-wave svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.transition-wave path {
+  animation: waveFloat 8s ease-in-out infinite;
+}
+
+@keyframes waveFloat {
+  0%, 100% {
+    d: path("M0,64 C480,150 960,-20 1440,64 L1440,120 L0,120 Z");
+  }
+  50% {
+    d: path("M0,64 C480,-20 960,150 1440,64 L1440,120 L0,120 Z");
+  }
+}
+
+/* Connector Transition (Features to Investment) */
+.section-transition-alt {
+  height: 0;
+  margin-top: 0;
+  display: none;
+  background: linear-gradient(180deg, #f8fafc 0%, #f8fafc 100%);
+}
+
+.transition-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.connector-line {
+  width: 2px;
+  height: 5px;
+  background: linear-gradient(180deg, transparent, #6366f1, transparent);
+  animation: lineGlow 2s ease-in-out infinite;
+}
+
+.connector-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes lineGlow {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+  }
+  50% {
+    transform: scale(1.2);
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.8);
+  }
+}
+
+/* CTA Transition */
+.section-transition-cta {
+  height: 120px;
+  margin-top: 0;
+  background: linear-gradient(180deg, #f8fafc 0%, #1a365d 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.transition-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(99, 102, 241, 0.1) 50%,
+    transparent 100%
+  );
+}
+
+.transition-particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+}
+
+.transition-particles span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.6);
+  animation: particleFloat 3s ease-in-out infinite;
+}
+
+.transition-particles span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.transition-particles span:nth-child(2) {
+  animation-delay: 0.5s;
+  width: 8px;
+  height: 8px;
+}
+
+.transition-particles span:nth-child(3) {
+  animation-delay: 1s;
+}
+
+@keyframes particleFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.2);
+    opacity: 1;
+  }
+}
+
 /* Investment Section */
 .investment-section {
-  padding: 100px 0;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  padding: 20px 0 100px;
+  background: linear-gradient(180deg, #f8fafc 0%, #f8fafc 100%);
   position: relative;
   overflow: hidden;
 }
@@ -252,5 +403,59 @@
 
   .investment-card {
     padding: 1.5rem;
+  }
+}
+
+/* Responsive Transitions */
+@media screen and (max-width: 768px) {
+  .section-transition {
+    height: 60px;
+    margin-top: -60px;
+  }
+
+  .section-transition-alt {
+    height: 40px;
+  }
+
+  .section-transition-cta {
+    height: 80px;
+  }
+
+  .connector-line {
+    height: 20px;
+  }
+
+  .connector-dot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .transition-particles {
+    gap: 25px;
+  }
+
+  .transition-particles span {
+    width: 4px;
+    height: 4px;
+  }
+
+  .transition-particles span:nth-child(2) {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .section-transition {
+    height: 50px;
+    margin-top: -50px;
+  }
+
+  .section-transition-alt {
+    height: 35px;
+  }
+
+  .section-transition-cta {
+    height: 60px;
   }
 }

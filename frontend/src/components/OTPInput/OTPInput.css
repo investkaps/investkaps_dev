@@ -6,10 +6,10 @@
 }
 
 .otp-input {
-  width: 50px;
-  height: 56px;
+  width: 44px;
+  height: 44px;
   text-align: center;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 600;
   border: 2px solid #ddd;
   border-radius: 8px;
@@ -59,28 +59,28 @@
   }
 }
 
-/* Mobile responsive */
-@media (max-width: 480px) {
+/* Tablet responsive */
+@media (max-width: 768px) {
   .otp-input-container {
     gap: 8px;
   }
   
   .otp-input {
-    width: 42px;
-    height: 48px;
-    font-size: 20px;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
   }
 }
 
-/* Tablet responsive */
-@media (max-width: 768px) {
+/* Mobile responsive */
+@media (max-width: 480px) {
   .otp-input-container {
-    gap: 10px;
+    gap: 6px;
   }
   
   .otp-input {
-    width: 45px;
-    height: 52px;
-    font-size: 22px;
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
   }
 }

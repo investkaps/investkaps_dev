@@ -18,3 +18,8 @@
 2025-11-05 08:20:14 - INFO - Fetching KYC details for PAN: ALDPR4292B
 2025-11-05 08:20:16 - INFO - KYC Verification for PAN: ALDPR4292B, Timestamp: 20251105082016., Hash: 494178c6
 2025-11-05 08:20:16 - INFO - KYC verification logged: KYC verified at 20251105082016.
+2025-12-12 12:00:42 - INFO - Connection test to www.nsekra.com successful
+2025-12-12 12:00:42 - INFO - Fetching encrypted password for PAN: RARPS6224N
+2025-12-12 12:00:43 - INFO - Fetching KYC details for PAN: RARPS6224N
+2025-12-12 12:00:46 - INFO - KYC Verification for PAN: RARPS6224N, Timestamp: 20251212120046., Hash: f088a333
+2025-12-12 12:00:46 - INFO - KYC verification logged: KYC verified at 20251212120046.

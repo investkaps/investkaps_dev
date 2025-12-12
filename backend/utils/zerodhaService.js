@@ -125,33 +125,74 @@ const getOHLC = async (instruments) => {
 };
 
 /**
- * Search instruments
+ * Search instruments - fetches CSV from Zerodha and parses it
  * @param {string} query - Search query
  * @param {string} exchange - Exchange (NSE, BSE, etc.)
  * @returns {Promise<array>} Matching instruments
  */
 const searchInstruments = async (query, exchange = null) => {
   try {
-    let endpoint = `/instruments`;
+    const accessToken = await getAccessToken();
     
+    let url = `${BASE_URL}/instruments`;
     if (exchange) {
-      endpoint = `/instruments/${exchange}`;
+      url = `${BASE_URL}/instruments/${exchange}`;
     }
     
-    const response = await makeZerodhaRequest(endpoint);
+    // Instruments endpoint returns CSV, not JSON
+    const response = await axios({
+      method: 'GET',
+      url: url,
+      headers: {
+        'Authorization': `token ${API_KEY}:${accessToken.trim()}`,
+        'X-Kite-Version': '3'
+      }
+    });
     
-    // Filter by query if provided
-    if (query && Array.isArray(response)) {
-      const queryUpper = query.toUpperCase();
-      return response.filter(inst => 
-        (inst.tradingsymbol && inst.tradingsymbol.toUpperCase().includes(queryUpper)) ||
-        (inst.name && inst.name.toUpperCase().includes(queryUpper))
-      ).slice(0, 20);
+    // Parse CSV response
+    const csvData = response.data;
+    if (typeof csvData !== 'string') {
+      return [];
     }
     
-    return response;
+    const lines = csvData.split('\n');
+    if (lines.length < 2) return [];
+    
+    // Parse header to get column indices
+    const headers = lines[0].split(',');
+    const tradingsymbolIdx = headers.indexOf('tradingsymbol');
+    const nameIdx = headers.indexOf('name');
+    const instrumentTokenIdx = headers.indexOf('instrument_token');
+    const exchangeIdx = headers.indexOf('exchange');
+    
+    // Parse data rows and filter by query
+    const instruments = [];
+    const queryUpper = query ? query.toUpperCase() : '';
+    
+    for (let i = 1; i < lines.length && instruments.length < 20; i++) {
+      const cols = lines[i].split(',');
+      if (cols.length < headers.length) continue;
+      
+      const tradingsymbol = cols[tradingsymbolIdx] || '';
+      const name = cols[nameIdx] || '';
+      
+      // Filter by query if provided
+      if (queryUpper && !tradingsymbol.toUpperCase().includes(queryUpper) && 
+          !name.toUpperCase().includes(queryUpper)) {
+        continue;
+      }
+      
+      instruments.push({
+        tradingsymbol: tradingsymbol,
+        name: name,
+        instrument_token: cols[instrumentTokenIdx],
+        exchange: cols[exchangeIdx]
+      });
+    }
+    
+    return instruments;
   } catch (error) {
-    logger.error('Error searching instruments:', error);
+    logger.error('Error searching instruments:', error.message);
     throw error;
   }
 };

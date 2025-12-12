@@ -33,9 +33,23 @@
   flex-direction: column;
 }
 
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.footer-logo {
+  height: 50px;
+  width: auto;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
 .footer-title {
   font-size: 1.8rem;
-  margin-bottom: 1rem;
+  margin: 0;
   font-weight: 700;
   background: linear-gradient(45deg, #3498db, #2ecc71);
   -webkit-background-clip: text;
@@ -225,6 +239,16 @@
 
 .social-links a:nth-child(3):hover {
   background: #ff0000;
+}
+
+.social-links a:nth-child(4):hover,
+.social-links a.telegram-link:hover {
+  background: #0088cc;
+}
+
+.social-links a:nth-child(5):hover,
+.social-links a.whatsapp-link:hover {
+  background: #25D366;
 }
 
 .footer-bottom {

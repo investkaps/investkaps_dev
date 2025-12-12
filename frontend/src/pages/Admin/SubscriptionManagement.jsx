@@ -142,6 +142,7 @@ const SubscriptionManagement = () => {
       },
       currency: 'INR',
       features: [],
+      telegramChatId: '',
       isActive: true
     });
     setSelectedStrategies([]);
@@ -169,6 +170,7 @@ const SubscriptionManagement = () => {
       },
       currency: subscription.currency || 'INR',
       features: subscription.features || [],
+      telegramChatId: subscription.telegramChatId || '',
       isActive: subscription.isActive
     });
     
@@ -570,6 +572,20 @@ const SubscriptionManagement = () => {
                   />
                   Active
                 </label>
+              </div>
+
+              <div className="admin-form-group">
+                <label>Telegram Chat ID</label>
+                <input
+                  type="text"
+                  name="telegramChatId"
+                  value={formData.telegramChatId}
+                  onChange={handleInputChange}
+                  placeholder="e.g., -1001234567890"
+                />
+                <small style={{ color: '#6c757d', display: 'block', marginTop: '4px' }}>
+                  Enter the Telegram group/channel chat ID for this subscription's notifications
+                </small>
               </div>
               
               <div className="admin-form-section">

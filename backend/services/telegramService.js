@@ -1,8 +1,7 @@
-
 const TelegramBot = require('node-telegram-bot-api');
 const logger = require('../utils/logger');
 
-// Initialize bot
+// Initialize bot - uses common bot token from env
 let bot = null;
 
 const initializeTelegramBot = () => {
@@ -24,11 +23,12 @@ const initializeTelegramBot = () => {
 };
 
 /**
- * Send stock recommendation to Telegram group
+ * Send stock recommendation to Telegram chat
  * @param {Object} recommendation - Stock recommendation object
+ * @param {string} chatId - Telegram chat ID (from subscription)
  * @returns {Promise<boolean>} Success status
  */
-const sendRecommendationToTelegram = async (recommendation) => {
+const sendRecommendationToTelegram = async (recommendation, chatId) => {
   try {
     if (!bot) {
       bot = initializeTelegramBot();
@@ -38,11 +38,18 @@ const sendRecommendationToTelegram = async (recommendation) => {
       }
     }
 
-    const chatId = process.env.TELEGRAM_CHAT_ID;
-    
-    if (!chatId || chatId === 'your_group_chat_id_here') {
-      logger.warn('Telegram chat ID not configured. Skipping notification.');
+    if (!chatId) {
+      logger.warn('Telegram chat ID not provided. Skipping notification.');
       return false;
+    }
+
+    // Format target prices
+    let targetPricesText = `• Target 1: ₹${recommendation.targetPrice}`;
+    if (recommendation.targetPrice2) {
+      targetPricesText += `\n• Target 2: ₹${recommendation.targetPrice2}`;
+    }
+    if (recommendation.targetPrice3) {
+      targetPricesText += `\n• Target 3: ₹${recommendation.targetPrice3}`;
     }
 
     // Format the message
@@ -56,7 +63,7 @@ ${typeEmoji} *NEW STOCK RECOMMENDATION* ${typeEmoji}
 
 💰 *Price Details:*
 • Current Price: ₹${recommendation.currentPrice}
-• Target Price: ₹${recommendation.targetPrice}
+${targetPricesText}
 ${recommendation.stopLoss ? `• Stop Loss: ₹${recommendation.stopLoss}` : ''}
 
 📈 *Recommendation:* ${recommendation.recommendationType.toUpperCase()}
@@ -80,59 +87,59 @@ _InvestKaps - Your Investment Partner_
       disable_web_page_preview: false
     });
 
-    logger.info(`Stock recommendation sent to Telegram: ${recommendation.stockSymbol}`);
+    logger.info(`Stock recommendation sent to Telegram chat ${chatId}: ${recommendation.stockSymbol}`);
     return true;
 
   } catch (error) {
-    logger.error('Error sending recommendation to Telegram:', error);
+    logger.error(`Error sending recommendation to Telegram chat ${chatId}:`, error);
     return false;
   }
 };
 
 /**
- * Send custom message to Telegram group
+ * Send custom message to Telegram chat
  * @param {string} message - Message to send
+ * @param {string} chatId - Telegram chat ID (from subscription)
  * @returns {Promise<boolean>} Success status
  */
-const sendTelegramMessage = async (message) => {
+const sendTelegramMessage = async (message, chatId) => {
   try {
     if (!bot) {
       bot = initializeTelegramBot();
       if (!bot) return false;
     }
 
-    const chatId = process.env.TELEGRAM_CHAT_ID;
-    if (!chatId || chatId === 'your_group_chat_id_here') {
-      logger.warn('Telegram chat ID not configured.');
+    if (!chatId) {
+      logger.warn('Telegram chat ID not provided.');
       return false;
     }
 
     await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
-    logger.info('Custom message sent to Telegram');
+    logger.info(`Custom message sent to Telegram chat ${chatId}`);
     return true;
 
   } catch (error) {
-    logger.error('Error sending message to Telegram:', error);
+    logger.error(`Error sending message to Telegram chat ${chatId}:`, error);
     return false;
   }
 };
 
 /**
- * Send PDF document to Telegram group
+ * Send PDF document to Telegram chat
  * @param {string} pdfUrl - URL of the PDF
  * @param {string} caption - Caption for the PDF
+ * @param {string} chatId - Telegram chat ID (from subscription)
  * @returns {Promise<boolean>} Success status
  */
-const sendPDFToTelegram = async (pdfUrl, caption) => {
+const sendPDFToTelegram = async (pdfUrl, caption, chatId) => {
   try {
     if (!bot) {
       bot = initializeTelegramBot();
       if (!bot) return false;
     }
 
-    const chatId = process.env.TELEGRAM_CHAT_ID;
-    if (!chatId || chatId === 'your_group_chat_id_here') {
-      logger.warn('Telegram chat ID not configured.');
+    if (!chatId) {
+      logger.warn('Telegram chat ID not provided.');
       return false;
     }
 
@@ -141,18 +148,46 @@ const sendPDFToTelegram = async (pdfUrl, caption) => {
       parse_mode: 'Markdown'
     });
     
-    logger.info('PDF sent to Telegram');
+    logger.info(`PDF sent to Telegram chat ${chatId}`);
     return true;
 
   } catch (error) {
-    logger.error('Error sending PDF to Telegram:', error);
+    logger.error(`Error sending PDF to Telegram chat ${chatId}:`, error);
     return false;
   }
+};
+
+/**
+ * Send recommendation to multiple Telegram chats (for multiple subscriptions)
+ * @param {Object} recommendation - Stock recommendation object
+ * @param {Array} subscriptions - Array of subscription objects with telegramChatId
+ * @returns {Promise<Object>} Results with success/failure counts
+ */
+const sendRecommendationToSubscriptions = async (recommendation, subscriptions) => {
+  const results = { sent: 0, failed: 0, skipped: 0 };
+  
+  for (const subscription of subscriptions) {
+    if (!subscription.telegramChatId) {
+      results.skipped++;
+      continue;
+    }
+    
+    const success = await sendRecommendationToTelegram(recommendation, subscription.telegramChatId);
+    if (success) {
+      results.sent++;
+    } else {
+      results.failed++;
+    }
+  }
+  
+  logger.info(`Telegram notifications: sent=${results.sent}, failed=${results.failed}, skipped=${results.skipped}`);
+  return results;
 };
 
 module.exports = {
   initializeTelegramBot,
   sendRecommendationToTelegram,
+  sendRecommendationToSubscriptions,
   sendTelegramMessage,
   sendPDFToTelegram
 };

@@ -26,6 +26,8 @@ const StockRecommendationManagement = () => {
     stockName: '',
     currentPrice: '',
     targetPrice: '',
+    targetPrice2: '',
+    targetPrice3: '',
     stopLoss: '',
     recommendationType: 'buy',
     timeFrame: 'short_term',
@@ -140,6 +142,8 @@ const StockRecommendationManagement = () => {
       stockName: '',
       currentPrice: '',
       targetPrice: '',
+      targetPrice2: '',
+      targetPrice3: '',
       stopLoss: '',
       recommendationType: 'buy',
       timeFrame: 'short_term',
@@ -160,6 +164,8 @@ const StockRecommendationManagement = () => {
       targetStrategies: recommendation.targetStrategies.map(strategy => strategy._id || strategy),
       currentPrice: recommendation.currentPrice.toString(),
       targetPrice: recommendation.targetPrice.toString(),
+      targetPrice2: recommendation.targetPrice2 ? recommendation.targetPrice2.toString() : '',
+      targetPrice3: recommendation.targetPrice3 ? recommendation.targetPrice3.toString() : '',
       stopLoss: recommendation.stopLoss ? recommendation.stopLoss.toString() : '',
       expiresAt: recommendation.expiresAt ? new Date(recommendation.expiresAt).toISOString().split('T')[0] : ''
     });
@@ -201,6 +207,8 @@ const StockRecommendationManagement = () => {
         ...formData,
         currentPrice: parseFloat(formData.currentPrice),
         targetPrice: parseFloat(formData.targetPrice),
+        targetPrice2: formData.targetPrice2 ? parseFloat(formData.targetPrice2) : undefined,
+        targetPrice3: formData.targetPrice3 ? parseFloat(formData.targetPrice3) : undefined,
         stopLoss: formData.stopLoss ? parseFloat(formData.stopLoss) : undefined,
       };
       
@@ -311,7 +319,7 @@ const StockRecommendationManagement = () => {
           ...prev,
           stockSymbol: symbol,  // Update to cleaned symbol (without .BSE/.NSE)
           currentPrice: response.data.lastPrice.toString(),
-          stockName: response.data.tradingSymbol || symbol  // Use trading symbol from API or fallback to symbol
+          stockName: response.data.stockName || symbol  // Use stock name from API or fallback to symbol
         }));
         setError(null);
       } else {
@@ -467,30 +475,34 @@ const StockRecommendationManagement = () => {
               maxHeight: '90vh',
               overflowY: 'auto',
               zIndex: 1000,
-              backgroundColor: '#1e293b',
+              backgroundColor: '#ffffff',
               borderRadius: '12px',
               padding: '2rem',
-              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)'
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)'
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ margin: 0 }}>{formMode === 'create' ? 'Create New Recommendation' : 'Edit Recommendation'}</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #e5e7eb', paddingBottom: '1rem' }}>
+              <h3 style={{ margin: 0, color: '#1f2937', fontSize: '1.25rem', fontWeight: '600' }}>{formMode === 'create' ? 'Create New Recommendation' : 'Edit Recommendation'}</h3>
               <button 
                 type="button"
                 onClick={() => setIsFormVisible(false)}
                 style={{
                   background: 'none',
                   border: 'none',
-                  fontSize: '2rem',
-                  color: '#94a3b8',
+                  fontSize: '1.5rem',
+                  color: '#6b7280',
                   cursor: 'pointer',
                   padding: '0',
-                  width: '40px',
-                  height: '40px',
+                  width: '32px',
+                  height: '32px',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  borderRadius: '4px',
+                  transition: 'background-color 0.2s'
                 }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+                onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
               >
                 ×
               </button>
@@ -575,7 +587,7 @@ const StockRecommendationManagement = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="targetPrice">Target Price (₹)</label>
+                <label htmlFor="targetPrice">Target 1 (₹) *</label>
                 <input
                   type="number"
                   id="targetPrice"
@@ -584,11 +596,12 @@ const StockRecommendationManagement = () => {
                   onChange={handleFormChange}
                   step="0.01"
                   required
+                  placeholder="Required"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="stopLoss">Stop Loss (₹) (Optional)</label>
+                <label htmlFor="stopLoss">Stop Loss (₹)</label>
                 <input
                   type="number"
                   id="stopLoss"
@@ -596,6 +609,35 @@ const StockRecommendationManagement = () => {
                   value={formData.stopLoss}
                   onChange={handleFormChange}
                   step="0.01"
+                  placeholder="Optional"
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="targetPrice2">Target 2 (₹)</label>
+                <input
+                  type="number"
+                  id="targetPrice2"
+                  name="targetPrice2"
+                  value={formData.targetPrice2}
+                  onChange={handleFormChange}
+                  step="0.01"
+                  placeholder="Optional"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="targetPrice3">Target 3 (₹)</label>
+                <input
+                  type="number"
+                  id="targetPrice3"
+                  name="targetPrice3"
+                  value={formData.targetPrice3}
+                  onChange={handleFormChange}
+                  step="0.01"
+                  placeholder="Optional"
                 />
               </div>
             </div>

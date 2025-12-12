@@ -59,6 +59,7 @@ const Navbar = ({ scrolled }) => {
       <div className="navbar-container">
         <div className="navbar-logo">
           <Link to="/">
+            <img src="/logo.png" alt="InvestKaps" className="logo-image" />
             <span className="logo-text">InvestKaps</span>
           </Link>
         </div>
@@ -162,8 +163,8 @@ const Navbar = ({ scrolled }) => {
             </>
           ) : (
             <>
-              <a href="https://trade.investkaps.com" className="btn btn-secondary">Login</a>
-              <a href="https://trade.investkaps.com" className="btn btn-primary">Get Started</a>
+              <Link to="/login" className="btn btn-secondary">Login</Link>
+              <Link to="/register" className="btn btn-primary">Get Started</Link>
             </>
           )}
         </div>

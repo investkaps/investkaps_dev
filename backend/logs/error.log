@@ -1647,3 +1647,7 @@
 2025-11-25 13:00:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
 2025-11-25 13:00:00 error: Error getting quote: Request failed with status code 403
 2025-11-25 13:00:00 error: Failed to update price for TCS:
+2025-12-09 14:57:43 error: Failed to send OTP. Status: Error
+2025-12-09 14:57:58 error: Failed to send OTP. Status: Error
+2025-12-09 16:22:43 error: Failed to send recommendation to user 6909bcf62d29de75e7e8eb50: notificationService.sendRecommendationNotification is not a function
+2025-12-09 16:22:43 error: Failed to send recommendation to user 692a9cb37a9e84691d9c580a: notificationService.sendRecommendationNotification is not a function

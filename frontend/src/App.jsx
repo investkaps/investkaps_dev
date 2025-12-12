@@ -10,6 +10,7 @@ import Footer from './components/Footer/Footer';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import AdminRoute from './components/guards/AdminRoute'; // Admin route guard
 import PWAInstallPrompt from './components/PWAInstallPrompt/PWAInstallPrompt';
+import WhatsAppButton from './components/WhatsAppButton/WhatsAppButton';
 
 // Pages
 import Home from './pages/Home/Home';
@@ -84,6 +85,7 @@ const AppLayout = ({ children, scrolled }) => {
         {children}
       </main>
       {!isAdminRoute && <Footer />}
+      {!isAdminRoute && <WhatsAppButton />}
     </div>
   );
 };
