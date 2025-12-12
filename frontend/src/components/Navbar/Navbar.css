@@ -524,8 +524,24 @@ body.is-register .navbar.scrolled .menu-icon span {
   display: none;
 }
 
+/* Hide mobile auth buttons on desktop */
+.mobile-auth-buttons {
+  display: none !important;
+}
+
 /* Responsive styles */
 @media screen and (max-width: 960px) {
+  /* Show mobile auth buttons on mobile */
+  .mobile-auth-buttons {
+    display: flex !important;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    width: 100%;
+    align-items: center;
+  }
   .menu-icon {
     display: flex;
   }
@@ -559,14 +575,16 @@ body.is-register .navbar.scrolled .menu-icon span {
     position: fixed;
     top: -100%;
     left: 0;
-    height: 50vh;
+    height: auto;
+    max-height: 85vh;
     opacity: 0;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     z-index: 999;
     padding: 80px 2rem 2rem;
     border-radius: 0 0 20px 20px;
+    overflow-y: auto;
   }
 
   .nav-menu.active {
@@ -650,6 +668,75 @@ body.is-register .navbar.scrolled .menu-icon span {
     width: 30px;
     left: 50%;
     transform: translateX(-50%);
+  }
+
+  /* Mobile auth buttons */
+  .mobile-auth-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .mobile-login-btn,
+  .mobile-profile-btn {
+    background: transparent;
+    color: white;
+    border: 2px solid white;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    text-align: center;
+    width: 80%;
+  }
+
+  .mobile-login-btn:hover,
+  .mobile-profile-btn:hover {
+    background: white;
+    color: #2c3e50;
+    transform: scale(1.02);
+  }
+
+  .mobile-logout-btn {
+    background: rgba(231, 76, 60, 0.9);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 80%;
+  }
+
+  .mobile-logout-btn:hover {
+    background: #c0392b;
+    transform: scale(1.02);
+  }
+
+  .mobile-register-btn {
+    background: white;
+    color: #2c3e50;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.3s ease;
+    width: 80%;
+  }
+
+  .mobile-register-btn:hover {
+    background: #f8f9fa;
+    transform: scale(1.02);
   }
 }
 

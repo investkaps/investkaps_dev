@@ -698,56 +698,57 @@ const Dashboard = () => {
                 {loadingRecommendations ? (
                   <div className="loading-message">Loading recommendations...</div>
                 ) : stockRecommendations.length > 0 ? (
-                  <div className="recommendations-grid">
-                    {stockRecommendations.map((rec) => (
-                      <div key={rec._id} className="recommendation-card">
-                        <div className="rec-header">
-                          <h3>{rec.stockSymbol}</h3>
-                          <span className={`rec-type ${rec.recommendationType}`}>
-                            {rec.recommendationType}
-                          </span>
-                        </div>
-                        <div className="rec-body">
-                          <p className="stock-name">{rec.stockName}</p>
-                          <div className="price-info">
-                            <div className="price-item">
-                              <span className="label">Current:</span>
-                              <span className="value">₹{rec.currentPrice}</span>
-                            </div>
-                            <div className="price-item">
-                              <span className="label">Target:</span>
-                              <span className="value target">₹{rec.targetPrice}</span>
-                            </div>
-                            <div className="price-item">
-                              <span className="label">Stop Loss:</span>
-                              <span className="value stoploss">₹{rec.stopLoss}</span>
-                            </div>
-                          </div>
-                          {rec.description && (
-                            <p className="rec-description">{rec.description}</p>
-                          )}
-                          <div className="rec-footer">
-                            <span className="timeframe">{rec.timeFrame}</span>
-                            {rec.pdfReport && rec.pdfReport.url && (
-                              <a 
-                                href={rec.pdfReport.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="pdf-link"
-                                style={{
-                                  color: '#dc2626',
-                                  textDecoration: 'none',
-                                  fontWeight: '600',
-                                  fontSize: '0.9rem'
-                                }}
-                              >
-                                📄 PDF Report
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="recommendations-table-container">
+                    <table className="recommendations-table">
+                      <thead>
+                        <tr>
+                          <th>Stock</th>
+                          <th>Type</th>
+                          <th>Current</th>
+                          <th>Target 1</th>
+                          <th>Target 2</th>
+                          <th>Target 3</th>
+                          <th>Stop Loss</th>
+                          <th>Timeframe</th>
+                          <th>Report</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {stockRecommendations.map((rec) => (
+                          <tr key={rec._id} className="rec-row">
+                            <td className="stock-cell">
+                              <span className="stock-symbol">{rec.stockSymbol}</span>
+                              <span className="stock-name">{rec.stockName}</span>
+                            </td>
+                            <td>
+                              <span className={`rec-badge ${rec.recommendationType}`}>
+                                {rec.recommendationType.toUpperCase()}
+                              </span>
+                            </td>
+                            <td className="price-cell">₹{rec.currentPrice}</td>
+                            <td className="price-cell target">₹{rec.targetPrice}</td>
+                            <td className="price-cell target">{rec.targetPrice2 ? `₹${rec.targetPrice2}` : '-'}</td>
+                            <td className="price-cell target">{rec.targetPrice3 ? `₹${rec.targetPrice3}` : '-'}</td>
+                            <td className="price-cell stoploss">{rec.stopLoss ? `₹${rec.stopLoss}` : '-'}</td>
+                            <td className="timeframe-cell">
+                              {rec.timeFrame === 'short_term' ? 'Short' : rec.timeFrame === 'medium_term' ? 'Medium' : 'Long'}
+                            </td>
+                            <td>
+                              {rec.pdfReport && rec.pdfReport.url ? (
+                                <a 
+                                  href={rec.pdfReport.url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="pdf-btn"
+                                >
+                                  📄 View
+                                </a>
+                              ) : '-'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 ) : (
                   <div className="no-recommendations">

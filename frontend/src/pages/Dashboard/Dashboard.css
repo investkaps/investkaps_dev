@@ -1300,6 +1300,142 @@ input.verified {
   margin-top: 1rem;
 }
 
+/* New Table Design for Recommendations */
+.recommendations-table-container {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.recommendations-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.recommendations-table thead {
+  background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+}
+
+.recommendations-table th {
+  color: white;
+  padding: 14px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.recommendations-table tbody tr {
+  border-bottom: 1px solid #e9ecef;
+  transition: background 0.2s ease;
+}
+
+.recommendations-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.recommendations-table td {
+  padding: 14px 12px;
+  vertical-align: middle;
+}
+
+.stock-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stock-cell .stock-symbol {
+  font-weight: 700;
+  color: #212529;
+  font-size: 1rem;
+}
+
+.stock-cell .stock-name {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.rec-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rec-badge.buy {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.rec-badge.sell {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.rec-badge.hold {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.price-cell {
+  font-weight: 600;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.price-cell.target {
+  color: #059669 !important;
+}
+
+.price-cell.stoploss {
+  color: #dc2626 !important;
+}
+
+.timeframe-cell {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.pdf-btn {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.pdf-btn:hover {
+  background: #dc2626;
+  color: white;
+}
+
+/* Mobile responsive for table */
+@media screen and (max-width: 768px) {
+  .recommendations-table {
+    font-size: 0.85rem;
+  }
+  
+  .recommendations-table th,
+  .recommendations-table td {
+    padding: 10px 8px;
+  }
+  
+  .recommendations-table th:nth-child(5),
+  .recommendations-table td:nth-child(5),
+  .recommendations-table th:nth-child(6),
+  .recommendations-table td:nth-child(6) {
+    display: none;
+  }
+}
+
 .recommendation-card {
   background: #f8f9fa;
   border: 1px solid #e9ecef;

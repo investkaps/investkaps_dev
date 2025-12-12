@@ -98,6 +98,37 @@ const Navbar = ({ scrolled }) => {
           <li className="nav-item">
             <Link to="/contact" className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`} onClick={() => setMenuOpen(false)}>Contact</Link>
           </li>
+          {/* Mobile auth buttons */}
+          <div className="mobile-auth-buttons">
+            {isAuthenticated ? (
+              <>
+                <Link to="/profile" className="mobile-profile-btn" onClick={() => setMenuOpen(false)}>Profile</Link>
+                <button 
+                  className="mobile-logout-btn"
+                  onClick={() => {
+                    logout();
+                    setMenuOpen(false);
+                    navigate('/');
+                  }}
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  className="mobile-login-btn"
+                  onClick={() => {
+                    navigate('/login');
+                    setMenuOpen(false);
+                  }}
+                >
+                  Login
+                </button>
+                <Link to="/register" className="mobile-register-btn" onClick={() => setMenuOpen(false)}>Get Started</Link>
+              </>
+            )}
+          </div>
         </ul>
 
         <div className="nav-cta">
