@@ -26,6 +26,7 @@ const stockRecommendationRoutes = require('./routes/stockRecommendtionRoutes');
 const testRoutes = require('./routes/testRoutes');
 const phoneRoutes = require('./routes/phoneRoutes');
 const paymentRequestRoutes = require('./routes/paymentRequestRoutes');
+const newsletterRoutes = require('./routes/newsletterRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -101,6 +102,9 @@ app.use('/api/recommendations', stockRecommendationRoutes);
 
 // Payment Request routes
 app.use('/api/payment-requests', paymentRequestRoutes);
+
+// Newsletter routes
+app.use('/api/newsletter', newsletterRoutes);
 
 // Create directory for uploads if it doesn't exist
 const uploadsDir = path.join(process.cwd(), 'uploads');

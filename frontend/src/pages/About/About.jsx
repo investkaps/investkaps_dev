@@ -5,23 +5,12 @@ import CTA from '../../components/CTA/CTA';
 const About = () => {
   return (
     <div className="about-page">
-      {/* Hero Section */}
-      <section className="about-hero">
-        <div className="about-hero-overlay"></div>
-        <div className="about-hero-content">
-          <h1 className="about-hero-title">About InvestKaps</h1>
-          <p className="about-hero-subtitle">
-            Your trusted partner in financial growth and investment success
-          </p>
-        </div>
-      </section>
-      
       {/* Meet Our Founder Section */}
       <section className="founder-section">
         <div className="founder-container">
           <div className="section-header">
-            <span className="section-subtitle">Leadership</span>
-            <h2 className="section-title">Meet Our Founder</h2>
+            <h1 className="about-main-title">Meet Our Founder</h1>
+            <p className="about-main-subtitle">Your trusted partner in financial growth and investment success</p>
           </div>
           
           <div className="founder-content">

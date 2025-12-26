@@ -7,17 +7,29 @@ const AuditReport = () => {
       <div className="audit-report-container">
         {/* Header */}
         <div className="page-header">
-          <h1 className="page-title">Audit Report</h1>
-          <p className="page-subtitle">SEBI Research Analysts Information</p>
+          <h1 className="page-title">FAQs</h1>
+          <p className="page-subtitle">Frequently Asked Questions</p>
         </div>
 
-        {/* Image Section */}
-        <section className="audit-image-section">
-          <div className="image-container">
-            <img src="/audit.png" alt="Audit Report 1" className="audit-image" />
+        {/* PDF Viewer Section */}
+        <section className="audit-pdf-section">
+          <div className="pdf-viewer-container">
+            <iframe
+              src="/investkaps - FAQs.pdf"
+              title="InvestKaps FAQs"
+              className="pdf-viewer"
+              width="100%"
+              height="800px"
+            />
           </div>
-          <div className="image-container">
-            <img src="/audit2.png" alt="Audit Report 2" className="audit-image" />
+          <div className="pdf-download-section">
+            <a 
+              href="/investkaps - FAQs.pdf" 
+              download="InvestKaps-FAQs.pdf"
+              className="download-button"
+            >
+              Download FAQ Document
+            </a>
           </div>
         </section>
       </div>

@@ -22,16 +22,15 @@ const Footer = () => {
           </div>
           
           <div className="footer-column">
-            <h4 className="footer-heading">Legal & Policies</h4>
+            <h4 className="footer-heading">Quick Links</h4>
             <ul className="footer-links">
               <li><Link to="/privacy-policy" onClick={scrollToTop}>Privacy Policy</Link></li>
-              <li><Link to="/disclaimer" onClick={scrollToTop}>Disclaimer</Link></li>
+              <li><Link to="/disclaimer" onClick={scrollToTop}>Disclaimers</Link></li>
               <li><Link to="/terms-and-conditions" onClick={scrollToTop}>Terms and Conditions</Link></li>
               <li><Link to="/investor-charter" onClick={scrollToTop}>Investor Charter</Link></li>
               <li><Link to="/valid-upi" onClick={scrollToTop}>Valid UPI</Link></li>
               <li><Link to="/faqs" onClick={scrollToTop}>FAQs</Link></li>
               <li><Link to="/complaints-and-audit" onClick={scrollToTop}>Complaints and Audit</Link></li>
-              <li><Link to="/complaints-data" onClick={scrollToTop}>Complaints Data</Link></li>
               <li><Link to="/cancellations-and-refunds" onClick={scrollToTop}>Cancellations and Refunds</Link></li>
               <li><Link to="/grievance-redressal" onClick={scrollToTop}>Grievance Redressal</Link></li>
               <li><Link to="/code-of-conduct" onClick={scrollToTop}>Code of Conduct</Link></li>

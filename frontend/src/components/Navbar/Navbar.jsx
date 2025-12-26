@@ -59,8 +59,8 @@ const Navbar = ({ scrolled }) => {
       <div className="navbar-container">
         <div className="navbar-logo">
           <Link to="/">
-            <img src="/logo.png" alt="InvestKaps" className="logo-image" />
-            <span className="logo-text">InvestKaps</span>
+            <img src="/logo.png" alt="investkaps" className="logo-image" />
+            <span className="logo-text">investkaps</span>
           </Link>
         </div>
 

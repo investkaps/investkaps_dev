@@ -47,20 +47,13 @@ const Contact = () => {
 
   return (
     <div className="contact-page">
-      {/* Contact Hero Section */}
-      <section className="contact-hero">
-        <div className="contact-hero-overlay"></div>
-        <div className="contact-hero-content">
-          <h1 className="contact-hero-title">Contact Us</h1>
-          <p className="contact-hero-subtitle">
-            Get in touch with our team of financial experts
-          </p>
-        </div>
-      </section>
-      
       {/* Contact Information Section */}
       <section className="contact-info-section">
         <div className="contact-container">
+          <div className="contact-page-header">
+            <h1 className="contact-main-title">Contact Us</h1>
+            <p className="contact-main-subtitle">Get in touch with our team of financial experts</p>
+          </div>
           <div className="primary-contact-banner">
             <h2 className="primary-contact-title">We are right here:</h2>
             <p className="primary-contact-subtitle">

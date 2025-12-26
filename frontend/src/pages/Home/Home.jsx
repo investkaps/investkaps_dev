@@ -4,9 +4,64 @@ import './Home.css';
 import Hero from '../../components/Hero/Hero';
 import CTA from '../../components/CTA/CTA';
 import Features from '../../components/Features/Features';
+import Newsletter from '../../components/Newsletter/Newsletter';
+import { TestimonialsMarquee } from '../../components/TestimonialsMarquee/TestimonialsMarquee';
 
 const Home = () => {
   const investmentCardsRef = useRef([]);
+
+  const testimonials = [
+    {
+      author: {
+        name: "Rajesh Kumar",
+        handle: "@rajeshfinance",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+      },
+      text: "investkaps has completely transformed my investment strategy. Their expert recommendations helped me achieve 40% returns in just 6 months. Highly recommended!",
+      href: "https://twitter.com/rajeshfinance"
+    },
+    {
+      author: {
+        name: "Priya Sharma",
+        handle: "@priyainvests",
+        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face"
+      },
+      text: "As a first-time investor, I was nervous about the stock market. investkaps provided personalized guidance that gave me confidence. Their research-driven approach is exceptional."
+    },
+    {
+      author: {
+        name: "Amit Patel",
+        handle: "@amittrader",
+        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face"
+      },
+      text: "The advisory services are top-notch. They understand market trends and provide timely recommendations. My portfolio has never been more diversified and profitable.",
+      href: "https://twitter.com/amittrader"
+    },
+    {
+      author: {
+        name: "Sneha Reddy",
+        handle: "@snehastocks",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face"
+      },
+      text: "investkaps made investing simple and accessible. Their platform is user-friendly and their team is always available to answer questions. Best investment decision I've made!"
+    },
+    {
+      author: {
+        name: "Vikram Singh",
+        handle: "@vikraminvest",
+        avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face"
+      },
+      text: "Professional, reliable, and results-driven. investkaps has helped me build a strong investment portfolio aligned with my financial goals. Truly grateful for their expertise."
+    },
+    {
+      author: {
+        name: "Ananya Desai",
+        handle: "@ananyawealth",
+        avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face"
+      },
+      text: "The research quality and stock recommendations are outstanding. investkaps has consistently delivered value and helped me make informed investment decisions."
+    }
+  ];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -79,15 +134,15 @@ const Home = () => {
         </div>
       </div>
       
-      {/* Investment Options Section */}
+      {/* Our Proven Process Section */}
       <motion.section 
-        className="investment-section"
+        className="proven-process-section"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         variants={sectionVariants}
       >
-        <div className="investment-container">
+        <div className="proven-process-container">
           <motion.div 
             className="section-header"
             initial="hidden"
@@ -95,92 +150,132 @@ const Home = () => {
             viewport={{ once: true, amount: 0.3 }}
             variants={headerVariants}
           >
-            <span className="section-label">Investment Options</span>
-            <h2 className="section-title">Diversified Investment Opportunities</h2>
+            <span className="section-label">Our Proven Process</span>
+            <h2 className="section-title">Track Record of Success</h2>
             <p className="section-description">
-              Expert guidance across multiple asset classes to help you build and grow your investment portfolio
+              Real results from our research-driven recommendations. See how our expert analysis has helped investors achieve exceptional returns.
             </p>
           </motion.div>
           
-          <div className="investment-grid">
-            <div 
-              className="investment-card"
-              ref={(el) => (investmentCardsRef.current[0] = el)}
-            >
-              <div className="investment-number">01</div>
-              <div className="investment-icon">
+          <div className="success-stats">
+            <div className="stat-card" ref={(el) => (investmentCardsRef.current[0] = el)}>
+              <div className="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                </svg>
+              </div>
+              <div className="stat-number">85%</div>
+              <div className="stat-label">Success Rate</div>
+            </div>
+            
+            <div className="stat-card" ref={(el) => (investmentCardsRef.current[1] = el)}>
+              <div className="stat-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+              </div>
+              <div className="stat-number">150+</div>
+              <div className="stat-label">Successful Calls</div>
+            </div>
+            
+            <div className="stat-card" ref={(el) => (investmentCardsRef.current[2] = el)}>
+              <div className="stat-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="12" y1="1" x2="12" y2="23"></line>
                   <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                 </svg>
               </div>
-              <h3 className="investment-title">Stocks & Equities</h3>
-              <p className="investment-description">
-                Strategic equity investments with comprehensive analysis and risk management for optimal returns.
-              </p>
-              <a href="/investments/stocks-bonds" className="investment-link">
-                Explore
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-              </a>
+              <div className="stat-number">45%</div>
+              <div className="stat-label">Avg. Returns</div>
             </div>
-            
-            <div 
-              className="investment-card"
-              ref={(el) => (investmentCardsRef.current[1] = el)}
-            >
-              <div className="investment-number">02</div>
-              <div className="investment-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
-                  <path d="M12 18V6"></path>
-                </svg>
+          </div>
+
+          <div className="recommendations-showcase">
+            <h3 className="showcase-title">Recent Winning Recommendations</h3>
+            <div className="recommendations-grid">
+              <div className="recommendation-card">
+                <div className="recommendation-header">
+                  <span className="stock-name">Reliance Industries</span>
+                  <span className="recommendation-badge success">Target Achieved</span>
+                </div>
+                <div className="recommendation-details">
+                  <div className="detail-row">
+                    <span className="detail-label">Entry Price</span>
+                    <span className="detail-value">₹2,450</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Exit Price</span>
+                    <span className="detail-value">₹3,120</span>
+                  </div>
+                  <div className="detail-row highlight">
+                    <span className="detail-label">Returns</span>
+                    <span className="detail-value gain">+27.3%</span>
+                  </div>
+                </div>
+                <div className="recommendation-timeline">
+                  <span className="timeline-text">Duration: 4 months</span>
+                </div>
               </div>
-              <h3 className="investment-title">Mutual Funds</h3>
-              <p className="investment-description">
-                Professionally managed diversified funds designed to maximize returns while minimizing risk.
-              </p>
-              <a href="/investments/mutual-funds" className="investment-link">
-                Explore
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-              </a>
-            </div>
-            
-            <div 
-              className="investment-card"
-              ref={(el) => (investmentCardsRef.current[2] = el)}
-            >
-              <div className="investment-number">03</div>
-              <div className="investment-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                </svg>
+
+              <div className="recommendation-card">
+                <div className="recommendation-header">
+                  <span className="stock-name">HDFC Bank</span>
+                  <span className="recommendation-badge success">Target Achieved</span>
+                </div>
+                <div className="recommendation-details">
+                  <div className="detail-row">
+                    <span className="detail-label">Entry Price</span>
+                    <span className="detail-value">₹1,580</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Exit Price</span>
+                    <span className="detail-value">₹1,890</span>
+                  </div>
+                  <div className="detail-row highlight">
+                    <span className="detail-label">Returns</span>
+                    <span className="detail-value gain">+19.6%</span>
+                  </div>
+                </div>
+                <div className="recommendation-timeline">
+                  <span className="timeline-text">Duration: 3 months</span>
+                </div>
               </div>
-              <h3 className="investment-title">Advisory Services</h3>
-              <p className="investment-description">
-                Personalized investment recommendations and expert guidance tailored to your financial goals.
-              </p>
-              <a href="/investments/advisory" className="investment-link">
-                Explore
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-              </a>
+
+              <div className="recommendation-card">
+                <div className="recommendation-header">
+                  <span className="stock-name">Infosys</span>
+                  <span className="recommendation-badge success">Target Achieved</span>
+                </div>
+                <div className="recommendation-details">
+                  <div className="detail-row">
+                    <span className="detail-label">Entry Price</span>
+                    <span className="detail-value">₹1,420</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Exit Price</span>
+                    <span className="detail-value">₹1,820</span>
+                  </div>
+                  <div className="detail-row highlight">
+                    <span className="detail-label">Returns</span>
+                    <span className="detail-value gain">+28.2%</span>
+                  </div>
+                </div>
+                <div className="recommendation-timeline">
+                  <span className="timeline-text">Duration: 5 months</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </motion.section>
 
-      {/* Transition Divider: Investment to CTA */}
+      <TestimonialsMarquee 
+        title="Trusted by investors across India"
+        description="Join thousands of investors who are already building wealth with our expert guidance and research-driven recommendations"
+        testimonials={testimonials}
+      />
+
+      {/* Transition Divider: Testimonials to Newsletter */}
       <div className="section-transition section-transition-cta">
         <div className="transition-gradient"></div>
         <div className="transition-particles">
@@ -189,6 +284,8 @@ const Home = () => {
           <span></span>
         </div>
       </div>
+      
+      <Newsletter />
       
       <CTA />
     </div>

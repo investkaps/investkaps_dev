@@ -115,19 +115,44 @@
 
 .card-testimonial {
   background-color: #f8f9fa;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.card-testimonial .card-image {
+  display: none;
 }
 
 .card-testimonial .card-content {
   position: relative;
+  padding: 2rem 2.5rem;
+  text-align: center;
+}
+
+.card-testimonial .card-title {
+  font-size: 1.125rem;
+  margin-bottom: 0.25rem;
+}
+
+.card-testimonial .card-subtitle {
+  font-size: 0.8125rem;
+  margin-bottom: 1.25rem;
+}
+
+.card-testimonial .card-text {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: #64748b;
 }
 
 .card-testimonial .card-content:before {
   content: '"';
   position: absolute;
-  top: 0;
-  left: 1.5rem;
-  font-size: 5rem;
-  color: rgba(52, 152, 219, 0.1);
+  top: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 4rem;
+  color: rgba(52, 152, 219, 0.15);
   font-family: Georgia, serif;
   line-height: 1;
 }

@@ -48,8 +48,7 @@ const Hero = () => {
         </motion.h1>
 
         <motion.p className="hero-subtitle" variants={itemVariants}>
-          Professional investment management tailored to your goals.
-          Start your journey towards financial freedom with our expert guidance.
+          ...driven by research, guided by expertise
         </motion.p>
 
         <motion.div className="hero-actions" variants={itemVariants}>

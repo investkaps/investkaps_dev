@@ -2,6 +2,25 @@
   overflow-x: hidden;
 }
 
+.contact-page-header {
+  text-align: center;
+  padding: 120px 20px 40px;
+  background: white;
+}
+
+.contact-main-title {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #1a202c;
+  margin-bottom: 1rem;
+}
+
+.contact-main-subtitle {
+  font-size: 1.25rem;
+  color: #64748b;
+  margin-bottom: 2rem;
+}
+
 /* Contact Hero Section */
 .contact-hero {
   height: 50vh;

@@ -54,6 +54,48 @@
   border-radius: 8px;
 }
 
+/* PDF Viewer Section */
+.audit-pdf-section {
+  margin-bottom: 2rem;
+}
+
+.pdf-viewer-container {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.pdf-viewer {
+  border: none;
+  border-radius: 8px;
+  min-height: 800px;
+}
+
+.pdf-download-section {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.download-button {
+  display: inline-block;
+  padding: 12px 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.download-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
 /* Responsive Design */
 @media screen and (max-width: 768px) {
   .audit-report-page {
