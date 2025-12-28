@@ -151,7 +151,7 @@ const Home = () => {
             variants={headerVariants}
           >
             <span className="section-label">Our Proven Process</span>
-            <h2 className="section-title">Track Record of Success</h2>
+            <h2 className="section-title">Past Recommendations</h2>
             <p className="section-description">
               Real results from our research-driven recommendations. See how our expert analysis has helped investors achieve exceptional returns.
             </p>
@@ -164,7 +164,7 @@ const Home = () => {
                   <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                 </svg>
               </div>
-              <div className="stat-number">85%</div>
+              <div className="stat-number"></div>
               <div className="stat-label">Success Rate</div>
             </div>
             
@@ -174,8 +174,8 @@ const Home = () => {
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                 </svg>
               </div>
-              <div className="stat-number">150+</div>
-              <div className="stat-label">Successful Calls</div>
+              <div className="stat-number"></div>
+              <div className="stat-label"></div>
             </div>
             
             <div className="stat-card" ref={(el) => (investmentCardsRef.current[2] = el)}>
@@ -185,8 +185,8 @@ const Home = () => {
                   <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                 </svg>
               </div>
-              <div className="stat-number">45%</div>
-              <div className="stat-label">Avg. Returns</div>
+              <div className="stat-number"></div>
+              <div className="stat-label"></div>
             </div>
           </div>
 

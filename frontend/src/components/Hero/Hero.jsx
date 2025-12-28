@@ -41,6 +41,8 @@ const Hero = () => {
         variants={containerVariants}
       >
         <motion.h1 className="hero-title" variants={itemVariants}>
+          (Important note: investkaps website is undergoing certain changes...please bear with us)
+
           Build Your
           <span className="title-highlight"> Financial Future</span>
           <br />
