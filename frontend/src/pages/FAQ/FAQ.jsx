@@ -9,40 +9,64 @@ const FAQ = () => {
     setActiveIndex(activeIndex === index ? null : index);
   };
 
+  const pdfUrl =
+    'https://res.cloudinary.com/dh9pmvu5j/image/upload/v1767112860/FAQs.pdf';
+
   const faqs = [
     {
-      question: "I have many basic questions about SEBI RAs in general. Where can I know more about them?",
+      question:
+        "I have many basic questions about SEBI RAs in general. Where can I know more about them?",
       answer: (
         <>
-          <Link to="/audit-report" className="faq-link">Click here</Link>.
+          <a
+            href={pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="faq-link"
+          >
+            Click here
+          </a>.
         </>
-      )
+      ),
     },
     {
-      question: "I know about SEBI RAs but I want to know more about investkaps, its offerings and how to subscribe. Where can I know more?",
+      question:
+        "I know about SEBI RAs but I want to know more about investkaps, its offerings and how to subscribe. Where can I know more?",
       answer: (
         <>
-          <Link to="/audit-report" className="faq-link">Click here</Link>.
+          <a
+            href={pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="faq-link"
+          >
+            Click here
+          </a>.
         </>
-      )
+      ),
     },
     {
-      question: "How do I verify genuine Research Analyst so as to not fall prey to impersonation fraud?",
+      question:
+        "How do I verify genuine Research Analyst so as to not fall prey to impersonation fraud?",
       answer: (
         <>
-          Please <Link to="/complaints-and-audit" className="faq-link">click here</Link> and refer to "Important Notice Regarding Fraudulent Activities". 
+          Please{' '}
+          <Link to="/complaints-and-audit" className="faq-link">
+            click here
+          </Link>{' '}
+          and refer to "Important Notice Regarding Fraudulent Activities".
           Ensure the correct registered RA details including contact number on{' '}
-          <a 
-            href="https://www.sebi.gov.in/sebiweb/other/OtherAction.do?doRecognisedFpi=yes&intmId=14" 
-            target="_blank" 
+          <a
+            href="https://www.sebi.gov.in/sebiweb/other/OtherAction.do?doRecognisedFpi=yes&intmId=14"
+            target="_blank"
             rel="noopener noreferrer"
             className="faq-link"
           >
             SEBI website
           </a>.
         </>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -57,12 +81,12 @@ const FAQ = () => {
         {/* FAQ List */}
         <div className="faq-list">
           {faqs.map((faq, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className={`faq-item ${activeIndex === index ? 'active' : ''}`}
             >
-              <div 
-                className="faq-question" 
+              <div
+                className="faq-question"
                 onClick={() => toggleFAQ(index)}
               >
                 <h3>{faq.question}</h3>
@@ -70,7 +94,11 @@ const FAQ = () => {
                   {activeIndex === index ? '−' : '+'}
                 </span>
               </div>
-              <div className={`faq-answer ${activeIndex === index ? 'show' : ''}`}>
+              <div
+                className={`faq-answer ${
+                  activeIndex === index ? 'show' : ''
+                }`}
+              >
                 <p>{faq.answer}</p>
               </div>
             </div>
