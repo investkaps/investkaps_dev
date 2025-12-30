@@ -9,56 +9,56 @@ import { TestimonialsMarquee } from '../../components/TestimonialsMarquee/Testim
 
 const Home = () => {
   const testimonials = [
-    {
-      author: {
-        name: "Rajesh Kumar",
-        handle: "@rajeshfinance",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
-      },
-      text: "investkaps has completely transformed my investment strategy. Their expert recommendations helped me achieve 40% returns in just 6 months. Highly recommended!",
-      href: "https://twitter.com/rajeshfinance"
-    },
-    {
-      author: {
-        name: "Priya Sharma",
-        handle: "@priyainvests",
-        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face"
-      },
-      text: "As a first-time investor, I was nervous about the stock market. investkaps provided personalized guidance that gave me confidence. Their research-driven approach is exceptional."
-    },
-    {
-      author: {
-        name: "Amit Patel",
-        handle: "@amittrader",
-        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face"
-      },
-      text: "The advisory services are top-notch. They understand market trends and provide timely recommendations. My portfolio has never been more diversified and profitable.",
-      href: "https://twitter.com/amittrader"
-    },
-    {
-      author: {
-        name: "Sneha Reddy",
-        handle: "@snehastocks",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face"
-      },
-      text: "investkaps made investing simple and accessible. Their platform is user-friendly and their team is always available to answer questions. Best investment decision I've made!"
-    },
-    {
-      author: {
-        name: "Vikram Singh",
-        handle: "@vikraminvest",
-        avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face"
-      },
-      text: "Professional, reliable, and results-driven. investkaps has helped me build a strong investment portfolio aligned with my financial goals. Truly grateful for their expertise."
-    },
-    {
-      author: {
-        name: "Ananya Desai",
-        handle: "@ananyawealth",
-        avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face"
-      },
-      text: "The research quality and stock recommendations are outstanding. investkaps has consistently delivered value and helped me make informed investment decisions."
-    }
+    // {
+    //   author: {
+    //     name: "Rajesh Kumar",
+    //     handle: "@rajeshfinance",
+    //     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+    //   },
+    //   text: "investkaps has completely transformed my investment strategy. Their expert recommendations helped me achieve 40% returns in just 6 months. Highly recommended!",
+    //   href: "https://twitter.com/rajeshfinance"
+    // },
+    // {
+    //   author: {
+    //     name: "Priya Sharma",
+    //     handle: "@priyainvests",
+    //     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face"
+    //   },
+    //   text: "As a first-time investor, I was nervous about the stock market. investkaps provided personalized guidance that gave me confidence. Their research-driven approach is exceptional."
+    // },
+    // {
+    //   author: {
+    //     name: "Amit Patel",
+    //     handle: "@amittrader",
+    //     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face"
+    //   },
+    //   text: "The advisory services are top-notch. They understand market trends and provide timely recommendations. My portfolio has never been more diversified and profitable.",
+    //   href: "https://twitter.com/amittrader"
+    // },
+    // {
+    //   author: {
+    //     name: "Sneha Reddy",
+    //     handle: "@snehastocks",
+    //     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face"
+    //   },
+    //   text: "investkaps made investing simple and accessible. Their platform is user-friendly and their team is always available to answer questions. Best investment decision I've made!"
+    // },
+    // {
+    //   author: {
+    //     name: "Vikram Singh",
+    //     handle: "@vikraminvest",
+    //     avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face"
+    //   },
+    //   text: "Professional, reliable, and results-driven. investkaps has helped me build a strong investment portfolio aligned with my financial goals. Truly grateful for their expertise."
+    // },
+    // {
+    //   author: {
+    //     name: "Ananya Desai",
+    //     handle: "@ananyawealth",
+    //     avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face"
+    //   },
+    //   text: "The research quality and stock recommendations are outstanding. investkaps has consistently delivered value and helped me make informed investment decisions."
+    // }
   ];
 
   // Animation variants for sections
@@ -270,8 +270,8 @@ const Home = () => {
       </motion.section>
 
       <TestimonialsMarquee 
-        title="Trusted by investors across India"
-        description="Join thousands of investors who are already building wealth with our expert guidance and research-driven recommendations"
+        title="Testimonials"
+        description="What our client say about us"
         testimonials={testimonials}
       />
 

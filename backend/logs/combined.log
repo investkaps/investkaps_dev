@@ -2976,3 +2976,262 @@
 2025-12-28 15:55:55 info: E-Signing API available at http://localhost:5000/api/esign
 2025-12-28 15:56:52 info: Server running on port 5000
 2025-12-28 15:56:52 info: E-Signing API available at http://localhost:5000/api/esign
+2025-12-29 09:00:00 info: Running scheduled task: Send expiration reminders
+2025-12-29 09:00:02 info: Found 2 subscriptions expiring soon to notify
+2025-12-29 09:00:02 error: Error sending expiration reminders: Cannot read properties of null (reading 'email')
+2025-12-29 09:00:02 error: Error in expiration reminders scheduled task: Cannot read properties of null (reading 'email')
+2025-12-29 09:15:00 info: Running scheduled task: Update stock prices
+2025-12-29 09:15:00 info: Starting automatic stock price update...
+2025-12-29 09:15:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 09:15:01 error: Error getting quote: Request failed with status code 403
+2025-12-29 09:15:01 error: Failed to update price for TCS:
+2025-12-29 09:15:01 info: Price update complete: 0 updated, 1 failed
+2025-12-29 09:15:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 09:30:00 info: Running scheduled task: Update stock prices
+2025-12-29 09:30:00 info: Starting automatic stock price update...
+2025-12-29 09:30:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 09:30:00 error: Error getting quote: Request failed with status code 403
+2025-12-29 09:30:00 error: Failed to update price for TCS:
+2025-12-29 09:30:00 info: Price update complete: 0 updated, 1 failed
+2025-12-29 09:30:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 09:45:00 info: Running scheduled task: Update stock prices
+2025-12-29 09:45:00 info: Starting automatic stock price update...
+2025-12-29 09:45:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 09:45:00 error: Error getting quote: Request failed with status code 403
+2025-12-29 09:45:00 error: Failed to update price for TCS:
+2025-12-29 09:45:00 info: Price update complete: 0 updated, 1 failed
+2025-12-29 09:45:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 10:00:00 info: Running scheduled task: Update stock prices
+2025-12-29 10:00:00 info: Starting automatic stock price update...
+2025-12-29 10:00:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 10:00:00 error: Error getting quote: Request failed with status code 403
+2025-12-29 10:00:00 error: Failed to update price for TCS:
+2025-12-29 10:00:00 info: Price update complete: 0 updated, 1 failed
+2025-12-29 10:00:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 10:15:00 info: Running scheduled task: Update stock prices
+2025-12-29 10:15:00 info: Starting automatic stock price update...
+2025-12-29 10:15:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 10:15:00 error: Error getting quote: Request failed with status code 403
+2025-12-29 10:15:00 error: Failed to update price for TCS:
+2025-12-29 10:15:00 info: Price update complete: 0 updated, 1 failed
+2025-12-29 10:15:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 10:30:00 info: Running scheduled task: Update stock prices
+2025-12-29 10:30:00 info: Starting automatic stock price update...
+2025-12-29 10:30:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 10:30:00 error: Error getting quote: Request failed with status code 403
+2025-12-29 10:30:00 error: Failed to update price for TCS:
+2025-12-29 10:30:00 info: Price update complete: 0 updated, 1 failed
+2025-12-29 10:30:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 10:45:01 info: Running scheduled task: Update stock prices
+2025-12-29 10:45:01 info: Starting automatic stock price update...
+2025-12-29 10:45:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 10:45:01 error: Error getting quote: Request failed with status code 403
+2025-12-29 10:45:01 error: Failed to update price for TCS:
+2025-12-29 10:45:01 info: Price update complete: 0 updated, 1 failed
+2025-12-29 10:45:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 11:00:00 info: Running scheduled task: Update stock prices
+2025-12-29 11:00:00 info: Starting automatic stock price update...
+2025-12-29 11:00:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 11:00:00 error: Error getting quote: Request failed with status code 403
+2025-12-29 11:00:00 error: Failed to update price for TCS:
+2025-12-29 11:00:00 info: Price update complete: 0 updated, 1 failed
+2025-12-29 11:00:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 11:15:00 info: Running scheduled task: Update stock prices
+2025-12-29 11:15:00 info: Starting automatic stock price update...
+2025-12-29 11:15:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 11:15:01 error: Error getting quote: Request failed with status code 403
+2025-12-29 11:15:01 error: Failed to update price for TCS:
+2025-12-29 11:15:01 info: Price update complete: 0 updated, 1 failed
+2025-12-29 11:15:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 11:30:00 info: Running scheduled task: Update stock prices
+2025-12-29 11:30:00 info: Starting automatic stock price update...
+2025-12-29 11:30:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 11:30:01 error: Error getting quote: Request failed with status code 403
+2025-12-29 11:30:01 error: Failed to update price for TCS:
+2025-12-29 11:30:01 info: Price update complete: 0 updated, 1 failed
+2025-12-29 11:30:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 11:45:00 info: Running scheduled task: Update stock prices
+2025-12-29 11:45:00 info: Starting automatic stock price update...
+2025-12-29 11:45:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 11:45:00 error: Error getting quote: Request failed with status code 403
+2025-12-29 11:45:00 error: Failed to update price for TCS:
+2025-12-29 11:45:00 info: Price update complete: 0 updated, 1 failed
+2025-12-29 11:45:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 12:00:01 info: Running scheduled task: Update stock prices
+2025-12-29 12:00:01 info: Starting automatic stock price update...
+2025-12-29 12:00:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 12:00:01 error: Error getting quote: Request failed with status code 403
+2025-12-29 12:00:01 error: Failed to update price for TCS:
+2025-12-29 12:00:01 info: Price update complete: 0 updated, 1 failed
+2025-12-29 12:00:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 12:15:00 info: Running scheduled task: Update stock prices
+2025-12-29 12:15:00 info: Starting automatic stock price update...
+2025-12-29 12:15:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 12:15:00 error: Error getting quote: Request failed with status code 403
+2025-12-29 12:15:00 error: Failed to update price for TCS:
+2025-12-29 12:15:00 info: Price update complete: 0 updated, 1 failed
+2025-12-29 12:15:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 12:30:00 info: Running scheduled task: Update stock prices
+2025-12-29 12:30:00 info: Starting automatic stock price update...
+2025-12-29 12:30:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 12:30:01 error: Error getting quote: Request failed with status code 403
+2025-12-29 12:30:01 error: Failed to update price for TCS:
+2025-12-29 12:30:01 info: Price update complete: 0 updated, 1 failed
+2025-12-29 12:30:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 12:45:00 info: Running scheduled task: Update stock prices
+2025-12-29 12:45:00 info: Starting automatic stock price update...
+2025-12-29 12:45:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 12:45:01 error: Error getting quote: Request failed with status code 403
+2025-12-29 12:45:01 error: Failed to update price for TCS:
+2025-12-29 12:45:01 info: Price update complete: 0 updated, 1 failed
+2025-12-29 12:45:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 13:00:00 info: Running scheduled task: Update stock prices
+2025-12-29 13:00:00 info: Starting automatic stock price update...
+2025-12-29 13:00:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 13:00:01 error: Error getting quote: Request failed with status code 403
+2025-12-29 13:00:01 error: Failed to update price for TCS:
+2025-12-29 13:00:01 info: Price update complete: 0 updated, 1 failed
+2025-12-29 13:00:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 13:15:00 info: Running scheduled task: Update stock prices
+2025-12-29 13:15:00 info: Starting automatic stock price update...
+2025-12-29 13:15:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 13:15:01 error: Error getting quote: Request failed with status code 403
+2025-12-29 13:15:01 error: Failed to update price for TCS:
+2025-12-29 13:15:01 info: Price update complete: 0 updated, 1 failed
+2025-12-29 13:15:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 13:30:00 info: Running scheduled task: Update stock prices
+2025-12-29 13:30:00 info: Starting automatic stock price update...
+2025-12-29 13:30:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 13:30:00 error: Error getting quote: Request failed with status code 403
+2025-12-29 13:30:00 error: Failed to update price for TCS:
+2025-12-29 13:30:00 info: Price update complete: 0 updated, 1 failed
+2025-12-29 13:30:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 13:45:00 info: Running scheduled task: Update stock prices
+2025-12-29 13:45:00 info: Starting automatic stock price update...
+2025-12-29 13:45:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 13:45:01 error: Error getting quote: Request failed with status code 403
+2025-12-29 13:45:01 error: Failed to update price for TCS:
+2025-12-29 13:45:01 info: Price update complete: 0 updated, 1 failed
+2025-12-29 13:45:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 14:00:00 info: Running scheduled task: Update stock prices
+2025-12-29 14:00:00 info: Starting automatic stock price update...
+2025-12-29 14:00:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 14:00:01 error: Error getting quote: Request failed with status code 403
+2025-12-29 14:00:01 error: Failed to update price for TCS:
+2025-12-29 14:00:01 info: Price update complete: 0 updated, 1 failed
+2025-12-29 14:00:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 14:15:00 info: Running scheduled task: Update stock prices
+2025-12-29 14:15:00 info: Starting automatic stock price update...
+2025-12-29 14:15:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 14:15:00 error: Error getting quote: Request failed with status code 403
+2025-12-29 14:15:00 error: Failed to update price for TCS:
+2025-12-29 14:15:00 info: Price update complete: 0 updated, 1 failed
+2025-12-29 14:15:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 14:30:00 info: Running scheduled task: Update stock prices
+2025-12-29 14:30:00 info: Starting automatic stock price update...
+2025-12-29 14:30:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 14:30:00 error: Error getting quote: Request failed with status code 403
+2025-12-29 14:30:00 error: Failed to update price for TCS:
+2025-12-29 14:30:00 info: Price update complete: 0 updated, 1 failed
+2025-12-29 14:30:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 14:45:00 info: Running scheduled task: Update stock prices
+2025-12-29 14:45:00 info: Starting automatic stock price update...
+2025-12-29 14:45:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 14:45:01 error: Error getting quote: Request failed with status code 403
+2025-12-29 14:45:01 error: Failed to update price for TCS:
+2025-12-29 14:45:01 info: Price update complete: 0 updated, 1 failed
+2025-12-29 14:45:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 15:00:00 info: Running scheduled task: Update stock prices
+2025-12-29 15:00:00 info: Starting automatic stock price update...
+2025-12-29 15:00:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 15:00:01 error: Error getting quote: Request failed with status code 403
+2025-12-29 15:00:01 error: Failed to update price for TCS:
+2025-12-29 15:00:01 info: Price update complete: 0 updated, 1 failed
+2025-12-29 15:00:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 15:15:00 info: Running scheduled task: Update stock prices
+2025-12-29 15:15:00 info: Starting automatic stock price update...
+2025-12-29 15:15:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 15:15:00 error: Error getting quote: Request failed with status code 403
+2025-12-29 15:15:00 error: Failed to update price for TCS:
+2025-12-29 15:15:00 info: Price update complete: 0 updated, 1 failed
+2025-12-29 15:15:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-29 15:30:00 info: Running scheduled task: Update stock prices
+2025-12-29 15:30:00 info: Starting automatic stock price update...
+2025-12-29 15:30:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-29 15:30:00 error: Error getting quote: Request failed with status code 403
+2025-12-29 15:30:00 error: Failed to update price for TCS:
+2025-12-29 15:30:00 info: Price update complete: 0 updated, 1 failed
+2025-12-29 15:30:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-30 09:00:00 info: Running scheduled task: Send expiration reminders
+2025-12-30 09:00:02 info: Found 0 subscriptions expiring soon to notify
+2025-12-30 09:00:02 info: Sent reminders for 0 expiring subscriptions
+2025-12-30 09:15:00 info: Running scheduled task: Update stock prices
+2025-12-30 09:15:00 info: Starting automatic stock price update...
+2025-12-30 09:15:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-30 09:15:01 error: Error getting quote: Request failed with status code 403
+2025-12-30 09:15:01 error: Failed to update price for TCS:
+2025-12-30 09:15:01 info: Price update complete: 0 updated, 1 failed
+2025-12-30 09:15:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-30 09:30:00 info: Running scheduled task: Update stock prices
+2025-12-30 09:30:00 info: Starting automatic stock price update...
+2025-12-30 09:30:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-30 09:30:01 error: Error getting quote: Request failed with status code 403
+2025-12-30 09:30:01 error: Failed to update price for TCS:
+2025-12-30 09:30:01 info: Price update complete: 0 updated, 1 failed
+2025-12-30 09:30:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-30 09:45:00 info: Running scheduled task: Update stock prices
+2025-12-30 09:45:00 info: Starting automatic stock price update...
+2025-12-30 09:45:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-30 09:45:00 error: Error getting quote: Request failed with status code 403
+2025-12-30 09:45:00 error: Failed to update price for TCS:
+2025-12-30 09:45:00 info: Price update complete: 0 updated, 1 failed
+2025-12-30 09:45:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-30 10:00:00 info: Running scheduled task: Update stock prices
+2025-12-30 10:00:00 info: Starting automatic stock price update...
+2025-12-30 10:00:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-30 10:00:01 error: Error getting quote: Request failed with status code 403
+2025-12-30 10:00:01 error: Failed to update price for TCS:
+2025-12-30 10:00:01 info: Price update complete: 0 updated, 1 failed
+2025-12-30 10:00:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-30 10:15:00 info: Running scheduled task: Update stock prices
+2025-12-30 10:15:00 info: Starting automatic stock price update...
+2025-12-30 10:15:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-30 10:15:01 error: Error getting quote: Request failed with status code 403
+2025-12-30 10:15:01 error: Failed to update price for TCS:
+2025-12-30 10:15:01 info: Price update complete: 0 updated, 1 failed
+2025-12-30 10:15:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-30 10:30:00 info: Running scheduled task: Update stock prices
+2025-12-30 10:30:00 info: Starting automatic stock price update...
+2025-12-30 10:30:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-30 10:30:00 error: Error getting quote: Request failed with status code 403
+2025-12-30 10:30:00 error: Failed to update price for TCS:
+2025-12-30 10:30:00 info: Price update complete: 0 updated, 1 failed
+2025-12-30 10:30:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-30 10:45:00 info: Running scheduled task: Update stock prices
+2025-12-30 10:45:00 info: Starting automatic stock price update...
+2025-12-30 10:45:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-30 10:45:00 error: Error getting quote: Request failed with status code 403
+2025-12-30 10:45:00 error: Failed to update price for TCS:
+2025-12-30 10:45:00 info: Price update complete: 0 updated, 1 failed
+2025-12-30 10:45:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-30 11:00:00 info: Running scheduled task: Update stock prices
+2025-12-30 11:00:00 info: Starting automatic stock price update...
+2025-12-30 11:00:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-30 11:00:01 error: Error getting quote: Request failed with status code 403
+2025-12-30 11:00:01 error: Failed to update price for TCS:
+2025-12-30 11:00:01 info: Price update complete: 0 updated, 1 failed
+2025-12-30 11:00:01 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-30 11:15:00 info: Running scheduled task: Update stock prices
+2025-12-30 11:15:00 info: Starting automatic stock price update...
+2025-12-30 11:15:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-30 11:15:00 error: Error getting quote: Request failed with status code 403
+2025-12-30 11:15:00 error: Failed to update price for TCS:
+2025-12-30 11:15:00 info: Price update complete: 0 updated, 1 failed
+2025-12-30 11:15:00 info: Stock price update: 0 updated, 1 failed out of 1 total
+2025-12-30 11:30:00 info: Running scheduled task: Update stock prices
+2025-12-30 11:30:00 info: Starting automatic stock price update...
+2025-12-30 11:30:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-30 11:30:00 error: Error getting quote: Request failed with status code 403
+2025-12-30 11:30:00 error: Failed to update price for TCS:
+2025-12-30 11:30:00 info: Price update complete: 0 updated, 1 failed
+2025-12-30 11:30:00 info: Stock price update: 0 updated, 1 failed out of 1 total
