@@ -1763,3 +1763,15 @@
 2025-12-30 11:30:00 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
 2025-12-30 11:30:00 error: Error getting quote: Request failed with status code 403
 2025-12-30 11:30:00 error: Failed to update price for TCS:
+2025-12-30 11:45:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-30 11:45:01 error: Error getting quote: Request failed with status code 403
+2025-12-30 11:45:01 error: Failed to update price for TCS:
+2025-12-30 12:00:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-30 12:00:01 error: Error getting quote: Request failed with status code 403
+2025-12-30 12:00:01 error: Failed to update price for TCS:
+2025-12-30 12:15:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-30 12:15:01 error: Error getting quote: Request failed with status code 403
+2025-12-30 12:15:01 error: Failed to update price for TCS:
+2025-12-30 12:30:01 error: Zerodha API request failed: Incorrect `api_key` or `access_token`.
+2025-12-30 12:30:01 error: Error getting quote: Request failed with status code 403
+2025-12-30 12:30:01 error: Failed to update price for TCS:

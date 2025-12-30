@@ -25,7 +25,7 @@ const Footer = () => {
             <h4 className="footer-heading">Quick Links</h4>
             <ul className="footer-links">
               <li><Link to="/privacy-policy" onClick={scrollToTop}>Privacy Policy</Link></li>
-              <li><Link to="/disclaimer" onClick={scrollToTop}>Disclaimers</Link></li>
+              <li><Link to="/disclaimers" onClick={scrollToTop}>Disclaimers</Link></li>
               <li><Link to="/terms-and-conditions" onClick={scrollToTop}>Terms and Conditions</Link></li>
               <li><Link to="/investor-charter" onClick={scrollToTop}>Investor Charter</Link></li>
               <li><Link to="/valid-upi" onClick={scrollToTop}>Valid UPI</Link></li>

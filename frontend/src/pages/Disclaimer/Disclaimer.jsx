@@ -5,7 +5,7 @@ const Disclaimer = () => {
   return (
     <div className="disclaimer-page">
       <div className="disclaimer-container">
-        <h1 className="disclaimer-title">Disclaimer</h1>
+        <h1 className="disclaimer-title">Disclaimers</h1>
         
         <div className="pdf-viewer-container">
           <iframe
