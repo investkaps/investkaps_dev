@@ -52,9 +52,9 @@ const Hero = () => {
         </motion.p>
 
         <motion.div className="hero-actions" variants={itemVariants}>
-          <a href="https://trade.investkaps.com/checkout" className="hero-cta-button">
+          <Link to="/plans" className="hero-cta-button">
             Start Investing Today
-          </a>
+          </Link>
         </motion.div>
       </motion.div>
     </section>

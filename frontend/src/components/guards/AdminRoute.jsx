@@ -23,20 +23,9 @@ const AdminRoute = ({ children }) => {
     );
   }
   
-  // Redirect to external login if not authenticated
-  useEffect(() => {
-    if (!currentUser) {
-      window.location.href = 'https://trade.investkaps.com';
-    }
-  }, [currentUser]);
-
+  // Redirect to login if not authenticated
   if (!currentUser) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Redirecting to login...</p>
-      </div>
-    );
+    return <Navigate to="/login" replace />;
   }
   
   // Redirect to dashboard if not admin

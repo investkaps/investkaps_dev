@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { createSignRequest, checkSignStatus } = require('../utils/leegality');
-const { verifyToken } = require('../middleware/auth');
-const Document = require('../model/Document');
-const logger = require('../utils/logger');
+import { createSignRequest, checkSignStatus, getDocumentDetails  } from '../utils/leegality.js';
+import { verifyToken  } from '../middleware/auth.js';
+import Document from '../model/Document.js';
+import logger from '../utils/logger.js';
 
 function base64Preview(b64) {
   if (!b64 || typeof b64 !== 'string') return { length: 0, head: '', tail: '' };
@@ -321,5 +321,5 @@ router.post('/esign/webhook', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
  

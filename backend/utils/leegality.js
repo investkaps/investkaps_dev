@@ -1,6 +1,6 @@
-const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
+import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
 
 // Hardcoded for testing
 const LEEGALITY_API_BASE = "https://app1.leegality.com/api/v3.0";
@@ -149,4 +149,127 @@ async function checkSignStatus(requestId) {
   }
 }
 
-module.exports = { createSignRequest, checkSignStatus, generateRandomIRN };
+/**
+ * Get document details from Leegality API v3.0
+ * @param {string} documentId - Leegality document ID
+ * @returns {Promise<Object>} Response with document details, signing status, and files
+ */
+async function getDocumentDetails(documentId) {
+  if (!documentId) {
+    return { success: false, error: 'documentId required', httpStatus: 400 };
+  }
+
+  makeLog('Fetching document details from Leegality', 'INFO', { documentId });
+
+  try {
+    const resp = await axiosInstance.get('/sign/request', {
+      params: { documentId },
+      headers: { 'X-Auth-Token': LEEGALITY_AUTH_TOKEN }
+    });
+
+    makeLog('Document details retrieved', 'INFO', { 
+      documentId, 
+      status: resp.status,
+      apiStatus: resp.data?.status 
+    });
+
+    // Check if API call was successful (status: 1)
+    if (resp.data?.status !== 1) {
+      makeLog('Leegality API returned failure status', 'WARN', { 
+        documentId, 
+        apiStatus: resp.data?.status,
+        response: resp.data 
+      });
+      return { 
+        success: false, 
+        error: 'Failed to fetch document details', 
+        details: resp.data,
+        httpStatus: 200 
+      };
+    }
+
+    const data = resp.data.data || {};
+    const requests = data.requests || [];
+    const files = data.files || [];
+    const auditTrail = data.auditTrail || null;
+
+    // Analyze signing status
+    const totalInvitees = requests.length;
+    const signedInvitees = requests.filter(r => r.status === 'signed').length;
+    const rejectedInvitees = requests.filter(r => r.status === 'rejected').length;
+    const expiredInvitees = requests.filter(r => r.status === 'expired').length;
+    const pendingInvitees = requests.filter(r => r.status === 'pending' || !r.status).length;
+
+    const allSigned = totalInvitees > 0 && signedInvitees === totalInvitees;
+    const anyRejected = rejectedInvitees > 0;
+    const anyExpired = expiredInvitees > 0;
+
+    // Determine overall status
+    let overallStatus = 'pending';
+    if (allSigned) {
+      overallStatus = 'completed';
+    } else if (anyRejected) {
+      overallStatus = 'rejected';
+    } else if (anyExpired && pendingInvitees === 0) {
+      overallStatus = 'expired';
+    }
+
+    makeLog('Document signing status analyzed', 'INFO', {
+      documentId,
+      totalInvitees,
+      signedInvitees,
+      rejectedInvitees,
+      expiredInvitees,
+      pendingInvitees,
+      overallStatus,
+      allSigned,
+      hasAuditTrail: !!auditTrail
+    });
+
+    return {
+      success: true,
+      data: {
+        documentId,
+        status: overallStatus,
+        allSigned,
+        signingDetails: {
+          total: totalInvitees,
+          signed: signedInvitees,
+          rejected: rejectedInvitees,
+          expired: expiredInvitees,
+          pending: pendingInvitees
+        },
+        invitees: requests.map(r => ({
+          name: r.name,
+          email: r.email,
+          status: r.status || 'pending',
+          signedAt: r.signedAt || null
+        })),
+        files: files.map(f => ({
+          name: f.name || 'document.pdf',
+          base64: f.base64 || f.file || null
+        })),
+        auditTrail: auditTrail ? {
+          base64: auditTrail
+        } : null,
+        rawResponse: resp.data
+      }
+    };
+
+  } catch (err) {
+    makeLog('Error fetching document details', 'ERROR', {
+      documentId,
+      error: err.message,
+      response: err.response?.data,
+      status: err.response?.status
+    });
+    return {
+      success: false,
+      error: err.message,
+      details: err.response?.data,
+      httpStatus: err.response?.status || 500
+    };
+  }
+}
+
+export { createSignRequest, checkSignStatus, getDocumentDetails, generateRandomIRN };

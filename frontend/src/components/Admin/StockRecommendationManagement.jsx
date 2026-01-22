@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../../services/api';
 import stockRecommendationAPI from '../../services/stockRecommendationAPI';
 import PDFReportGenerator from '../PDFReportGenerator/PDFReportGenerator';
+import SymbolAutocomplete from './SymbolAutocomplete';
 import './StockRecommendationManagement.css';
 
 const StockRecommendationManagement = () => {
@@ -14,12 +15,13 @@ const StockRecommendationManagement = () => {
   const [formMode, setFormMode] = useState('create'); // 'create' or 'edit'
   const [showPDFModal, setShowPDFModal] = useState(false);
   const [pdfRecommendation, setPdfRecommendation] = useState(null);
-  const [zerodhaToken, setZerodhaToken] = useState('');
-  const [showTokenInput, setShowTokenInput] = useState(false);
-  const [tokenStatus, setTokenStatus] = useState(null);
-  const [fetchingPrice, setFetchingPrice] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState(null);
+  
+  // Stock price fetching state
+  const [priceLoading, setPriceLoading] = useState(false);
+  const [priceMessage, setPriceMessage] = useState(null);
+  const [fetchingPrice, setFetchingPrice] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     stockSymbol: '',
@@ -43,6 +45,67 @@ const StockRecommendationManagement = () => {
     fetchRecommendations();
     fetchStrategies();
   }, []);
+  
+  const handleFetchPrice = async () => {
+    if (!formData.stockSymbol) {
+      setError('Please enter a stock symbol first');
+      return;
+    }
+
+    const fetchStockPrice = async (symbol) => {
+      try {
+        setFetchingPrice(true);
+        setError(null);
+        setPriceMessage(null);
+        
+        const response = await adminAPI.updateStockPrices([symbol]);
+        
+        if (response.success && response.prices[symbol]) {
+          setFormData(prev => ({
+            ...prev,
+            currentPrice: response.prices[symbol]
+          }));
+          setPriceMessage({ type: 'success', text: `Price updated: ${response.prices[symbol]}` });
+        }
+      } catch (err) {
+        setError(err.message || 'Failed to fetch stock price');
+      } finally {
+        setFetchingPrice(false);
+      }
+    };
+
+    fetchStockPrice(formData.stockSymbol);
+  };
+
+  const updateAllPrices = async () => {
+    try {
+      setPriceLoading(true);
+      setPriceMessage(null);
+      
+      // Get all unique symbols from recommendations
+      const symbols = [...new Set(recommendations.map(rec => rec.stockSymbol))];
+      
+      if (symbols.length === 0) {
+        setPriceMessage({ type: 'error', text: 'No stock symbols found' });
+        return;
+      }
+      
+      const response = await adminAPI.updateStockPrices(symbols);
+      
+      if (response.success) {
+        setPriceMessage({ 
+          type: 'success', 
+          text: `Updated ${response.updated.length} stock prices` 
+        });
+        // Refresh recommendations to show updated prices
+        fetchRecommendations();
+      }
+    } catch (err) {
+      setPriceMessage({ type: 'error', text: err.message || 'Failed to update prices' });
+    } finally {
+      setPriceLoading(false);
+    }
+  };
 
   const fetchRecommendations = async () => {
     try {
@@ -281,57 +344,6 @@ const StockRecommendationManagement = () => {
     }
   };
 
-  const handleSetToken = async () => {
-    try {
-      setLoading(true);
-      setTokenStatus(null);
-      
-      const response = await adminAPI.setZerodhaToken(zerodhaToken);
-      
-      setTokenStatus({ type: 'success', message: response.message || 'Token set successfully!' });
-      setShowTokenInput(false);
-      setZerodhaToken('');
-    } catch (err) {
-      console.error('Error setting Zerodha token:', err);
-      setTokenStatus({ type: 'error', message: err.message || 'Failed to set token' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGetPrice = async () => {
-    if (!formData.stockSymbol) {
-      setError('Please enter a stock symbol first');
-      return;
-    }
-
-    try {
-      setFetchingPrice(true);
-      setError(null);
-      
-      const exchange = formData.stockSymbol.includes('.') ? 'BSE' : 'NSE';
-      const symbol = formData.stockSymbol.replace('.BSE', '').replace('.NSE', '');
-      
-      const response = await adminAPI.getStockPrice(symbol, exchange);
-      
-      if (response.success) {
-        setFormData(prev => ({
-          ...prev,
-          stockSymbol: symbol,  // Update to cleaned symbol (without .BSE/.NSE)
-          currentPrice: response.data.lastPrice.toString(),
-          stockName: response.data.stockName || symbol  // Use stock name from API or fallback to symbol
-        }));
-        setError(null);
-      } else {
-        setError(response.error || 'Failed to fetch price');
-      }
-    } catch (err) {
-      console.error('Error fetching stock price:', err);
-      setError(err.message || 'Failed to fetch stock price. Please check if Zerodha token is set.');
-    } finally {
-      setFetchingPrice(false);
-    }
-  };
 
   if (loading && recommendations.length === 0) {
     return (
@@ -347,21 +359,15 @@ const StockRecommendationManagement = () => {
       <div className="admin-section-header">
         <div style={{ display: 'flex', gap: '10px' }}>
           <button 
-            className="admin-button" 
-            onClick={handleRefreshPrices}
-            disabled={refreshing}
-            style={{ 
-              backgroundColor: refreshing ? '#ccc' : '#28a745',
-              cursor: refreshing ? 'not-allowed' : 'pointer'
+            className="admin-button"
+            onClick={updateAllPrices}
+            disabled={priceLoading}
+            style={{
+              backgroundColor: priceLoading ? '#6c757d' : '#007bff',
+              color: 'white'
             }}
           >
-            {refreshing ? '🔄 Refreshing...' : '🔄 Refresh Prices'}
-          </button>
-          <button 
-            className="admin-button secondary" 
-            onClick={() => setShowTokenInput(!showTokenInput)}
-          >
-            {showTokenInput ? 'Hide' : 'Set Zerodha Token'}
+            {priceLoading ? '🔄 Updating Prices...' : '📊 Update All Prices'}
           </button>
           <button className="admin-button primary" onClick={handleCreateNew}>
             Create New Recommendation
@@ -393,57 +399,33 @@ const StockRecommendationManagement = () => {
         </div>
       )}
 
-      {showTokenInput && (
-        <div className="admin-section" style={{ marginBottom: '20px', padding: '20px', background: '#f8f9fa', borderRadius: '8px' }}>
-          <h3 style={{ marginBottom: '15px' }}>Set Zerodha Access Token</h3>
-          <p style={{ marginBottom: '15px', color: '#666' }}>
-            Enter your Zerodha access token to enable real-time stock price fetching.
-          </p>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <input
-              type="text"
-              value={zerodhaToken}
-              onChange={(e) => setZerodhaToken(e.target.value)}
-              placeholder="Enter Zerodha access token"
-              style={{ 
-                flex: 1, 
-                padding: '10px', 
-                border: '1px solid #ddd', 
-                borderRadius: '4px',
-                fontSize: '14px'
-              }}
-            />
-            <button 
-              className="admin-button primary" 
-              onClick={handleSetToken}
-              disabled={!zerodhaToken || loading}
-            >
-              Set Token
-            </button>
-          </div>
-          {tokenStatus && (
-            <div 
-              style={{ 
-                marginTop: '10px', 
-                padding: '10px', 
-                borderRadius: '4px',
-                background: tokenStatus.type === 'success' ? '#d4edda' : '#f8d7da',
-                color: tokenStatus.type === 'success' ? '#155724' : '#721c24',
-                border: `1px solid ${tokenStatus.type === 'success' ? '#c3e6cb' : '#f5c6cb'}`
-              }}
-            >
-              {tokenStatus.message}
-            </div>
-          )}
-        </div>
-      )}
-
       {error && (
         <div className="admin-error">
           <p>{error}</p>
           <button className="admin-button" onClick={fetchRecommendations}>
             Try Again
           </button>
+        </div>
+      )}
+
+      {priceMessage && (
+        <div 
+          className={`admin-alert ${priceMessage.type}`}
+          style={{
+            padding: '12px 16px',
+            borderRadius: '4px',
+            marginBottom: '16px',
+            whiteSpace: 'pre-line',
+            backgroundColor: 
+              priceMessage.type === 'success' ? '#d4edda' : '#f8d7da',
+            color: 
+              priceMessage.type === 'success' ? '#155724' : '#721c24',
+            border: `1px solid ${
+              priceMessage.type === 'success' ? '#c3e6cb' : '#f5c6cb'
+            }`
+          }}
+        >
+          {priceMessage.text}
         </div>
       )}
 
@@ -524,20 +506,22 @@ const StockRecommendationManagement = () => {
               <div className="form-group">
                 <label htmlFor="stockSymbol">Stock Symbol</label>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <input
-                    type="text"
-                    id="stockSymbol"
-                    name="stockSymbol"
-                    value={formData.stockSymbol}
-                    onChange={handleFormChange}
-                    placeholder="e.g., RELIANCE, TCS, INFY"
-                    required
-                    style={{ flex: 1 }}
-                  />
+                  <div style={{ flex: 1 }}>
+                    <SymbolAutocomplete
+                      value={formData.stockSymbol}
+                      onChange={(value) => setFormData(prev => ({ ...prev, stockSymbol: value }))}
+                      onSelect={(symbol) => {
+                        setFormData(prev => ({ ...prev, stockSymbol: symbol }));
+                        // Auto-fetch price when symbol is selected
+                        setTimeout(() => handleFetchPrice(), 100);
+                      }}
+                      placeholder="Search stock symbol (e.g., RELIANCE, TCS, INFY)"
+                    />
+                  </div>
                   <button 
                     type="button"
                     className="admin-button primary" 
-                    onClick={handleGetPrice}
+                    onClick={handleFetchPrice}
                     disabled={fetchingPrice || !formData.stockSymbol}
                     style={{ minWidth: '120px' }}
                   >
@@ -545,7 +529,7 @@ const StockRecommendationManagement = () => {
                   </button>
                 </div>
                 <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
-                  Enter stock symbol (NSE by default, add .BSE for BSE stocks)
+                  Type to search from 142,000+ symbols. Price fetches automatically on selection.
                 </small>
               </div>
 
@@ -579,11 +563,6 @@ const StockRecommendationManagement = () => {
                     fontSize: '16px'
                   }}
                 />
-                {formData.currentPrice && (
-                  <small style={{ color: '#198754', display: 'block', marginTop: '5px' }}>
-                    Current market price fetched successfully
-                  </small>
-                )}
               </div>
 
               <div className="form-group">

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const featureSchema = new mongoose.Schema({
   name: {
@@ -129,4 +129,4 @@ subscriptionSchema.pre('save', function(next) {
 
 const Subscription = mongoose.model('Subscription', subscriptionSchema);
 
-module.exports = Subscription;
+export default Subscription;

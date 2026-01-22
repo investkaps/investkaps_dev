@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { check } = require('express-validator');
-const strategyController = require('../controllers/strategyController');
-const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware');
+import { check  } from 'express-validator';
+import * as strategyController from '../controllers/strategyController.js';
+import { authenticateToken, requireAdmin  } from '../middleware/authMiddleware.js';
 
 // All strategy routes are protected by admin middleware
 router.use(authenticateToken);
@@ -51,4 +51,4 @@ router.patch('/:id/toggle-status', strategyController.toggleStrategyStatus);
 // @access  Admin
 router.get('/:id/subscriptions', strategyController.getSubscriptionsByStrategy);
 
-module.exports = router;
+export default router;

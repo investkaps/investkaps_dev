@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const StockDataSchema = new mongoose.Schema({
   symbol: {
@@ -119,4 +119,4 @@ StockDataSchema.index({ symbol: 1, exchange: 1 }, { unique: true });
 StockDataSchema.index({ instrumentToken: 1 }, { unique: true });
 StockDataSchema.index({ name: 'text' });
 
-module.exports = mongoose.model('StockData', StockDataSchema);
+export default mongoose.model('StockData', StockDataSchema);

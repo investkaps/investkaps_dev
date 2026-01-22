@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const kycController = require('../controllers/kycController');
-const { verifyToken } = require('../middleware/auth');
-const User = require('../model/User');
+import * as kycController from '../controllers/kycController.js';
+import { verifyToken  } from '../middleware/auth.js';
+import User from '../model/User.js';
 
 // Simplified auth middleware for KYC verification (doesn't require user to exist in DB)
 const simpleAuthCheck = async (req, res, next) => {
@@ -63,4 +63,4 @@ router.get('/check-pan/:pan', simpleAuthCheck, kycController.checkPANExists);
 // Bypass KYC for testing - requires authentication
 router.post('/bypass', verifyToken, kycController.bypassKYC);
 
-module.exports = router;
+export default router;

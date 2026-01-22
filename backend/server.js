@@ -1,32 +1,46 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const fs = require('fs');
-const path = require('path');
-const cron = require('node-cron');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+import cron from 'node-cron';
 
 // Load environment variables first, before any other imports that might use them
 dotenv.config();
 
+// Verify environment variables are loaded
+console.log('=== Environment Variables Check ===');
+console.log('Razorpay Key ID available:', !!process.env.RAZORPAY_KEY_ID);
+console.log('Razorpay Key Secret available:', !!process.env.RAZORPAY_KEY_SECRET);
+console.log('MSTOCK_API_KEY available:', !!process.env.MSTOCK_API_KEY);
+console.log('KYC_USERNAME available:', !!process.env.KYC_USERNAME);
+console.log('CLERK_PUBLISHABLE_KEY available:', !!process.env.CLERK_PUBLISHABLE_KEY);
+console.log('MONGODB_URI available:', !!process.env.MONGODB_URI);
+console.log('===================================');
+
 // Now import modules that might use environment variables
-const connectDB = require('./config/db');
-const logger = require('./utils/logger');
-const subscriptionService = require('./controllers/subscriptionService');
-const stockRecommendationController = require('./controllers/stockRecommendationController');
+import connectDB from './config/db.js';
+import logger from './utils/logger.js';
+
+// Import subscriptionService after dotenv loads to ensure env vars are available
+import * as subscriptionService from './controllers/subscriptionService.js';
+import * as stockRecommendationController from './controllers/stockRecommendationController.js';
 
 // Route imports
-const esignRoutes = require('./routes/esignRoutes');
-const userRoutes = require('./routes/userRoutes');
-const kycRoutes = require('./routes/kycRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-const setupRoutes = require('./routes/setupRoutes');
-const consolidatedSubscriptionRoutes = require('./routes/consolidatedSubscriptionRoutes');
-const strategyRoutes = require('./routes/strategyRoutes');
-const stockRecommendationRoutes = require('./routes/stockRecommendtionRoutes');
-const testRoutes = require('./routes/testRoutes');
-const phoneRoutes = require('./routes/phoneRoutes');
-const paymentRequestRoutes = require('./routes/paymentRequestRoutes');
-const newsletterRoutes = require('./routes/newsletterRoutes');
+import esignRoutes from './routes/esignRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import kycRoutes from './routes/kycRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import setupRoutes from './routes/setupRoutes.js';
+import consolidatedSubscriptionRoutes from './routes/consolidatedSubscriptionRoutes.js';
+import strategyRoutes from './routes/strategyRoutes.js';
+import stockRecommendationRoutes from './routes/stockRecommendtionRoutes.js';
+import testRoutes from './routes/testRoutes.js';
+import phoneRoutes from './routes/phoneRoutes.js';
+import paymentRequestRoutes from './routes/paymentRequestRoutes.js';
+import newsletterRoutes from './routes/newsletterRoutes.js';
+import stockPriceRoutes from './routes/stockPriceRoutes.js';
+import symbolRoutes from './routes/symbolRoutes.js';
 
 // Connect to MongoDB
 connectDB();
@@ -106,6 +120,12 @@ app.use('/api/payment-requests', paymentRequestRoutes);
 // Newsletter routes
 app.use('/api/newsletter', newsletterRoutes);
 
+// Stock Price routes (m.Stock Type-B integration)
+app.use('/api/stocks', stockPriceRoutes);
+
+// Symbol search routes
+app.use('/api/symbols', symbolRoutes);
+
 // Create directory for uploads if it doesn't exist
 const uploadsDir = path.join(process.cwd(), 'uploads');
 
@@ -147,46 +167,4 @@ app.listen(PORT, () => {
     }
   });
 
-  // Deactivate expired Zerodha tokens daily at 6:00 AM IST
-  cron.schedule('0 6 * * *', async () => {
-    try {
-      logger.info('Running scheduled task: Deactivate expired Zerodha tokens');
-      const result = await stockRecommendationController.deactivateExpiredTokens();
-      if (result.success && result.deactivated > 0) {
-        logger.info(`Deactivated ${result.deactivated} expired Zerodha token(s)`);
-      }
-    } catch (error) {
-      logger.error('Error in token deactivation scheduled task:', error);
-    }
-  }, {
-    timezone: "Asia/Kolkata"
-  });
-
-  // Update stock prices every 15 minutes during market hours (9:15 AM - 3:30 PM IST, Mon-Fri)
-  // Runs at :00, :15, :30, :45 of every hour
-  cron.schedule('*/15 * * * 1-5', async () => {
-    try {
-      const now = new Date();
-      const istTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-      const hours = istTime.getHours();
-      const minutes = istTime.getMinutes();
-      
-      // Only run between 9:15 AM and 3:30 PM IST
-      const isMarketHours = (hours === 9 && minutes >= 15) || 
-                           (hours >= 10 && hours < 15) || 
-                           (hours === 15 && minutes <= 30);
-      
-      if (isMarketHours) {
-        logger.info('Running scheduled task: Update stock prices');
-        const result = await stockRecommendationController.updateAllStockPrices();
-        if (result.success) {
-          logger.info(`Stock price update: ${result.updated} updated, ${result.failed} failed out of ${result.total} total`);
-        }
-      }
-    } catch (error) {
-      logger.error('Error in stock price update scheduled task:', error);
-    }
-  }, {
-    timezone: "Asia/Kolkata"
-  });
 });

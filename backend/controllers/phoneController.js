@@ -1,6 +1,6 @@
-const User = require('../model/User');
-const axios = require('axios');
-const logger = require('../utils/logger');
+import User from '../model/User.js';
+import axios from 'axios';
+import logger from '../utils/logger.js';
 
 // In-memory store (prod: use Redis)
 const otpSessions = new Map();
@@ -22,7 +22,7 @@ const keyForPhone = (tenDigitPhone) => `91${tenDigitPhone}`;
 /**
  * Send OTP to phone number (AUTOGEN2 for sandbox, AUTOGEN for production)
  */
-exports.sendOTP = async (req, res) => {
+export const sendOTP = async (req, res) => {
   try {
     const { phone } = req.body;
 
@@ -110,7 +110,7 @@ exports.sendOTP = async (req, res) => {
 /**
  * Verify OTP (phone-based VERIFY3)
  */
-exports.verifyOTP = async (req, res) => {
+export const verifyOTP = async (req, res) => {
   try {
     const { phone, otp } = req.body;
 
@@ -233,7 +233,7 @@ exports.verifyOTP = async (req, res) => {
 /**
  * Check if phone number is verified
  */
-exports.checkPhoneStatus = async (req, res) => {
+export const checkPhoneStatus = async (req, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({

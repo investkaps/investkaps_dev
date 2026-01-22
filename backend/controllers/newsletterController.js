@@ -1,8 +1,7 @@
-const Newsletter = require('../model/Newsletter');
-const logger = require('../utils/logger');
+import Newsletter from '../model/Newsletter.js';
+import logger from '../utils/logger.js';
 
-const newsletterController = {
-  subscribe: async (req, res) => {
+export const subscribe = async (req, res) => {
     try {
       const { email } = req.body;
 
@@ -63,9 +62,9 @@ const newsletterController = {
         message: 'Failed to subscribe to newsletter. Please try again later.'
       });
     }
-  },
+};
 
-  unsubscribe: async (req, res) => {
+export const unsubscribe = async (req, res) => {
     try {
       const { email } = req.body;
 
@@ -102,9 +101,9 @@ const newsletterController = {
         message: 'Failed to unsubscribe. Please try again later.'
       });
     }
-  },
+};
 
-  getAllSubscribers: async (req, res) => {
+export const getAllSubscribers = async (req, res) => {
     try {
       const { status = 'active', page = 1, limit = 50 } = req.query;
 
@@ -133,7 +132,4 @@ const newsletterController = {
         message: 'Failed to retrieve subscribers'
       });
     }
-  }
 };
-
-module.exports = newsletterController;

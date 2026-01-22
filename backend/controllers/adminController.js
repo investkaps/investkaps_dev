@@ -1,12 +1,12 @@
-const User = require('../model/User');
-const logger = require('../utils/logger');
+import User from '../model/User.js';
+import logger from '../utils/logger.js';
 
 /**
  * Set initial admin user
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.setInitialAdmin = async (req, res) => {
+export const setInitialAdmin = async (req, res) => {
   try {
     const { email, adminSecret } = req.body;
     
@@ -64,7 +64,7 @@ exports.setInitialAdmin = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.getAdminStatus = async (req, res) => {
+export const getAdminStatus = async (req, res) => {
   try {
     // Count total users
     const totalUsers = await User.countDocuments();

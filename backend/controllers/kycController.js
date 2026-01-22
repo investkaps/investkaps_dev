@@ -1,14 +1,14 @@
-const KycVerification = require('../model/KycVerification');
-const User = require('../model/User');
-const { verifyKYC } = require('../kyc_check');
-const logger = require('../utils/logger');
+import KycVerification from '../model/KycVerification.js';
+import User from '../model/User.js';
+import { verifyKYC  } from '../kyc_check.js';
+import logger from '../utils/logger.js';
 
 /**
  * Verify KYC and save the verification result to database
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.verifyAndSaveKYC = async (req, res) => {
+export const verifyAndSaveKYC = async (req, res) => {
   try {
     const { pan, dob, email } = req.body;
     
@@ -280,7 +280,7 @@ exports.verifyAndSaveKYC = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.getKYCHistory = async (req, res) => {
+export const getKYCHistory = async (req, res) => {
   try {
     const { clerkId, email } = req.params;
     
@@ -326,7 +326,7 @@ exports.getKYCHistory = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.getKYCVerification = async (req, res) => {
+export const getKYCVerification = async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -381,7 +381,7 @@ exports.getKYCVerification = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.checkPANExists = async (req, res) => {
+export const checkPANExists = async (req, res) => {
   try {
     const { pan } = req.params;
     
@@ -461,7 +461,7 @@ exports.checkPANExists = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.bypassKYC = async (req, res) => {
+export const bypassKYC = async (req, res) => {
   try {
     // Get user from authenticated request
     const userId = req.user?.id;

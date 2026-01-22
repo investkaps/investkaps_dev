@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const userController = require('../controllers/userController');
-const { verifyToken, handleWebhook } = require('../middleware/auth');
+import * as userController from '../controllers/userController.js';
+import { verifyToken, handleWebhook  } from '../middleware/auth.js';
 
 // Create or update user from Clerk webhook
 router.post('/webhook', handleWebhook, userController.createOrUpdateUser);
@@ -44,10 +44,10 @@ router.post('/create', async (req, res, next) => {
 }, userController.createUser);
 
 // Get user by Clerk ID
-router.get('/clerk/:clerkId', verifyToken, userController.getUserByClerkId);
+router.get('/clerk/:clerkId', verifyToken, userController.getUserById);
 
 // Get user by email
-router.get('/email/:email', verifyToken, userController.getUserByEmail);
+router.get('/email/:email', verifyToken, userController.getUserProfile);
 
 // Update user profile
 router.put('/:clerkId/profile', verifyToken, userController.updateUserProfile);
@@ -70,4 +70,4 @@ router.get('/clerk/:clerkId/kyc/history', verifyToken, userController.getUserKYC
 // Get user KYC verification history by email
 router.get('/email/:email/kyc/history', verifyToken, userController.getUserKYCHistoryByEmail);
 
-module.exports = router;
+export default router;

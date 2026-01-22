@@ -1,8 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware');
-const {
-  getAllSubscriptions,
+import { authenticateToken, requireAdmin  } from '../middleware/authMiddleware.js';
+import { getAllSubscriptions,
   getAllSubscriptionsAdmin,
   getSubscriptionById,
   createSubscription,
@@ -11,7 +10,7 @@ const {
   toggleSubscriptionStatus,
   addStrategiesToSubscription,
   removeStrategiesFromSubscription
-} = require('../controllers/subscriptionController');
+ } from '../controllers/subscriptionController.js';
 
 // Public routes
 router.get('/', getAllSubscriptions);
@@ -28,4 +27,4 @@ router.patch('/:id/toggle', authenticateToken, requireAdmin, toggleSubscriptionS
 router.post('/:id/strategies', authenticateToken, requireAdmin, addStrategiesToSubscription);
 router.delete('/:id/strategies', authenticateToken, requireAdmin, removeStrategiesFromSubscription);
 
-module.exports = router;
+export default router;

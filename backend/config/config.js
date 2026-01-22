@@ -5,7 +5,7 @@
  * For development, you can set values directly here
  */
 
-module.exports = {
+export default {
   // MongoDB connection string
   MONGO_URI: process.env.MONGO_URI,
   
@@ -19,11 +19,6 @@ module.exports = {
   // Razorpay API keys
   RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
   RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
-  
-  // Zerodha API keys
-  ZERODHA_API_KEY: process.env.ZERODHA_API_KEY,
-  ZERODHA_API_SECRET: process.env.ZERODHA_API_SECRET,
-  ZERODHA_ACCESS_TOKEN: process.env.ZERODHA_ACCESS_TOKEN,
   
   // Frontend URL for CORS
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',

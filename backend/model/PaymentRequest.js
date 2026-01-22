@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const paymentRequestSchema = new mongoose.Schema({
   user: {
@@ -72,4 +72,4 @@ paymentRequestSchema.index({ status: 1, createdAt: -1 });
 
 const PaymentRequest = mongoose.model('PaymentRequest', paymentRequestSchema);
 
-module.exports = PaymentRequest;
+export default PaymentRequest;

@@ -1,4 +1,4 @@
-const cloudinary = require('cloudinary').v2;
+import { v2 as cloudinary } from 'cloudinary';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -105,7 +105,7 @@ const deleteImage = async (publicId) => {
   }
 };
 
-module.exports = {
+export {
   cloudinary,
   uploadPDF,
   deletePDF,

@@ -1,6 +1,6 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const KycVerification = require('../model/KycVerification');
+import KycVerification from '../model/KycVerification.js';
 
 // Test endpoint to check if KYC verification is being saved
 router.get('/kyc-verifications', async (req, res) => {
@@ -24,4 +24,4 @@ router.get('/kyc-verifications', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

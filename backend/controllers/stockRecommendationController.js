@@ -1,14 +1,13 @@
-const StockRecommendation = require('../model/StockRecommendation');
-const User = require('../model/User');
-const UserSubscription = require('../model/UserSubscription');
-const ZerodhaToken = require('../model/ZerodhaToken');
-const notificationService = require('../utils/notificationService');
-const logger = require('../utils/logger');
-const zerodhaService = require('../utils/zerodhaService');
-const { generateStockReportPDF } = require('../utils/pdfGenerator');
-const { uploadPDF, deletePDF } = require('../config/cloudinary');
-const { sendRecommendationToTelegram } = require('../services/telegramService');
-const Subscription = require('../model/Subscription');
+import StockRecommendation from '../model/StockRecommendation.js';
+import User from '../model/User.js';
+import UserSubscription from '../model/UserSubscription.js';
+import notificationService from '../utils/notificationService.js';
+import logger from '../utils/logger.js';
+import { generateStockReportPDF  } from '../utils/pdfGenerator.js';
+import { uploadPDF, deletePDF  } from '../config/cloudinary.js';
+import { sendRecommendationToTelegram  } from '../services/telegramService.js';
+import { sendRecommendationToWhatsApp  } from '../services/whatsappService.js';
+import Subscription from '../model/Subscription.js';
 
 /**
  * Create a new stock recommendation
@@ -64,20 +63,45 @@ const createRecommendation = async (req, res) => {
     if (status === 'published') {
       await sendRecommendationToUsers(recommendation._id);
       
-      // Send to Telegram - fetch subscriptions that have the target strategies
+      // Fetch subscriptions that have the target strategies
+      const subscriptions = await Subscription.find({
+        strategies: { $in: targetStrategies }
+      });
+      
+      // Get subscription IDs
+      const subscriptionIds = subscriptions.map(sub => sub._id);
+      
+      // Fetch active user subscriptions with user data
+      const userSubscriptions = await UserSubscription.find({
+        subscription: { $in: subscriptionIds },
+        status: 'active'
+      }).populate('user');
+      
+      // Send to Telegram
       try {
-        const subscriptions = await Subscription.find({
-          strategies: { $in: targetStrategies },
-          telegramChatId: { $exists: true, $ne: null, $ne: '' }
-        });
-        
-        for (const subscription of subscriptions) {
+        const telegramSubscriptions = subscriptions.filter(sub => sub.telegramChatId);
+        for (const subscription of telegramSubscriptions) {
           await sendRecommendationToTelegram(recommendation, subscription.telegramChatId);
           logger.info(`Recommendation sent to Telegram chat ${subscription.telegramChatId}: ${recommendation.stockSymbol}`);
         }
       } catch (telegramError) {
         logger.error('Failed to send to Telegram:', telegramError);
         // Don't fail the request if Telegram fails
+      }
+
+      // Send to WhatsApp - use phone numbers from User model
+      try {
+        const users = userSubscriptions
+          .map(us => us.user)
+          .filter(user => user?.profile?.phone && user?.profile?.phoneVerified);
+        
+        for (const user of users) {
+          await sendRecommendationToWhatsApp(recommendation, user);
+          logger.info(`Recommendation sent to WhatsApp ${user.profile.phone}: ${recommendation.stockSymbol}`);
+        }
+      } catch (whatsappError) {
+        logger.error('Failed to send to WhatsApp:', whatsappError);
+        // Don't fail the request if WhatsApp fails
       }
     }
 
@@ -200,20 +224,45 @@ const updateRecommendation = async (req, res) => {
     if (willBePublished) {
       await sendRecommendationToUsers(recommendation._id);
       
-      // Send to Telegram - fetch subscriptions that have the target strategies
+      // Fetch subscriptions that have the target strategies
+      const subscriptions = await Subscription.find({
+        strategies: { $in: recommendation.targetStrategies }
+      });
+      
+      // Get subscription IDs
+      const subscriptionIds = subscriptions.map(sub => sub._id);
+      
+      // Fetch active user subscriptions with user data
+      const userSubscriptions = await UserSubscription.find({
+        subscription: { $in: subscriptionIds },
+        status: 'active'
+      }).populate('user');
+      
+      // Send to Telegram
       try {
-        const subscriptions = await Subscription.find({
-          strategies: { $in: recommendation.targetStrategies },
-          telegramChatId: { $exists: true, $ne: null, $ne: '' }
-        });
-        
-        for (const subscription of subscriptions) {
+        const telegramSubscriptions = subscriptions.filter(sub => sub.telegramChatId);
+        for (const subscription of telegramSubscriptions) {
           await sendRecommendationToTelegram(recommendation, subscription.telegramChatId);
           logger.info(`Recommendation sent to Telegram chat ${subscription.telegramChatId}: ${recommendation.stockSymbol}`);
         }
       } catch (telegramError) {
         logger.error('Failed to send to Telegram:', telegramError);
         // Don't fail the request if Telegram fails
+      }
+
+      // Send to WhatsApp - use phone numbers from User model
+      try {
+        const users = userSubscriptions
+          .map(us => us.user)
+          .filter(user => user?.profile?.phone && user?.profile?.phoneVerified);
+        
+        for (const user of users) {
+          await sendRecommendationToWhatsApp(recommendation, user);
+          logger.info(`Recommendation sent to WhatsApp ${user.profile.phone}: ${recommendation.stockSymbol}`);
+        }
+      } catch (whatsappError) {
+        logger.error('Failed to send to WhatsApp:', whatsappError);
+        // Don't fail the request if WhatsApp fails
       }
     }
 
@@ -456,498 +505,6 @@ const sendRecommendationToUsers = async (recommendationId) => {
 };
 
 
-/**
- * Set Zerodha access token
- * @route POST /api/recommendations/zerodha/set-token
- * @access Admin only
- */
-const setZerodhaToken = async (req, res) => {
-  try {
-    const { accessToken } = req.body;
-    const adminEmail = req.user?.email || 'admin';
-    
-    if (!accessToken) {
-      return res.status(400).json({
-        success: false,
-        error: 'Access token is required'
-      });
-    }
-    
-    // Calculate expiration time (next day at 6:00 AM IST)
-    const now = new Date();
-    const istTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-    const expiresAt = new Date(istTime);
-    
-    // Set to next day at 6:00 AM
-    expiresAt.setDate(expiresAt.getDate() + 1);
-    expiresAt.setHours(6, 0, 0, 0);
-    
-    // Convert back to UTC for storage
-    const expiresAtUTC = new Date(expiresAt.toLocaleString('en-US', { timeZone: 'UTC' }));
-    
-    // Find existing active token and update it, or create new one if none exists
-    const existingToken = await ZerodhaToken.findOne({ isActive: true });
-    
-    if (existingToken) {
-      // Update existing token
-      existingToken.accessToken = accessToken;
-      existingToken.updatedBy = adminEmail;
-      existingToken.updatedAt = new Date();
-      existingToken.expiresAt = expiresAtUTC;
-      existingToken.isActive = true;
-      
-      await existingToken.save();
-      
-      logger.info(`Zerodha access token updated by ${adminEmail}, expires at ${expiresAt.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })}`);
-    } else {
-      // Create new token if none exists
-      const newToken = new ZerodhaToken({
-        accessToken,
-        updatedBy: adminEmail,
-        expiresAt: expiresAtUTC,
-        isActive: true
-      });
-      
-      await newToken.save();
-      
-      logger.info(`Zerodha access token created by ${adminEmail}, expires at ${expiresAt.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })}`);
-    }
-    
-    res.status(200).json({
-      success: true,
-      message: 'Zerodha access token set successfully',
-      expiresAt: expiresAt.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })
-    });
-  } catch (error) {
-    logger.error('Error setting Zerodha token:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to set Zerodha token',
-      details: error.message
-    });
-  }
-};
-
-/**
- * Deactivate expired Zerodha tokens
- * Called by cron job at 6:00 AM daily
- * @access Internal/Cron
- */
-const deactivateExpiredTokens = async () => {
-  try {
-    const now = new Date();
-    
-    // Find and deactivate all expired tokens
-    const result = await ZerodhaToken.updateMany(
-      {
-        isActive: true,
-        expiresAt: { $lte: now }
-      },
-      {
-        isActive: false
-      }
-    );
-    
-    if (result.modifiedCount > 0) {
-      logger.info(`Deactivated ${result.modifiedCount} expired Zerodha token(s)`);
-    }
-    
-    return { success: true, deactivated: result.modifiedCount };
-  } catch (error) {
-    logger.error('Error deactivating expired tokens:', error);
-    return { success: false, error: error.message };
-  }
-};
-
-/**
- * Get current Zerodha token status
- * @route GET /api/recommendations/zerodha/token-status
- * @access Admin only
- */
-const getZerodhaTokenStatus = async (req, res) => {
-  try {
-    const token = await ZerodhaToken.findOne({ isActive: true }).sort({ updatedAt: -1 });
-    
-    if (!token) {
-      return res.status(200).json({
-        success: true,
-        hasToken: false,
-        message: 'No active token found'
-      });
-    }
-    
-    // Check if token has expired
-    const now = new Date();
-    const isExpired = token.expiresAt && token.expiresAt <= now;
-    
-    if (isExpired) {
-      // Deactivate expired token
-      token.isActive = false;
-      await token.save();
-      
-      return res.status(200).json({
-        success: true,
-        hasToken: false,
-        message: 'Token has expired',
-        expiredAt: token.expiresAt
-      });
-    }
-    
-    res.status(200).json({
-      success: true,
-      hasToken: true,
-      updatedBy: token.updatedBy,
-      updatedAt: token.updatedAt,
-      expiresAt: token.expiresAt,
-      isExpired: false
-    });
-  } catch (error) {
-    logger.error('Error getting token status:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get token status'
-    });
-  }
-};
-
-/**
- * Get stock price from Zerodha
- * @route GET /api/recommendations/zerodha/get-price
- * @access Admin only
- */
-const getStockPrice = async (req, res) => {
-  try {
-    const { symbol, exchange = 'NSE' } = req.query;
-    
-    if (!symbol) {
-      return res.status(400).json({
-        success: false,
-        error: 'Stock symbol is required'
-      });
-    }
-    
-    // Format instrument as EXCHANGE:SYMBOL
-    const instrument = `${exchange}:${symbol}`;
-    
-    // Get quote from Zerodha
-    const quoteData = await zerodhaService.getQuote([instrument]);
-    
-    if (!quoteData || !quoteData.data || !quoteData.data[instrument]) {
-      return res.status(404).json({
-        success: false,
-        error: 'Stock not found or invalid symbol'
-      });
-    }
-    
-    const quote = quoteData.data[instrument];
-    
-    // Try to get the stock name from instruments data
-    let stockName = symbol; // Default to symbol
-    try {
-      const instruments = await zerodhaService.searchInstruments(symbol, exchange);
-      if (instruments && instruments.length > 0) {
-        // Find exact match for the symbol
-        const exactMatch = instruments.find(inst => 
-          inst.tradingsymbol && inst.tradingsymbol.toUpperCase() === symbol.toUpperCase()
-        );
-        if (exactMatch && exactMatch.name) {
-          stockName = exactMatch.name;
-        }
-      }
-    } catch (instrumentError) {
-      // If fetching instrument name fails, just use the symbol
-      logger.warn('Could not fetch instrument name:', instrumentError.message);
-    }
-    
-    res.status(200).json({
-      success: true,
-      data: {
-        symbol: symbol,
-        exchange: exchange,
-        stockName: stockName,
-        lastPrice: quote.last_price,
-        ohlc: quote.ohlc,
-        change: quote.change,
-        changePercent: quote.change_percent || ((quote.last_price - quote.ohlc.close) / quote.ohlc.close * 100),
-        volume: quote.volume,
-        averagePrice: quote.average_price,
-        lastTradeTime: quote.last_trade_time,
-        instrumentToken: quote.instrument_token
-      }
-    });
-  } catch (error) {
-    logger.error('Error getting stock price:', error);
-    
-    if (error.message && error.message.includes('No active Zerodha access token')) {
-      return res.status(401).json({
-        success: false,
-        error: 'Zerodha access token not configured. Please set token from admin panel.'
-      });
-    }
-    
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get stock price',
-      details: error.message
-    });
-  }
-};
-
-/**
- * Search stocks from Zerodha
- * @route GET /api/recommendations/zerodha/search
- * @access Admin only
- */
-const searchStocks = async (req, res) => {
-  try {
-    const { query, exchange } = req.query;
-    
-    if (!query || query.length < 2) {
-      return res.status(400).json({
-        success: false,
-        error: 'Query must be at least 2 characters'
-      });
-    }
-    
-    const instruments = await zerodhaService.searchInstruments(query, exchange);
-    
-    res.status(200).json({
-      success: true,
-      count: instruments.length,
-      data: instruments
-    });
-  } catch (error) {
-    logger.error('Error searching stocks:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to search stocks',
-      details: error.message
-    });
-  }
-};
-
-/**
- * Update all active stock recommendation prices
- * Called by cron job during market hours
- * @access Internal/Cron
- */
-const updateAllStockPrices = async () => {
-  try {
-    logger.info('Starting automatic stock price update...');
-    
-    // Get all active recommendations that haven't expired
-    const recommendations = await StockRecommendation.find({ 
-      status: 'published',
-      $or: [
-        { expiresAt: { $gt: new Date() } },
-        { expiresAt: null }
-      ]
-    });
-    
-    if (recommendations.length === 0) {
-      logger.info('No active recommendations to update');
-      return { success: true, updated: 0, failed: 0 };
-    }
-    
-    let updatedCount = 0;
-    let failedCount = 0;
-    
-    // Update each recommendation's price
-    for (const rec of recommendations) {
-      try {
-        // Detect exchange from symbol suffix if not explicitly set
-        let exchange = rec.exchange || 'NSE';
-        let cleanSymbol = rec.stockSymbol;
-        
-        // If symbol has exchange suffix (e.g., CIANAGRO.BSE), extract it
-        if (cleanSymbol.includes('.')) {
-          const parts = cleanSymbol.split('.');
-          cleanSymbol = parts[0]; // Symbol part
-          const suffixExchange = parts[1]; // Exchange part (BSE, NSE, etc.)
-          
-          // Use the suffix exchange if the rec.exchange is not set or is default NSE
-          if (!rec.exchange || rec.exchange === 'NSE') {
-            exchange = suffixExchange.toUpperCase();
-          }
-        }
-        
-        const instrument = `${exchange}:${cleanSymbol}`;
-        
-        const quoteData = await zerodhaService.getQuote([instrument]);
-        
-        if (quoteData?.data?.[instrument]?.last_price) {
-          const newPrice = quoteData.data[instrument].last_price;
-          
-          // Only update if price has changed
-          if (rec.currentPrice !== newPrice) {
-            rec.currentPrice = newPrice;
-            rec.lastPriceUpdate = new Date();
-            await rec.save();
-            
-            logger.info(`Updated price for ${rec.stockSymbol}: ₹${newPrice}`);
-            updatedCount++;
-          }
-        } else {
-          logger.warn(`No price data available for ${rec.stockSymbol}`);
-          failedCount++;
-        }
-      } catch (error) {
-        logger.error(`Failed to update price for ${rec.stockSymbol}:`, error.message);
-        failedCount++;
-      }
-    }
-    
-    logger.info(`Price update complete: ${updatedCount} updated, ${failedCount} failed`);
-    return { success: true, updated: updatedCount, failed: failedCount, total: recommendations.length };
-    
-  } catch (error) {
-    logger.error('Error in updateAllStockPrices:', error);
-    return { success: false, error: error.message };
-  }
-};
-
-/**
- * Refresh stock prices on-demand (for dashboard)
- * Only updates if last update was more than 10 minutes ago
- * @route POST /api/recommendations/refresh-prices
- * @access Private
- */
-const refreshStockPrices = async (req, res) => {
-  try {
-    logger.info('========== STARTING PRICE REFRESH ==========');
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-    
-    logger.info(`Looking for recommendations that need price update (older than ${tenMinutesAgo.toISOString()})`);
-    
-    // Get active recommendations that need price update
-    const recommendations = await StockRecommendation.find({ 
-      status: 'published',
-      $or: [
-        { expiresAt: { $gt: new Date() } },
-        { expiresAt: null }
-      ],
-      $or: [
-        { lastPriceUpdate: { $lt: tenMinutesAgo } },
-        { lastPriceUpdate: null }
-      ]
-    });
-    
-    logger.info(`Found ${recommendations.length} recommendations to refresh`);
-    
-    if (recommendations.length === 0) {
-      logger.info('All prices are up to date. No refresh needed.');
-      return res.status(200).json({
-        success: true,
-        message: 'All prices are up to date',
-        updated: 0
-      });
-    }
-    
-    let updatedCount = 0;
-    let failedCount = 0;
-    const errors = [];
-    
-    logger.info(`Starting to process ${recommendations.length} recommendations...`);
-    
-    for (const rec of recommendations) {
-      try {
-        logger.info(`\n--- Processing: ${rec.stockSymbol} (ID: ${rec._id}) ---`);
-        
-        // Detect exchange from symbol suffix if not explicitly set
-        let exchange = rec.exchange || 'NSE';
-        let cleanSymbol = rec.stockSymbol;
-        
-        logger.info(`Original symbol: ${rec.stockSymbol}, Exchange: ${exchange}`);
-        
-        // If symbol has exchange suffix (e.g., CIANAGRO.BSE), extract it
-        if (cleanSymbol.includes('.')) {
-          const parts = cleanSymbol.split('.');
-          cleanSymbol = parts[0]; // Symbol part
-          const suffixExchange = parts[1]; // Exchange part (BSE, NSE, etc.)
-          
-          // Use the suffix exchange if the rec.exchange is not set or is default NSE
-          if (!rec.exchange || rec.exchange === 'NSE') {
-            exchange = suffixExchange.toUpperCase();
-            logger.info(`Detected exchange from symbol: ${rec.stockSymbol} -> ${exchange}:${cleanSymbol}`);
-          }
-        }
-        
-        const instrument = `${exchange}:${cleanSymbol}`;
-        
-        logger.info(`Fetching price for instrument: ${instrument}`);
-        
-        const quoteData = await zerodhaService.getQuote([instrument]);
-        
-        logger.info(`Quote response received for ${instrument}`);
-        logger.info(`Quote data keys: ${Object.keys(quoteData || {}).join(', ')}`);
-        
-        if (quoteData?.data?.[instrument]?.last_price) {
-          const oldPrice = rec.currentPrice;
-          rec.currentPrice = quoteData.data[instrument].last_price;
-          rec.lastPriceUpdate = new Date();
-          await rec.save();
-          updatedCount++;
-          logger.info(`✓ SUCCESS: ${rec.stockSymbol} price updated from ₹${oldPrice} to ₹${rec.currentPrice}`);
-        } else {
-          const errorMsg = `No price data in response for ${instrument}`;
-          logger.warn(`✗ FAILED: ${errorMsg}`);
-          logger.warn(`Response structure: ${JSON.stringify(quoteData, null, 2)}`);
-          errors.push(`${rec.stockSymbol}: No price data`);
-          failedCount++;
-        }
-      } catch (error) {
-        const errorMsg = `Failed to refresh price for ${rec.stockSymbol}: ${error.message}`;
-        logger.error(`✗ ERROR: ${errorMsg}`);
-        logger.error(`Error stack: ${error.stack}`);
-        errors.push(`${rec.stockSymbol}: ${error.message}`);
-        failedCount++;
-      }
-    }
-    
-    logger.info(`\n========== PRICE REFRESH COMPLETE ==========`);
-    logger.info(`Total processed: ${recommendations.length}`);
-    logger.info(`Successfully updated: ${updatedCount}`);
-    logger.info(`Failed: ${failedCount}`);
-    if (errors.length > 0) {
-      logger.warn(`Errors: ${errors.join(', ')}`);
-    }
-    
-    // Fetch updated recommendations to return fresh data
-    logger.info(`Fetching all updated recommendations...`);
-    const updatedRecommendations = await StockRecommendation.find({ 
-      status: 'published',
-      $or: [
-        { expiresAt: { $gt: new Date() } },
-        { expiresAt: null }
-      ]
-    })
-      .sort({ createdAt: -1 })
-      .populate('createdBy', 'name email')
-      .populate('targetStrategies', 'name strategyCode');
-    
-    logger.info(`Returning ${updatedRecommendations.length} recommendations to frontend`);
-    
-    res.status(200).json({
-      success: true,
-      message: `Refreshed ${updatedCount} stock prices`,
-      updated: updatedCount,
-      failed: failedCount,
-      total: recommendations.length,
-      errors: errors.length > 0 ? errors : undefined,
-      data: updatedRecommendations
-    });
-    
-  } catch (error) {
-    logger.error('========== PRICE REFRESH ERROR ==========');
-    logger.error('Error refreshing stock prices:', error);
-    logger.error('Error stack:', error.stack);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to refresh stock prices',
-      details: error.message
-    });
-  }
-};
 
 /**
  * Generate PDF report for a stock recommendation
@@ -1040,7 +597,7 @@ const generatePDFReport = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   createRecommendation,
   getAllRecommendations,
   getRecommendation,
@@ -1048,12 +605,5 @@ module.exports = {
   deleteRecommendation,
   sendRecommendation,
   getUserRecommendations,
-  setZerodhaToken,
-  getZerodhaTokenStatus,
-  getStockPrice,
-  searchStocks,
-  updateAllStockPrices,
-  refreshStockPrices,
-  deactivateExpiredTokens,
   generatePDFReport
 };

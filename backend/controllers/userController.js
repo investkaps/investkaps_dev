@@ -1,12 +1,12 @@
-const User = require('../model/User');
-const UserSubscription = require('../model/UserSubscription');
+import User from '../model/User.js';
+import UserSubscription from '../model/UserSubscription.js';
 
 /**
  * Create a new user manually
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.createUser = async (req, res) => {
+export const createUser = async (req, res) => {
   try {
     const { clerkId: bodyClerkId, email, name, isVerified } = req.body;
     
@@ -65,7 +65,7 @@ exports.createUser = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.createOrUpdateUser = async (req, res) => {
+export const createOrUpdateUser = async (req, res) => {
   try {
     const { id, email_addresses, first_name, last_name } = req.body.data;
     
@@ -123,7 +123,7 @@ exports.createOrUpdateUser = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.getUserByClerkId = async (req, res) => {
+export const getUserById = async (req, res) => {
   try {
     const { clerkId } = req.params;
     
@@ -172,7 +172,7 @@ exports.getUserByClerkId = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.getUserByEmail = async (req, res) => {
+export const getUserProfile = async (req, res) => {
   try {
     const { email } = req.params;
     
@@ -221,7 +221,7 @@ exports.getUserByEmail = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.updateUserProfile = async (req, res) => {
+export const updateUserProfile = async (req, res) => {
   try {
     const { clerkId } = req.params;
     const { name, profile } = req.body;
@@ -274,7 +274,7 @@ exports.updateUserProfile = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.updateUserKYC = async (req, res) => {
+export const updateUserKYC = async (req, res) => {
   try {
     const { clerkId } = req.params;
     const { panNumber, aadhaarNumber, isVerified } = req.body;
@@ -325,7 +325,7 @@ exports.updateUserKYC = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.getUserKYCStatus = async (req, res) => {
+export const getUserKYCStatus = async (req, res) => {
   try {
     const { clerkId } = req.params;
     
@@ -365,7 +365,7 @@ exports.getUserKYCStatus = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.getUserKYCHistory = async (req, res) => {
+export const getUserKYCHistory = async (req, res) => {
   try {
     const { clerkId } = req.params;
     
@@ -404,7 +404,7 @@ exports.getUserKYCHistory = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.getUserKYCHistoryByEmail = async (req, res) => {
+export const getUserKYCHistoryByEmail = async (req, res) => {
   try {
     const { email } = req.params;
     
@@ -443,7 +443,7 @@ exports.getUserKYCHistoryByEmail = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.getUserKYCStatusByEmail = async (req, res) => {
+export const getUserKYCStatusByEmail = async (req, res) => {
   try {
     const { email } = req.params;
     
@@ -483,7 +483,7 @@ exports.getUserKYCStatusByEmail = async (req, res) => {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.updateUserKYCByEmail = async (req, res) => {
+export const updateUserKYCByEmail = async (req, res) => {
   try {
     const { email } = req.params;
     const { panNumber, aadhaarNumber, isVerified } = req.body;

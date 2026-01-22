@@ -1,9 +1,9 @@
-const Strategy = require('../model/Strategy');
-const Subscription = require('../model/Subscription');
-const { validationResult } = require('express-validator');
+import Strategy from '../model/Strategy.js';
+import Subscription from '../model/Subscription.js';
+import { validationResult  } from 'express-validator';
 
 // Get all strategies
-exports.getAllStrategies = async (req, res) => {
+export const getAllStrategies = async (req, res) => {
   try {
     const strategies = await Strategy.find().sort({ createdAt: -1 });
     res.status(200).json(strategies);
@@ -14,7 +14,7 @@ exports.getAllStrategies = async (req, res) => {
 };
 
 // Get strategy by ID
-exports.getStrategyById = async (req, res) => {
+export const getStrategyById = async (req, res) => {
   try {
     const strategy = await Strategy.findById(req.params.id);
     
@@ -30,7 +30,7 @@ exports.getStrategyById = async (req, res) => {
 };
 
 // Create new strategy
-exports.createStrategy = async (req, res) => {
+export const createStrategy = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -54,7 +54,7 @@ exports.createStrategy = async (req, res) => {
 };
 
 // Update strategy
-exports.updateStrategy = async (req, res) => {
+export const updateStrategy = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -89,7 +89,7 @@ exports.updateStrategy = async (req, res) => {
 };
 
 // Delete strategy
-exports.deleteStrategy = async (req, res) => {
+export const deleteStrategy = async (req, res) => {
   try {
     // Check if strategy exists
     const strategy = await Strategy.findById(req.params.id);
@@ -116,7 +116,7 @@ exports.deleteStrategy = async (req, res) => {
 };
 
 // Toggle strategy status (active/inactive)
-exports.toggleStrategyStatus = async (req, res) => {
+export const toggleStrategyStatus = async (req, res) => {
   try {
     const strategy = await Strategy.findById(req.params.id);
     
@@ -138,7 +138,7 @@ exports.toggleStrategyStatus = async (req, res) => {
 };
 
 // Get subscriptions by strategy ID
-exports.getSubscriptionsByStrategy = async (req, res) => {
+export const getSubscriptionsByStrategy = async (req, res) => {
   try {
     const subscriptions = await Subscription.find({ 
       strategies: req.params.id 

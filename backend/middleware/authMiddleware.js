@@ -1,6 +1,6 @@
-const { clerkClient } = require('@clerk/clerk-sdk-node');
-const User = require('../model/User');
-const logger = require('../utils/logger');
+import { clerkClient } from '@clerk/clerk-sdk-node';
+import User from '../model/User.js';
+import logger from '../utils/logger.js';
 
 /**
  * Middleware to authenticate JWT token from Clerk
@@ -8,7 +8,7 @@ const logger = require('../utils/logger');
  * @param {Object} res - Express response object
  * @param {Function} next - Express next function
  */
-exports.authenticateToken = async (req, res, next) => {
+export const authenticateToken = async (req, res, next) => {
   try {
     // Get token from header
     const token = req.headers.authorization?.split(' ')[1];
@@ -81,7 +81,7 @@ exports.authenticateToken = async (req, res, next) => {
  * @param {Object} req - Express request object
  * @returns {Boolean} - True if user is admin, false otherwise
  */
-exports.validateAdmin = async (req) => {
+export const validateAdmin = async (req) => {
   try {
     // If req.user is already populated by authenticateToken middleware
     if (req.user) {
@@ -130,9 +130,9 @@ exports.validateAdmin = async (req) => {
  * @param {Object} res - Express response object
  * @param {Function} next - Express next function
  */
-exports.requireAdmin = async (req, res, next) => {
+export const requireAdmin = async (req, res, next) => {
   try {
-    const isAdmin = await exports.validateAdmin(req);
+    const isAdmin = await validateAdmin(req);
     
     if (!isAdmin) {
       return res.status(403).json({

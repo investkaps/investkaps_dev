@@ -55,14 +55,12 @@ const MomentumRider = () => {
 
           {/* Subscribe Button */}
           <div className="subscribe-section">
-            <a 
-              href="https://trade.investkaps.com/checkout" 
+            <Link 
+              to="/subscribe" 
               className="subscribe-button"
-              target="_blank"
-              rel="noopener noreferrer"
             >
               Subscribe Now
-            </a>
+            </Link>
           </div>
           </div>
 

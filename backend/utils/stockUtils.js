@@ -45,7 +45,7 @@ const formatStockForRecommendation = (stockData) => {
   };
 };
 
-module.exports = {
+export {
   processStockData,
   formatStockForRecommendation
 };

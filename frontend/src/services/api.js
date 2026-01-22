@@ -299,52 +299,65 @@ export const adminAPI = {
     }
   },
   
-  // Zerodha API Methods
-  setZerodhaToken: async (accessToken) => {
+  // Stock Price API Methods (m.Stock Type-B)
+  updateStockPrices: async (symbols) => {
     try {
-      const res = await api.post('/recommendations/zerodha/set-token', { accessToken });
+      const res = await api.post('/stocks/prices', { symbols });
       return res.data;
     } catch (err) {
       const { message } = extractError(err);
-      console.error('Error setting Zerodha token:', message);
+      console.error('Error updating stock prices:', message);
       throw new Error(message);
     }
   },
   
-  getZerodhaTokenStatus: async () => {
+  getStockPrices: async (symbols) => {
     try {
-      const res = await api.get('/recommendations/zerodha/token-status');
-      return res.data;
-    } catch (err) {
-      const { message } = extractError(err);
-      console.error('Error getting token status:', message);
-      throw new Error(message);
-    }
-  },
-  
-  getStockPrice: async (symbol, exchange = 'NSE') => {
-    try {
-      const res = await api.get('/recommendations/zerodha/get-price', { 
-        params: { symbol, exchange } 
+      const res = await api.get('/stocks/prices', { 
+        params: { symbols: symbols.join(',') } 
       });
       return res.data;
     } catch (err) {
       const { message } = extractError(err);
-      console.error('Error getting stock price:', message);
+      console.error('Error getting stock prices:', message);
       throw new Error(message);
     }
   },
-  
-  searchStocks: async (query, exchange = null) => {
+
+  // Symbol Search API Methods
+  searchSymbols: async (query, limit = 50) => {
     try {
-      const params = { query };
-      if (exchange) params.exchange = exchange;
-      
-      const res = await api.get('/recommendations/zerodha/search', { params });
+      const res = await api.get('/symbols/search', {
+        params: { query, limit }
+      });
       return res.data;
     } catch (err) {
       const { message } = extractError(err);
-      console.error('Error searching stocks:', message);
+      console.error('Error searching symbols:', message);
+      throw new Error(message);
+    }
+  },
+
+  getAllSymbols: async (page = 1, limit = 100) => {
+    try {
+      const res = await api.get('/symbols', {
+        params: { page, limit }
+      });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error getting all symbols:', message);
+      throw new Error(message);
+    }
+  },
+
+  reloadSymbols: async () => {
+    try {
+      const res = await api.post('/symbols/reload');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error reloading symbols:', message);
       throw new Error(message);
     }
   },

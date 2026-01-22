@@ -1,11 +1,11 @@
-const User = require('../model/User');
+import User from '../model/User.js';
 
 /**
  * Set admin role directly by email
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.setAdminByEmail = async (req, res) => {
+export const setAdminByEmail = async (req, res) => {
   try {
     const { email } = req.params;
     

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const StockRecommendationSchema = new mongoose.Schema({
   title: {
@@ -153,4 +153,4 @@ StockRecommendationSchema.index({ targetStrategies: 1 });
 StockRecommendationSchema.index({ status: 1, publishedAt: -1 }); // For filtering by publication date
 StockRecommendationSchema.index({ targetStrategies: 1, publishedAt: -1 }); // Compound index for user recommendations
 
-module.exports = mongoose.model('StockRecommendation', StockRecommendationSchema);
+export default mongoose.model('StockRecommendation', StockRecommendationSchema);

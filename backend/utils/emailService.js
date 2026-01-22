@@ -1,16 +1,23 @@
-const nodemailer = require('nodemailer');
-const logger = require('./logger');
+import nodemailer from 'nodemailer';
+import logger from './logger.js';
 
-// Create a transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: process.env.EMAIL_PORT || 587,
-  secure: process.env.EMAIL_SECURE === 'true',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
+// Create a transporter (lazy initialization)
+let transporter = null;
+
+const getTransporter = () => {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+      port: process.env.EMAIL_PORT || 587,
+      secure: process.env.EMAIL_SECURE === 'true',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
+      }
+    });
   }
-});
+  return transporter;
+};
 
 // Send email function
 const sendEmail = async (options) => {
@@ -22,7 +29,6 @@ const sendEmail = async (options) => {
       from,
       to: options.to,
       subject: options.subject,
-      text: options.text,
       html: options.html
     };
     
@@ -41,7 +47,8 @@ const sendEmail = async (options) => {
       mailOptions.attachments = options.attachments;
     }
     
-    const info = await transporter.sendMail(mailOptions);
+    const transporterInstance = getTransporter();
+    const info = await transporterInstance.sendMail(mailOptions);
     logger.info(`Email sent: ${info.messageId}`);
     return info;
   } catch (error) {
@@ -50,4 +57,4 @@ const sendEmail = async (options) => {
   }
 };
 
-module.exports = { sendEmail };
+export { sendEmail };

@@ -1,30 +1,34 @@
-// Ensure environment variables are loaded
-require('dotenv').config();
+import Subscription from '../model/Subscription.js';
+import UserSubscription from '../model/UserSubscription.js';
+import User from '../model/User.js';
+import Razorpay from 'razorpay';
+import crypto from 'crypto';
+import { sendEmail  } from '../utils/emailService.js';
+import logger from '../utils/logger.js';
+import moment from 'moment';
 
-const Subscription = require('../model/Subscription');
-const UserSubscription = require('../model/UserSubscription');
-const User = require('../model/User');
-const Razorpay = require('razorpay');
-const crypto = require('crypto');
-const { sendEmail } = require('../utils/emailService');
-const logger = require('../utils/logger');
-const moment = require('moment');
+// Initialize Razorpay lazily to ensure environment variables are loaded
+let razorpay = null;
 
-// Debug log for environment variables
-console.log('Razorpay Key ID available:', !!process.env.RAZORPAY_KEY_ID);
-console.log('Razorpay Key Secret available:', !!process.env.RAZORPAY_KEY_SECRET);
-
-// Initialize Razorpay
-let razorpay;
-try {
-  razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
-  });
-  console.log('Razorpay initialized successfully');
-} catch (error) {
-  console.error('Error initializing Razorpay:', error.message);
-}
+const getRazorpayInstance = () => {
+  if (!razorpay) {
+    // Debug log for environment variables
+    console.log('Razorpay Key ID available:', !!process.env.RAZORPAY_KEY_ID);
+    console.log('Razorpay Key Secret available:', !!process.env.RAZORPAY_KEY_SECRET);
+    
+    try {
+      razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET
+      });
+      console.log('Razorpay initialized successfully');
+    } catch (error) {
+      console.error('Error initializing Razorpay:', error.message);
+      throw new Error('Razorpay initialization failed: ' + error.message);
+    }
+  }
+  return razorpay;
+};
 
 // Helper function to calculate end date based on duration
 const calculateEndDate = (startDate, duration) => {
@@ -45,7 +49,7 @@ const calculateEndDate = (startDate, duration) => {
 // ===== SUBSCRIPTION PLANS MANAGEMENT (ADMIN) =====
 
 // Get all subscription plans (public)
-exports.getAllSubscriptions = async (req, res) => {
+export const getAllSubscriptions = async (req, res) => {
   try {
     // For public access, only return active subscriptions
     const subscriptions = await Subscription.find({ isActive: true })
@@ -66,7 +70,7 @@ exports.getAllSubscriptions = async (req, res) => {
 };
 
 // Get all subscription plans (admin only - includes inactive)
-exports.getAllSubscriptionsAdmin = async (req, res) => {
+export const getAllSubscriptionsAdmin = async (req, res) => {
   try {
     const subscriptions = await Subscription.find()
       .populate('strategies')
@@ -87,7 +91,7 @@ exports.getAllSubscriptionsAdmin = async (req, res) => {
 };
 
 // Get subscription by ID
-exports.getSubscriptionById = async (req, res) => {
+export const getSubscriptionById = async (req, res) => {
   try {
     const subscription = await Subscription.findById(req.params.id)
       .populate('strategies');
@@ -113,7 +117,7 @@ exports.getSubscriptionById = async (req, res) => {
 };
 
 // Create new subscription plan (admin only)
-exports.createSubscription = async (req, res) => {
+export const createSubscription = async (req, res) => {
   try {
     const {
       packageCode,
@@ -165,7 +169,7 @@ exports.createSubscription = async (req, res) => {
 };
 
 // Update subscription (admin only)
-exports.updateSubscription = async (req, res) => {
+export const updateSubscription = async (req, res) => {
   try {
     const {
       packageCode,
@@ -228,7 +232,7 @@ exports.updateSubscription = async (req, res) => {
 };
 
 // Delete subscription (admin only)
-exports.deleteSubscription = async (req, res) => {
+export const deleteSubscription = async (req, res) => {
   try {
     const subscription = await Subscription.findById(req.params.id);
     
@@ -255,7 +259,7 @@ exports.deleteSubscription = async (req, res) => {
 };
 
 // Toggle subscription plan status
-exports.toggleSubscriptionStatus = async (req, res) => {
+export const toggleSubscriptionStatus = async (req, res) => {
   try {
     const subscription = await Subscription.findById(req.params.id);
     
@@ -284,7 +288,7 @@ exports.toggleSubscriptionStatus = async (req, res) => {
 };
 
 // Add strategies to subscription
-exports.addStrategiesToSubscription = async (req, res) => {
+export const addStrategiesToSubscription = async (req, res) => {
   try {
     const { id } = req.params;
     const { strategyIds } = req.body;
@@ -327,7 +331,7 @@ exports.addStrategiesToSubscription = async (req, res) => {
 };
 
 // Remove strategies from subscription
-exports.removeStrategiesFromSubscription = async (req, res) => {
+export const removeStrategiesFromSubscription = async (req, res) => {
   try {
     const { id } = req.params;
     const { strategyIds } = req.body;
@@ -375,7 +379,7 @@ exports.removeStrategiesFromSubscription = async (req, res) => {
 // ===== USER SUBSCRIPTIONS MANAGEMENT =====
 
 // Get all subscriptions for a user
-exports.getUserSubscriptions = async (req, res) => {
+export const getUserSubscriptions = async (req, res) => {
   try {
     const clerkUserId = req.params.userId;
     
@@ -408,7 +412,7 @@ exports.getUserSubscriptions = async (req, res) => {
 };
 
 // Get active subscriptions for a user (returns ALL active subscriptions)
-exports.getActiveSubscription = async (req, res) => {
+export const getActiveSubscription = async (req, res) => {
   try {
     const clerkUserId = req.params.userId;
     console.log('🔍 Searching for active subscriptions - Clerk ID:', clerkUserId);
@@ -459,7 +463,7 @@ exports.getActiveSubscription = async (req, res) => {
 };
 
 // Cancel a subscription
-exports.cancelSubscription = async (req, res) => {
+export const cancelSubscription = async (req, res) => {
   try {
     const { subscriptionId } = req.params;
     
@@ -500,7 +504,7 @@ exports.cancelSubscription = async (req, res) => {
 // ===== PAYMENT AND SUBSCRIPTION PURCHASE =====
 
 // Create a Razorpay order for subscription purchase
-exports.createOrder = async (req, res) => {
+export const createOrder = async (req, res) => {
   try {
     // Check if Razorpay is initialized
     if (!razorpay) {
@@ -555,7 +559,8 @@ exports.createOrder = async (req, res) => {
       }
     };
     
-    const order = await razorpay.orders.create(options);
+    const razorpayInstance = getRazorpayInstance();
+    const order = await razorpayInstance.orders.create(options);
     
     // Get user details for prefill
     const user = await User.findById(userId);
@@ -579,7 +584,7 @@ exports.createOrder = async (req, res) => {
 };
 
 // Verify payment and create user subscription
-exports.verifyPayment = async (req, res) => {
+export const verifyPayment = async (req, res) => {
   try {
     // Check if Razorpay is initialized
     if (!razorpay) {
@@ -606,7 +611,8 @@ exports.verifyPayment = async (req, res) => {
     }
     
     // Get payment details from Razorpay
-    const payment = await razorpay.payments.fetch(razorpay_payment_id);
+    const razorpayInstance = getRazorpayInstance();
+    const payment = await razorpayInstance.payments.fetch(razorpay_payment_id);
     
     if (payment.status !== 'captured') {
       return res.status(400).json({
@@ -709,7 +715,7 @@ exports.verifyPayment = async (req, res) => {
 // ===== TESTING/DEVELOPMENT ENDPOINTS =====
 
 // Create test subscription (bypass payment for testing)
-exports.createTestSubscription = async (req, res) => {
+export const createTestSubscription = async (req, res) => {
   try {
     const userId = req.user.id;
     
@@ -811,7 +817,7 @@ exports.createTestSubscription = async (req, res) => {
 // ===== ADMIN SUBSCRIPTION MANAGEMENT =====
 
 // Get all user subscriptions (admin only)
-exports.getAllUserSubscriptions = async (req, res) => {
+export const getAllUserSubscriptions = async (req, res) => {
   try {
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
@@ -903,7 +909,7 @@ exports.getAllUserSubscriptions = async (req, res) => {
 };
 
 // Get dashboard stats for subscriptions
-exports.getSubscriptionStats = async (req, res) => {
+export const getSubscriptionStats = async (req, res) => {
   try {
     const now = new Date();
     
@@ -1030,7 +1036,7 @@ exports.getSubscriptionStats = async (req, res) => {
 // ===== SUBSCRIPTION MAINTENANCE (CRON JOBS) =====
 
 // Check and update expired subscriptions
-exports.checkExpiredSubscriptions = async () => {
+export const checkExpiredSubscriptions = async () => {
   try {
     const now = new Date();
     
@@ -1085,7 +1091,7 @@ exports.checkExpiredSubscriptions = async () => {
 };
 
 // Send notifications for subscriptions expiring soon
-exports.sendExpirationReminders = async () => {
+export const sendExpirationReminders = async () => {
   try {
     const now = new Date();
     const threeDaysLater = new Date(now);

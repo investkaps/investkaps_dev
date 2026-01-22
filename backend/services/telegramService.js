@@ -1,5 +1,5 @@
-const TelegramBot = require('node-telegram-bot-api');
-const logger = require('../utils/logger');
+import TelegramBot from 'node-telegram-bot-api';
+import logger from '../utils/logger.js';
 
 // Initialize bot - uses common bot token from env
 let bot = null;
@@ -184,7 +184,7 @@ const sendRecommendationToSubscriptions = async (recommendation, subscriptions) 
   return results;
 };
 
-module.exports = {
+export {
   initializeTelegramBot,
   sendRecommendationToTelegram,
   sendRecommendationToSubscriptions,

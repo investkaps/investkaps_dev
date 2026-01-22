@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const stockRecommendationController = require('../controllers/stockRecommendationController');
-const { authenticateToken } = require('../middleware/authMiddleware');
-const { checkRole } = require('../middleware/roleAuth');
+import * as stockRecommendationController from '../controllers/stockRecommendationController.js';
+import { authenticateToken  } from '../middleware/authMiddleware.js';
+import { checkRole  } from '../middleware/roleAuth.js';
 
 // Base route: /api/recommendations
 
@@ -10,13 +10,6 @@ const { checkRole } = require('../middleware/roleAuth');
 
 // Protected routes for regular users
 router.get('/user', authenticateToken, stockRecommendationController.getUserRecommendations);
-router.post('/refresh-prices', authenticateToken, stockRecommendationController.refreshStockPrices);
-
-// Zerodha API routes (Admin only) - MUST be before /:id routes
-router.post('/zerodha/set-token', authenticateToken, checkRole('admin'), stockRecommendationController.setZerodhaToken);
-router.get('/zerodha/token-status', authenticateToken, checkRole('admin'), stockRecommendationController.getZerodhaTokenStatus);
-router.get('/zerodha/get-price', authenticateToken, checkRole('admin'), stockRecommendationController.getStockPrice);
-router.get('/zerodha/search', authenticateToken, checkRole('admin'), stockRecommendationController.searchStocks);
 
 // Admin-only routes
 router.post('/', authenticateToken, checkRole('admin'), stockRecommendationController.createRecommendation);
@@ -27,4 +20,4 @@ router.delete('/:id', authenticateToken, checkRole('admin'), stockRecommendation
 router.post('/:id/send', authenticateToken, checkRole('admin'), stockRecommendationController.sendRecommendation);
 router.post('/:id/generate-pdf', authenticateToken, checkRole('admin'), stockRecommendationController.generatePDFReport);
 
-module.exports = router;
+export default router;

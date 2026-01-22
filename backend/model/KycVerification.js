@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const KycVerificationSchema = new mongoose.Schema({
   user: {
@@ -110,4 +110,4 @@ const KycVerificationSchema = new mongoose.Schema({
 KycVerificationSchema.index({ pan: 1, createdAt: -1 });
 KycVerificationSchema.index({ clerkId: 1, createdAt: -1 });
 
-module.exports = mongoose.model('KycVerification', KycVerificationSchema);
+export default mongoose.model('KycVerification', KycVerificationSchema);

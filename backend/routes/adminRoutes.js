@@ -1,12 +1,12 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { verifyToken } = require('../middleware/auth');
-const { checkRole } = require('../middleware/roleAuth');
-const User = require('../model/User');
-const KycVerification = require('../model/KycVerification');
-const Document = require('../model/Document');
-const UserSubscription = require('../model/UserSubscription');
-const adminRoleController = require('../controllers/adminRoleController');
+import { verifyToken  } from '../middleware/auth.js';
+import { checkRole  } from '../middleware/roleAuth.js';
+import User from '../model/User.js';
+import KycVerification from '../model/KycVerification.js';
+import Document from '../model/Document.js';
+import UserSubscription from '../model/UserSubscription.js';
+import * as adminRoleController from '../controllers/adminRoleController.js';
 
 /**
  * @route   GET /api/admin/dashboard
@@ -223,4 +223,4 @@ router.get('/kyc', verifyToken, checkRole('admin'), async (req, res) => {
  */
 router.get('/set-admin/:email', adminRoleController.setAdminByEmail);
 
-module.exports = router;
+export default router;

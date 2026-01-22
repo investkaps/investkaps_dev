@@ -1,6 +1,6 @@
 // src/components/Auth/ProtectedRoute.jsx
-import React, { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Loading from '../Loading/Loading'; // adjust path if needed
 
@@ -18,15 +18,9 @@ const ProtectedRoute = ({ children }) => {
     return <Loading message="Checking authentication..." />;
   }
 
-  // If user is not authenticated, redirect to external login
-  useEffect(() => {
-    if (!currentUser) {
-      window.location.href = 'https://trade.investkaps.com';
-    }
-  }, [currentUser]);
-
+  // If user is not authenticated, redirect to login
   if (!currentUser) {
-    return <Loading message="Redirecting to login..." />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // If authenticated, render the child component

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const DocumentSchema = new mongoose.Schema({
   user: {
@@ -67,4 +67,4 @@ DocumentSchema.pre('save', function(next) {
   next();
 });
 
-module.exports = mongoose.model('Document', DocumentSchema);
+export default mongoose.model('Document', DocumentSchema);

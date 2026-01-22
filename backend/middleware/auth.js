@@ -1,6 +1,6 @@
-const { clerkClient } = require('@clerk/clerk-sdk-node');
-const User = require('../model/User');
-const logger = require('../utils/logger');
+import { clerkClient } from '@clerk/clerk-sdk-node';
+import User from '../model/User.js';
+import logger from '../utils/logger.js';
 
 /**
  * Middleware to verify JWT token from Clerk
@@ -8,7 +8,7 @@ const logger = require('../utils/logger');
  * @param {Object} res - Express response object
  * @param {Function} next - Express next function
  */
-exports.verifyToken = async (req, res, next) => {
+export const verifyToken = async (req, res, next) => {
   try {
     // Get token from header
     const token = req.headers.authorization?.split(' ')[1];
@@ -82,7 +82,7 @@ exports.verifyToken = async (req, res, next) => {
  * @param {Object} res - Express response object
  * @param {Function} next - Express next function
  */
-exports.handleWebhook = async (req, res, next) => {
+export const handleWebhook = async (req, res, next) => {
   try {
     // SECURITY WARNING: Webhook signature verification is disabled
     // TODO: Implement Clerk webhook signature verification before production

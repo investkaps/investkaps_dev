@@ -90,9 +90,9 @@ const Subscribe = () => {
               We have free subscription for you with regular market updates, sector analysis, 
               analysis of financial results, free stock ideas and recommendations and more.
             </p>
-            <a href="https://trade.investkaps.com/checkout" className="free-button">
+            <Link to="/plans" className="free-button">
               Subscribe For Free
-            </a>
+            </Link>
           </div>
         </div>
 

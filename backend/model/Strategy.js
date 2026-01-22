@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const strategySchema = new mongoose.Schema({
   strategyCode: {
@@ -70,4 +70,4 @@ strategySchema.pre('findOneAndUpdate', function(next) {
 
 const Strategy = mongoose.model('Strategy', strategySchema);
 
-module.exports = Strategy;
+export default Strategy;

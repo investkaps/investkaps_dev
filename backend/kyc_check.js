@@ -1,27 +1,37 @@
 // nsekra_kyc_check.js
 // KYC verification module for API use
 
-const axios = require("axios");
-const fs = require("fs");
-const os = require("os");
-const path = require("path");
-const crypto = require("crypto");
-const net = require("net");
-const readline = require("readline");
+import axios from 'axios';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import crypto from 'crypto';
+import net from 'net';
+import readline from 'readline';
 
 // ===========================
-// KYC CREDENTIALS FROM ENV
+// KYC CREDENTIALS FROM ENV (lazy initialization)
 // ===========================
-const USERNAME = process.env.KYC_USERNAME;
-const PASSWORD = process.env.KYC_PASSWORD;
-const PASSKEY = process.env.KYC_PASSKEY;
-const POS_CODE = process.env.KYC_POS_CODE;
+let KYC_CREDENTIALS = null;
 
-// Validate required credentials
-if (!USERNAME || !PASSWORD || !PASSKEY || !POS_CODE) {
-  console.error('ERROR: Missing KYC credentials in environment variables');
-  console.error('Required: KYC_USERNAME, KYC_PASSWORD, KYC_PASSKEY, KYC_POS_CODE');
-}
+const getKYCCredentials = () => {
+  if (!KYC_CREDENTIALS) {
+    const USERNAME = process.env.KYC_USERNAME;
+    const PASSWORD = process.env.KYC_PASSWORD;
+    const PASSKEY = process.env.KYC_PASSKEY;
+    const POS_CODE = process.env.KYC_POS_CODE;
+
+    // Validate required credentials
+    if (!USERNAME || !PASSWORD || !PASSKEY || !POS_CODE) {
+      console.error('ERROR: Missing KYC credentials in environment variables');
+      console.error('Required: KYC_USERNAME, KYC_PASSWORD, KYC_PASSKEY, KYC_POS_CODE');
+      throw new Error('Missing KYC credentials');
+    }
+
+    KYC_CREDENTIALS = { USERNAME, PASSWORD, PASSKEY, POS_CODE };
+  }
+  return KYC_CREDENTIALS;
+};
 
 // ===========================
 // LOGGING (save log in backend folder)
@@ -210,6 +220,9 @@ async function verifyKYC(pan, dob) {
     // Format inputs
     pan = pan.toUpperCase();
     
+    // Get credentials
+    const { USERNAME, PASSWORD, PASSKEY, POS_CODE } = getKYCCredentials();
+    
     // Get encrypted password
     log(`Fetching encrypted password for PAN: ${pan}`);
     const encryptedPassword = await getEncryptedPassword(PASSKEY, PASSWORD);
@@ -248,4 +261,4 @@ async function verifyKYC(pan, dob) {
   }
 }
 
-module.exports = { verifyKYC };
+export { verifyKYC };

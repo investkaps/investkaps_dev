@@ -328,8 +328,16 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
+      // Wait for Clerk to be fully loaded with a timeout
+      const maxWaitTime = 5000; // 5 seconds
+      const startTime = Date.now();
+      
+      while ((!signUpLoaded || !signUp) && (Date.now() - startTime < maxWaitTime)) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
       if (!signUpLoaded || !signUp) {
-        throw new Error('Clerk sign-up is not loaded yet');
+        throw new Error('Clerk sign-up service is not available. Please refresh the page and try again.');
       }
 
       const result = await signUp.create({ emailAddress: userData.email });

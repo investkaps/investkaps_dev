@@ -1,13 +1,13 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const multer = require('multer');
-const PaymentRequest = require('../model/PaymentRequest');
-const User = require('../model/User');
-const Subscription = require('../model/Subscription');
-const UserSubscription = require('../model/UserSubscription');
-const { uploadImage, deleteImage } = require('../config/cloudinary');
-const { verifyToken } = require('../middleware/auth');
-const { checkRole } = require('../middleware/roleAuth');
+import multer from 'multer';
+import PaymentRequest from '../model/PaymentRequest.js';
+import User from '../model/User.js';
+import Subscription from '../model/Subscription.js';
+import UserSubscription from '../model/UserSubscription.js';
+import { uploadImage, deleteImage  } from '../config/cloudinary.js';
+import { verifyToken  } from '../middleware/auth.js';
+import { checkRole  } from '../middleware/roleAuth.js';
 
 // Configure multer for memory storage
 const storage = multer.memoryStorage();
@@ -280,4 +280,4 @@ router.post('/reject/:id', verifyToken, checkRole('admin'), async (req, res) => 
   }
 });
 
-module.exports = router;
+export default router;

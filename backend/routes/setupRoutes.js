@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { verifyToken } = require('../middleware/auth');
-const adminController = require('../controllers/adminController');
+import { verifyToken  } from '../middleware/auth.js';
+import * as adminController from '../controllers/adminController.js';
 
 /**
  * @route   POST /api/setup/admin
@@ -17,4 +17,4 @@ router.post('/admin', adminController.setInitialAdmin);
  */
 router.get('/admin-status', verifyToken, adminController.getAdminStatus);
 
-module.exports = router;
+export default router;

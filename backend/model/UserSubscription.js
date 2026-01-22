@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const userSubscriptionSchema = new mongoose.Schema({
   user: {
@@ -145,4 +145,4 @@ userSubscriptionSchema.statics.findExpired = function() {
 
 const UserSubscription = mongoose.model('UserSubscription', userSubscriptionSchema);
 
-module.exports = UserSubscription;
+export default UserSubscription;

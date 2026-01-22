@@ -8,7 +8,7 @@
  * @param {Array|String} roles - Required role(s) to access the route
  * @returns {Function} Express middleware
  */
-const checkRole = (roles) => {
+export const checkRole = (roles) => {
   // Convert single role to array
   if (typeof roles === 'string') {
     roles = [roles];
@@ -36,6 +36,3 @@ const checkRole = (roles) => {
   };
 };
 
-module.exports = {
-  checkRole
-};

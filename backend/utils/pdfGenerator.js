@@ -1,6 +1,6 @@
-const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const path = require('path');
+import PDFDocument from 'pdfkit';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Generate a stock recommendation PDF report
@@ -200,6 +200,6 @@ const generateStockReportPDF = async (data) => {
   });
 };
 
-module.exports = {
+export {
   generateStockReportPDF
 };

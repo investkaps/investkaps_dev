@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { authenticateToken } = require('../middleware/authMiddleware');
-const { checkRole } = require('../middleware/roleAuth');
-const subscriptionService = require('../controllers/subscriptionService');
+import { authenticateToken  } from '../middleware/authMiddleware.js';
+import { checkRole  } from '../middleware/roleAuth.js';
+import * as subscriptionService from '../controllers/subscriptionService.js';
 
 // ===== PUBLIC ROUTES =====
 // Get all active subscription plans
@@ -47,4 +47,4 @@ router.get('/admin/users', authenticateToken, checkRole('admin'), subscriptionSe
 // Get subscription statistics (admin)
 router.get('/admin/stats', authenticateToken, checkRole('admin'), subscriptionService.getSubscriptionStats);
 
-module.exports = router;
+export default router;

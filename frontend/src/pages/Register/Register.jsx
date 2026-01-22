@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useClerk } from '@clerk/clerk-react';
+import { useClerk, useSignUp } from '@clerk/clerk-react';
 import OTPInput from '../../components/OTPInput/OTPInput';
 import './Register.css';
 
@@ -19,6 +19,7 @@ const Register = () => {
   const [resendLoading, setResendLoading] = useState(false);
   
   const { register, completeRegistration, loading, error, currentUser } = useAuth();
+  const { isLoaded: clerkLoaded } = useSignUp();
   const navigate = useNavigate();
   
   // Redirect if user is already logged in
@@ -248,8 +249,9 @@ const Register = () => {
                     <button 
                       type="submit" 
                       className="next-button"
+                      disabled={loading || !clerkLoaded}
                     >
-                      Create Account
+                      {!clerkLoaded ? 'Loading...' : loading ? 'Creating Account...' : 'Create Account'}
                     </button>
                   </div>
                 )}
