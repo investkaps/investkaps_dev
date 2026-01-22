@@ -142,7 +142,7 @@ function App() {
                     
                     {/* Policy and Legal Pages */}
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                    <Route path="/disclaimer" element={<Disclaimer />} />
+                    <Route path="/disclaimers" element={<Disclaimer />} />
                     <Route path="/code-of-conduct" element={<CodeOfConduct />} />
                     <Route path="/grievance-redressal" element={<GrievanceRedressal />} />
                     <Route path="/cancellations-and-refunds" element={<CancellationsRefunds />} />
