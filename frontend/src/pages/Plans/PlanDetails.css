@@ -1,0 +1,266 @@
+.plan-details-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 120px 0 60px;
+}
+
+.plan-details-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Header */
+.plan-header {
+  margin-bottom: 3rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  color: #667eea;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+.back-link:hover {
+  color: #764ba2;
+}
+
+.plan-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Plan Layout - Two Column */
+.plan-layout {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 3rem;
+  align-items: start;
+}
+
+/* Hero Image - Right Side */
+.plan-hero-image {
+  width: 100%;
+  height: 500px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  position: sticky;
+  top: 140px;
+}
+
+.plan-hero-image::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.15) 100%);
+}
+
+.plan-hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Plan Content - Left Side */
+.plan-content {
+  background: white;
+  border-radius: 16px;
+  padding: 3rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+}
+
+.plan-section {
+  margin-bottom: 2.5rem;
+}
+
+.plan-section:last-of-type {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 1rem;
+}
+
+.section-text {
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: #4a5568;
+  margin-bottom: 1rem;
+}
+
+.section-text:last-child {
+  margin-bottom: 0;
+}
+
+.plan-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 1rem 0;
+}
+
+.plan-list li {
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: #4a5568;
+  margin-bottom: 0.75rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.plan-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #667eea;
+  font-weight: 700;
+}
+
+/* Warning Box */
+.warning-box {
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.warning-box p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #856404;
+  margin: 0;
+}
+
+.sebi-link {
+  color: #667eea;
+  font-weight: 600;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.sebi-link:hover {
+  color: #764ba2;
+}
+
+/* Subscribe Section */
+.subscribe-section {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 2px solid #e2e8f0;
+}
+
+.subscribe-button {
+  display: inline-block;
+  padding: 1.125rem 3.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1.125rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.subscribe-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 1024px) {
+  .plan-layout {
+    grid-template-columns: 1fr 350px;
+    gap: 2rem;
+  }
+
+  .plan-hero-image {
+    height: 450px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .plan-details-page {
+    padding: 100px 0 40px;
+  }
+
+  .plan-details-container {
+    padding: 0 1rem;
+  }
+
+  .plan-title {
+    font-size: 2.25rem;
+  }
+
+  .plan-layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .plan-hero-image {
+    height: 300px;
+    position: relative;
+    top: 0;
+    order: -1;
+  }
+
+  .plan-content {
+    padding: 2rem 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.375rem;
+  }
+
+  .section-text,
+  .plan-list li {
+    font-size: 1rem;
+  }
+
+  .subscribe-button {
+    padding: 1rem 2.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .plan-title {
+    font-size: 1.875rem;
+  }
+
+  .plan-hero-image {
+    height: 220px;
+  }
+
+  .plan-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+  }
+
+  .subscribe-button {
+    padding: 0.875rem 2rem;
+    font-size: 0.9375rem;
+  }
+}

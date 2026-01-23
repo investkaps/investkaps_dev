@@ -1,0 +1,218 @@
+.complaints-data-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 120px 0 60px;
+}
+
+.complaints-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Page Header */
+.page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+  font-size: 1.125rem;
+  color: #64748b;
+}
+
+/* Audit Section */
+.audit-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2.5rem;
+  margin-bottom: 3rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  border-left: 4px solid #3498db;
+}
+
+.section-heading {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 1.5rem;
+}
+
+.audit-text {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #4a5568;
+  margin-bottom: 1rem;
+}
+
+.audit-text:last-child {
+  margin-bottom: 0;
+}
+
+.audit-link {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.audit-link:hover {
+  color: #2980b9;
+  text-decoration: underline;
+}
+
+/* Table Section */
+.table-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2.5rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+}
+
+.table-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Table Styles */
+.complaints-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.complaints-table thead {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  color: white;
+}
+
+.complaints-table thead th {
+  padding: 1rem;
+  text-align: center;
+  font-weight: 600;
+  border: 1px solid #1e40af;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.complaints-table tbody td {
+  padding: 1rem;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  color: #2d3748;
+  background: white;
+}
+
+.complaints-table tbody tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+.complaints-table tbody tr:hover td {
+  background: #f1f5f9;
+}
+
+/* Total Row Styling */
+.total-row td {
+  background: #fef3c7 !important;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.total-row:hover td {
+  background: #fde68a !important;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 1024px) {
+  .complaints-table {
+    font-size: 0.875rem;
+  }
+
+  .complaints-table thead th,
+  .complaints-table tbody td {
+    padding: 0.75rem 0.5rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .complaints-data-page {
+    padding: 100px 0 40px;
+  }
+
+  .complaints-container {
+    padding: 0 1rem;
+  }
+
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .page-subtitle {
+    font-size: 1rem;
+  }
+
+  .audit-section,
+  .table-section {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-heading {
+    font-size: 1.5rem;
+  }
+
+  .table-title {
+    font-size: 1.25rem;
+  }
+
+  .audit-text {
+    font-size: 0.9375rem;
+  }
+
+  .complaints-table {
+    font-size: 0.8125rem;
+  }
+
+  .complaints-table thead th,
+  .complaints-table tbody td {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .page-title {
+    font-size: 1.75rem;
+  }
+
+  .section-heading {
+    font-size: 1.25rem;
+  }
+
+  .table-title {
+    font-size: 1.125rem;
+  }
+
+  .complaints-table thead th,
+  .complaints-table tbody td {
+    padding: 0.4rem 0.2rem;
+    font-size: 0.7rem;
+  }
+}

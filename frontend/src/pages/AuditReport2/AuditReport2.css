@@ -1,0 +1,211 @@
+.audit-report-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 120px 0 60px;
+}
+
+.audit-report-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Page Header */
+.page-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+  font-size: 1.125rem;
+  color: #64748b;
+}
+
+/* Content Section */
+.audit-content {
+  margin-bottom: 2rem;
+}
+
+.content-card {
+  background: white;
+  border-radius: 12px;
+  padding: 3rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+}
+
+.content-heading {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 1.5rem;
+}
+
+.content-subheading {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.content-text {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #4a5568;
+  margin-bottom: 1.5rem;
+}
+
+.registration-box {
+  background: #f8fafc;
+  border-left: 4px solid #667eea;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+}
+
+.registration-box p {
+  font-size: 1rem;
+  color: #2d3748;
+  margin: 0.5rem 0;
+}
+
+.content-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 1.5rem 0;
+}
+
+.content-list li {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #4a5568;
+  margin-bottom: 0.75rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.content-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #667eea;
+  font-weight: 700;
+}
+
+.numbered-list {
+  padding-left: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.numbered-list li {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #4a5568;
+  margin-bottom: 0.75rem;
+}
+
+.info-box {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 10px;
+  margin-top: 2.5rem;
+}
+
+.info-box h4 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.info-box p {
+  font-size: 1rem;
+  line-height: 1.7;
+  margin: 0.5rem 0;
+  opacity: 0.95;
+}
+
+.cta-box {
+  background: #f0f4ff;
+  border: 2px solid #667eea;
+  padding: 2rem;
+  border-radius: 10px;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.cta-box h4 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 0.75rem;
+}
+
+.cta-box p {
+  font-size: 1rem;
+  color: #4a5568;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .audit-report-page {
+    padding: 100px 0 40px;
+  }
+
+  .audit-report-container {
+    padding: 0 1rem;
+  }
+
+  .page-title {
+    font-size: 2rem;
+  }
+
+  .page-subtitle {
+    font-size: 1rem;
+  }
+
+  .content-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .content-heading {
+    font-size: 1.5rem;
+  }
+
+  .content-subheading {
+    font-size: 1.25rem;
+  }
+
+  .content-text,
+  .content-list li,
+  .numbered-list li {
+    font-size: 0.9375rem;
+  }
+
+  .info-box,
+  .cta-box {
+    padding: 1.5rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .page-title {
+    font-size: 1.75rem;
+  }
+
+  .content-heading {
+    font-size: 1.375rem;
+  }
+
+  .content-subheading {
+    font-size: 1.125rem;
+  }
+}

@@ -1,0 +1,418 @@
+.policy-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 100px 20px 60px;
+}
+
+.policy-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.policy-title {
+  font-size: 2.5rem;
+  color: #1a365d;
+  margin-bottom: 30px;
+  text-align: center;
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 15px;
+}
+
+.policy-section {
+  margin-bottom: 40px;
+}
+
+.policy-section h2 {
+  font-size: 1.8rem;
+  color: #2d3748;
+  margin-bottom: 20px;
+  margin-top: 30px;
+}
+
+.policy-section h3 {
+  font-size: 1.4rem;
+  color: #2d3748;
+  margin-bottom: 15px;
+  margin-top: 20px;
+}
+
+.policy-section p {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #4a5568;
+  margin-bottom: 15px;
+  text-align: justify;
+}
+
+.upi-announcement {
+  background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+  padding: 30px;
+  border-radius: 12px;
+  border-left: 5px solid #38b2ac;
+}
+
+.upi-announcement h2 {
+  margin-top: 0;
+  color: #234e52;
+}
+
+.upi-details-container {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 30px;
+  margin-top: 25px;
+  align-items: center;
+}
+
+.qr-code-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.qr-placeholder {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.qr-code-image {
+  width: 250px;
+  height: 250px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.qr-caption {
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: #4a5568;
+  font-weight: 600;
+}
+
+.upi-info-section {
+  display: flex;
+  align-items: center;
+}
+
+.upi-handle-box {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  width: 100%;
+}
+
+.valid-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+}
+
+.upi-handle-content h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.2rem;
+  color: #2d3748;
+}
+
+.upi-id {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #667eea;
+  font-family: 'Courier New', monospace;
+  background: #f7fafc;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: 2px solid #667eea;
+  margin: 10px 0;
+  word-break: break-all;
+}
+
+.upi-description {
+  margin: 10px 0 0 0;
+  font-size: 0.95rem;
+  color: #718096;
+}
+
+.note-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.note-list li {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #4a5568;
+  margin-bottom: 15px;
+  padding-left: 30px;
+  position: relative;
+  text-align: justify;
+}
+
+.note-list li::before {
+  content: "ℹ️";
+  position: absolute;
+  left: 0;
+  font-size: 1.2rem;
+}
+
+.info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  margin-top: 25px;
+}
+
+.info-card {
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  padding: 25px;
+  border-radius: 12px;
+  border-left: 4px solid #667eea;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-icon {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+.info-card h3 {
+  font-size: 1.3rem;
+  color: #2d3748;
+  margin: 10px 0 15px 0;
+}
+
+.info-card p {
+  margin: 0;
+  font-size: 1rem;
+  color: #4a5568;
+  line-height: 1.6;
+}
+
+.verification-section {
+  background: #f9fafb;
+  padding: 25px;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.format-box {
+  background: #2d3748;
+  color: #48bb78;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 15px 0;
+  font-family: 'Courier New', monospace;
+  font-size: 1.1rem;
+  text-align: center;
+  overflow-x: auto;
+}
+
+.format-box code {
+  color: #48bb78;
+}
+
+.format-breakdown {
+  margin-top: 20px;
+}
+
+.format-item {
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border-left: 3px solid #667eea;
+}
+
+.format-item strong {
+  color: #667eea;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.format-item code {
+  background: #f7fafc;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #e53e3e;
+  font-family: 'Courier New', monospace;
+}
+
+.visual-indicator {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin-top: 25px;
+  border: 2px solid #48bb78;
+}
+
+.indicator-icon {
+  flex-shrink: 0;
+}
+
+.green-triangle {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 20px;
+}
+
+.thumbs-up {
+  font-size: 2rem;
+  filter: brightness(0) invert(1);
+}
+
+.indicator-text p {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #2d3748;
+}
+
+.sebi-check-section {
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+  padding: 30px;
+  border-radius: 12px;
+  border-left: 5px solid #fc8181;
+}
+
+.sebi-check-section h2 {
+  margin-top: 0;
+  color: #742a2a;
+}
+
+.sebi-check-section p {
+  color: #742a2a;
+}
+
+.sebi-portal-link {
+  text-align: center;
+  margin-top: 25px;
+}
+
+.portal-button {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 15px 40px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.portal-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+}
+
+.security-notice {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%);
+  padding: 25px;
+  border-radius: 12px;
+  border-left: 5px solid #ed8936;
+}
+
+.security-icon {
+  font-size: 3rem;
+  flex-shrink: 0;
+}
+
+.security-content h3 {
+  margin: 0 0 10px 0;
+  color: #7c2d12;
+  font-size: 1.4rem;
+}
+
+.security-content p {
+  margin: 0;
+  color: #7c2d12;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 768px) {
+  .policy-page {
+    padding: 80px 15px 40px;
+  }
+
+  .policy-container {
+    padding: 25px;
+  }
+
+  .policy-title {
+    font-size: 1.8rem;
+  }
+
+  .upi-details-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .qr-code-image {
+    width: 200px;
+    height: 200px;
+  }
+
+  .upi-handle-box {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .upi-id {
+    font-size: 1.1rem;
+  }
+
+  .info-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .visual-indicator {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .format-box {
+    font-size: 0.9rem;
+  }
+
+  .security-notice {
+    flex-direction: column;
+    text-align: center;
+  }
+}

@@ -1,0 +1,135 @@
+.testimonials-marquee-section {
+  background: #ffffff;
+  padding: 3rem 0;
+  position: relative;
+}
+
+.testimonials-marquee-container {
+  margin: 0 auto;
+  max-width: 1280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rem;
+}
+
+.testimonials-marquee-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+.testimonials-marquee-title {
+  max-width: 720px;
+  font-size: 3rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #0f172a;
+  margin: 0;
+}
+
+.testimonials-marquee-description {
+  max-width: 600px;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #64748b;
+  margin: 0;
+}
+
+.testimonials-marquee-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.testimonials-marquee-track {
+  display: flex;
+  overflow: hidden;
+  padding: 0.5rem;
+  width: 100%;
+}
+
+.testimonials-marquee-content {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  animation: marquee 40s linear infinite;
+  flex-shrink: 0;
+}
+
+.testimonials-marquee-track:hover .testimonials-marquee-content {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - 1rem));
+  }
+}
+
+.testimonials-marquee-gradient {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 33.333%;
+  display: none;
+}
+
+.testimonials-marquee-gradient-left {
+  left: 0;
+  background: linear-gradient(to right, #ffffff, transparent);
+}
+
+.testimonials-marquee-gradient-right {
+  right: 0;
+  background: linear-gradient(to left, #ffffff, transparent);
+}
+
+@media (min-width: 640px) {
+  .testimonials-marquee-section {
+    padding: 6rem 0;
+  }
+  
+  .testimonials-marquee-header {
+    gap: 2rem;
+  }
+  
+  .testimonials-marquee-title {
+    font-size: 3rem;
+  }
+  
+  .testimonials-marquee-description {
+    font-size: 1.25rem;
+  }
+  
+  .testimonials-marquee-gradient {
+    display: block;
+  }
+}
+
+@media (min-width: 768px) {
+  .testimonials-marquee-section {
+    padding: 8rem 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .testimonials-marquee-title {
+    font-size: 1.875rem;
+  }
+  
+  .testimonials-marquee-description {
+    font-size: 1rem;
+  }
+}

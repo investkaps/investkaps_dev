@@ -1,0 +1,205 @@
+.policy-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 100px 20px 60px;
+}
+
+.policy-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.policy-title {
+  font-size: 2.5rem;
+  color: #1a365d;
+  margin-bottom: 30px;
+  text-align: center;
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 15px;
+}
+
+.policy-section {
+  margin-bottom: 40px;
+}
+
+.policy-section h2 {
+  font-size: 1.8rem;
+  color: #2d3748;
+  margin-bottom: 20px;
+  margin-top: 30px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.policy-section p {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #4a5568;
+  margin-bottom: 15px;
+  text-align: justify;
+}
+
+.terms-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.terms-list li {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #4a5568;
+  margin-bottom: 15px;
+  padding-left: 30px;
+  position: relative;
+  text-align: justify;
+}
+
+.terms-list li::before {
+  content: "•";
+  position: absolute;
+  left: 10px;
+  color: #667eea;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.warning-box {
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #fc8181;
+  margin: 20px 0;
+}
+
+.warning-box p {
+  margin: 10px 0;
+  color: #742a2a;
+}
+
+.important-note {
+  background: #f7fafc;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+  margin: 20px 0;
+}
+
+.important-note h4 {
+  font-size: 1.2rem;
+  color: #2d3748;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.important-note ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.important-note li {
+  color: #4a5568;
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.disclaimer-box {
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+  padding: 25px;
+  border-radius: 8px;
+  border-left: 4px solid #fc8181;
+  margin: 25px 0;
+}
+
+.disclaimer-box p {
+  margin: 0;
+  color: #742a2a;
+  font-size: 1.05rem;
+}
+
+.refund-notice {
+  background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%);
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #ed8936;
+  margin: 20px 0;
+}
+
+.refund-notice p {
+  margin: 0;
+  color: #7c2d12;
+  font-size: 1.05rem;
+}
+
+.refund-policy-box {
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+  padding: 25px;
+  border-radius: 8px;
+  border-left: 4px solid #fc8181;
+  margin: 20px 0;
+}
+
+.refund-policy-box p {
+  margin: 0;
+  color: #742a2a;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.final-note {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  margin-top: 30px;
+}
+
+.final-note p {
+  margin: 15px 0;
+  color: white;
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+.final-note p:first-child {
+  margin-top: 0;
+}
+
+.final-note p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .policy-page {
+    padding: 80px 15px 40px;
+  }
+
+  .policy-container {
+    padding: 25px;
+  }
+
+  .policy-title {
+    font-size: 1.8rem;
+  }
+
+  .policy-section h2 {
+    font-size: 1.5rem;
+  }
+
+  .policy-section p,
+  .terms-list li {
+    font-size: 0.95rem;
+  }
+
+  .warning-box,
+  .important-note,
+  .disclaimer-box,
+  .refund-notice,
+  .refund-policy-box,
+  .final-note {
+    padding: 15px;
+  }
+}

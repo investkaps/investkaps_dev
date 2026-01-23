@@ -1,0 +1,306 @@
+.policy-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 100px 20px 60px;
+}
+
+.policy-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.policy-title {
+  font-size: 2.5rem;
+  color: #1a365d;
+  margin-bottom: 30px;
+  text-align: center;
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 15px;
+}
+
+.policy-section {
+  margin-bottom: 40px;
+}
+
+.policy-section h2 {
+  font-size: 1.8rem;
+  color: #2d3748;
+  margin-bottom: 20px;
+  margin-top: 30px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.section-note {
+  font-style: italic;
+  color: #718096;
+  margin-bottom: 20px;
+}
+
+.vision-mission-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  margin-top: 25px;
+}
+
+.vm-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.vm-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.vm-card h3 {
+  font-size: 1.5rem;
+  margin: 15px 0;
+}
+
+.vm-card p {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin: 0;
+  opacity: 0.95;
+}
+
+.charter-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.charter-list li {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #4a5568;
+  margin-bottom: 12px;
+  padding-left: 30px;
+  position: relative;
+}
+
+.charter-list li::before {
+  content: "•";
+  position: absolute;
+  left: 10px;
+  color: #667eea;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.service-category {
+  margin-bottom: 30px;
+  background: #f7fafc;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.service-category h3 {
+  font-size: 1.3rem;
+  color: #2d3748;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.grievance-method {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.grievance-method h3 {
+  font-size: 1.4rem;
+  color: #2d3748;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.grievance-method p {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #4a5568;
+  margin-bottom: 15px;
+}
+
+.complaint-option {
+  margin: 20px 0;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.complaint-option h4 {
+  font-size: 1.2rem;
+  color: #2d3748;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.portal-link {
+  display: inline-block;
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 10px 20px;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  margin-top: 10px;
+  transition: all 0.3s;
+}
+
+.portal-link:hover {
+  background: #667eea;
+  color: white;
+}
+
+.review-levels {
+  margin-top: 15px;
+  padding: 15px;
+  background: #f7fafc;
+  border-radius: 6px;
+}
+
+.review-levels ul {
+  margin: 10px 0 0 0;
+  padding-left: 20px;
+}
+
+.review-levels li {
+  color: #4a5568;
+  margin-bottom: 8px;
+}
+
+.physical-address {
+  margin-top: 25px;
+  padding: 20px;
+  background: #fff5f5;
+  border-radius: 8px;
+  border-left: 4px solid #fc8181;
+}
+
+.physical-address h4 {
+  font-size: 1.2rem;
+  color: #c53030;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.physical-address address {
+  font-style: normal;
+  color: #742a2a;
+  line-height: 1.8;
+}
+
+.rights-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.rights-list > li {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #4a5568;
+  margin-bottom: 12px;
+  padding-left: 30px;
+  position: relative;
+}
+
+.rights-list > li::before {
+  content: "✓";
+  position: absolute;
+  left: 5px;
+  color: #48bb78;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.rights-list ul {
+  margin-top: 8px;
+  padding-left: 20px;
+}
+
+.rights-list ul li {
+  list-style: circle;
+  color: #718096;
+  margin-bottom: 6px;
+}
+
+.dos-donts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 30px;
+  margin-top: 25px;
+}
+
+.dos-section,
+.donts-section {
+  padding: 25px;
+  border-radius: 12px;
+}
+
+.dos-section {
+  background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+  border-left: 5px solid #48bb78;
+}
+
+.donts-section {
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+  border-left: 5px solid #fc8181;
+}
+
+.dos-title {
+  font-size: 1.5rem;
+  color: #22543d;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.donts-title {
+  font-size: 1.5rem;
+  color: #742a2a;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .policy-page {
+    padding: 80px 15px 40px;
+  }
+
+  .policy-container {
+    padding: 25px;
+  }
+
+  .policy-title {
+    font-size: 1.8rem;
+  }
+
+  .policy-section h2 {
+    font-size: 1.5rem;
+  }
+
+  .vision-mission-grid,
+  .dos-donts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .vm-card {
+    padding: 20px;
+  }
+
+  .charter-list li {
+    font-size: 0.95rem;
+  }
+}
