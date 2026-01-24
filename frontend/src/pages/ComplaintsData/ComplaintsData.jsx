@@ -25,9 +25,9 @@ const ComplaintsData = () => {
           </p>
         </section>
 
-        {/* Table 1: Data for the Month Ending October 2025 */}
+        {/* Table 1: Data for the Month Ending December 2025 */}
         <section className="table-section">
-          <h2 className="table-title">Data for the Month Ending October 2025</h2>
+          <h2 className="table-title">Data for the Month Ending December 2025</h2>
           <div className="table-wrapper">
             <table className="complaints-table">
               <thead>
@@ -105,7 +105,7 @@ const ComplaintsData = () => {
               <tbody>
                 <tr>
                   <td>1</td>
-                  <td>Sep & Oct 2025</td>
+                  <td>Q3 FY2025-26</td>
                   <td>0</td>
                   <td>0</td>
                   <td>0</td>
