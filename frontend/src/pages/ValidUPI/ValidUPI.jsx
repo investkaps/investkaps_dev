@@ -53,7 +53,7 @@ const ValidUPI = () => {
                   <div className="valid-icon">✓</div>
                   <div className="upi-handle-content">
                     <h3>Our UPI Handle</h3>
-                    <div className="upi-id">investkaps.upi.ra@validhdfc</div>
+                    <div className="upi-id">investkaps.ra@validicici</div>
                     <p className="upi-description">
                       For UPI payment directly to our bank account
                     </p>
