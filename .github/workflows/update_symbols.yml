@@ -21,17 +21,19 @@ jobs:
       - name: Install dependency
         run: |
           npm install csv-parser
+        working-directory: backend
 
       - name: Run symbol updater
         env:
           CSVURL: ${{ secrets.CSVURL }}
         run: |
           node updateSymbols.js
+        working-directory: backend
 
       - name: Commit and push changes
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add symbols.json
+          git add backend/symbols.json
           git commit -m "Auto update symbols.json" || echo "No changes"
           git push
