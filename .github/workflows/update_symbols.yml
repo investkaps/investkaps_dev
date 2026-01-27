@@ -18,9 +18,9 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install dependencies
+      - name: Install dependency
         run: |
-          npm install
+          npm install csv-parser
 
       - name: Run symbol updater
         env:
