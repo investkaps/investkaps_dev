@@ -66,12 +66,12 @@ const StrategicAlpha = () => {
 
           {/* Subscribe Button */}
           <div className="subscribe-section">
-            <Link 
-              to="/subscribe" 
+            <a 
+              href="https://trade.investkaps.com/checkout" 
               className="subscribe-button"
             >
               Subscribe Now
-            </Link>
+            </a>
           </div>
           </div>
 

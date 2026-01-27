@@ -96,15 +96,14 @@ const LeveredRiskFnO = () => {
 
           {/* Subscribe Button */}
           <div className="subscribe-section">
-            <Link 
-              to="/subscribe" 
+            <a 
+              href="https://trade.investkaps.com/checkout" 
               className="subscribe-button"
             >
               Subscribe Now
-            </Link>
+            </a>
           </div>
           </div>
-
           {/* Plan Image - Right */}
           <div className="plan-hero-image">
             <img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=500&fit=crop" alt="Financial Trading" />
