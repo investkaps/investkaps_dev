@@ -44,6 +44,7 @@ import Subscribe from './pages/Subscribe/Subscribe';
 import MomentumRider from './pages/Plans/MomentumRider';
 import StrategicAlpha from './pages/Plans/StrategicAlpha';
 import LeveredRiskFnO from './pages/Plans/LeveredRiskFnO';
+import IK15MomentumMP from './pages/Plans/IK15MomentumMP';  // Add this line
 
 // Layout component that conditionally renders the navbar
 const AppLayout = ({ children, scrolled }) => {

@@ -78,3 +78,5 @@
 2026-01-27 12:19:29 info: LTP fetched successfully: NSE:GROWW = 162.8
 2026-01-27 12:19:44 info: Fetching LTP for NSE:TCS
 2026-01-27 12:19:45 info: LTP fetched successfully: NSE:TCS = 3144.4
+2026-01-27 17:52:10 info: Server running on port 5000
+2026-01-27 17:52:10 info: E-Signing API available at http://localhost:5000/api/esign

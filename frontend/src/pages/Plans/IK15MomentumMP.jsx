@@ -97,7 +97,7 @@ const IK15MomentumMP = () => {
           {/* Subscribe Button */}
           <div className="subscribe-section">
             <a 
-              href="https://https://trade.investkaps.com/model-portfolios" 
+              href="https://trade.investkaps.com/model-portfolios" 
               className="subscribe-button"
             >
               Subscribe Now
@@ -114,4 +114,4 @@ const IK15MomentumMP = () => {
   );
 };
 
-export default LeveredRiskFnO;
+export default IK15MomentumMP;
