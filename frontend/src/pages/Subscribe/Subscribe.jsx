@@ -70,6 +70,21 @@ const Subscribe = () => {
             </div>
           </div>
 
+          {/* IK15_Momentum_Buys */}
+          <div className="plan-card">
+            <div className="plan-image">
+              <img src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=400&h=250&fit=crop" alt="Financial Trading" />
+            </div>
+            <h3 className="plan-name">IK15_Momentum_Buys</h3>
+            <div className="plan-price">
+              <span className="price">Rs. 5,999/-</span>
+              <span className="price-note">*pricing for half-yearly plan</span>
+            </div>
+            <Link to="/plans/ik15-momentum" className="plan-button">
+              click to know more and subscribe
+            </Link>
+          </div>
+
           {/* Core Alpha Model Portfolio */}
           <div className="plan-card coming-soon">
             <div className="plan-image">

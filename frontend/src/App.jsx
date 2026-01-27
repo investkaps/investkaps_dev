@@ -158,6 +158,7 @@ function App() {
                     <Route path="/plans/momentum-rider" element={<MomentumRider />} />
                     <Route path="/plans/strategic-alpha" element={<StrategicAlpha />} />
                     <Route path="/plans/levered-risk-fno" element={<LeveredRiskFnO />} />
+                    <Route path="/plans/ik15-momentum" element={<IK15MomentumMP />} />
 
                     {/* Protected routes */}
                     <Route
