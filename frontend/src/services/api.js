@@ -299,31 +299,6 @@ export const adminAPI = {
     }
   },
   
-  // Stock Price API Methods (m.Stock Type-B)
-  updateStockPrices: async (symbols) => {
-    try {
-      const res = await api.post('/stocks/prices', { symbols });
-      return res.data;
-    } catch (err) {
-      const { message } = extractError(err);
-      console.error('Error updating stock prices:', message);
-      throw new Error(message);
-    }
-  },
-  
-  getStockPrices: async (symbols) => {
-    try {
-      const res = await api.get('/stocks/prices', { 
-        params: { symbols: symbols.join(',') } 
-      });
-      return res.data;
-    } catch (err) {
-      const { message } = extractError(err);
-      console.error('Error getting stock prices:', message);
-      throw new Error(message);
-    }
-  },
-
   // Symbol Search API Methods
   searchSymbols: async (query, limit = 50) => {
     try {
@@ -358,6 +333,64 @@ export const adminAPI = {
     } catch (err) {
       const { message } = extractError(err);
       console.error('Error reloading symbols:', message);
+      throw new Error(message);
+    }
+  },
+
+  // LTP (Last Traded Price) API Methods
+  fetchSinglePrice: async (exchange, symbol) => {
+    try {
+      const res = await api.get('/ltp/single', {
+        params: { exchange, symbol }
+      });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching single price:', message);
+      throw new Error(message);
+    }
+  },
+
+  fetchBatchPrices: async (exchange, symbols) => {
+    try {
+      const res = await api.post('/ltp/batch', { exchange, symbols });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching batch prices:', message);
+      throw new Error(message);
+    }
+  },
+
+  fetchMultiExchangePrices: async (items) => {
+    try {
+      const res = await api.post('/ltp/multi', { items });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching multi-exchange prices:', message);
+      throw new Error(message);
+    }
+  },
+
+  smartFetchPrices: async (items) => {
+    try {
+      const res = await api.post('/ltp/smart', { items });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error in smart fetch prices:', message);
+      throw new Error(message);
+    }
+  },
+
+  fetchRecommendationPrices: async (recommendations) => {
+    try {
+      const res = await api.post('/ltp/recommendations', { recommendations });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching recommendation prices:', message);
       throw new Error(message);
     }
   },

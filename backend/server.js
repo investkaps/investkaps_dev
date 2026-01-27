@@ -12,7 +12,6 @@ dotenv.config();
 console.log('=== Environment Variables Check ===');
 console.log('Razorpay Key ID available:', !!process.env.RAZORPAY_KEY_ID);
 console.log('Razorpay Key Secret available:', !!process.env.RAZORPAY_KEY_SECRET);
-console.log('MSTOCK_API_KEY available:', !!process.env.MSTOCK_API_KEY);
 console.log('KYC_USERNAME available:', !!process.env.KYC_USERNAME);
 console.log('CLERK_PUBLISHABLE_KEY available:', !!process.env.CLERK_PUBLISHABLE_KEY);
 console.log('MONGODB_URI available:', !!process.env.MONGODB_URI);
@@ -39,8 +38,8 @@ import testRoutes from './routes/testRoutes.js';
 import phoneRoutes from './routes/phoneRoutes.js';
 import paymentRequestRoutes from './routes/paymentRequestRoutes.js';
 import newsletterRoutes from './routes/newsletterRoutes.js';
-import stockPriceRoutes from './routes/stockPriceRoutes.js';
 import symbolRoutes from './routes/symbolRoutes.js';
+import ltpRoutes from './routes/ltpRoutes.js';
 
 // Connect to MongoDB
 connectDB();
@@ -120,11 +119,12 @@ app.use('/api/payment-requests', paymentRequestRoutes);
 // Newsletter routes
 app.use('/api/newsletter', newsletterRoutes);
 
-// Stock Price routes (m.Stock Type-B integration)
-app.use('/api/stocks', stockPriceRoutes);
 
 // Symbol search routes
 app.use('/api/symbols', symbolRoutes);
+
+// LTP (Last Traded Price) routes
+app.use('/api/ltp', ltpRoutes);
 
 // Create directory for uploads if it doesn't exist
 const uploadsDir = path.join(process.cwd(), 'uploads');

@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "@clerk/clerk-sdk-node": "^4.13.23",
-    "@mstock-mirae-asset/nodetradingapi-typea": "^0.0.1",
     "axios": "^1.13.2",
     "cloudinary": "^2.8.0",
     "cors": "^2.8.5",

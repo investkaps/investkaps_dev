@@ -95,18 +95,6 @@ const stockRecommendationAPI = {
     }
   },
   
-  // Refresh stock prices (updates stale prices)
-  refreshPrices: async () => {
-    try {
-      const res = await api.post('/recommendations/refresh-prices');
-      return res.data;
-    } catch (err) {
-      const { message } = extractError(err);
-      console.error('Error refreshing stock prices:', message);
-      throw new Error(message);
-    }
-  },
-  
   // Generate PDF report for a recommendation (admin)
   generatePDFReport: async (id, reportData) => {
     try {

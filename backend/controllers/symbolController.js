@@ -13,7 +13,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 /**
  * Load symbols from symbols.json file
- * @returns {Array<string>} Array of stock symbols
+ * @returns {Array<Object>} Array of stock objects with exchange, symbol, and name
  */
 function loadSymbols() {
   try {
@@ -66,26 +66,48 @@ export const searchSymbols = async (req, res) => {
       });
     }
 
-    // Search for symbols that start with or contain the query (case-insensitive)
+    // Search for symbols by both symbol and name (case-insensitive)
     const searchQuery = query.toUpperCase().trim();
     
-    // Priority 1: Exact match
-    const exactMatch = symbols.filter(symbol => symbol === searchQuery);
-    
-    // Priority 2: Starts with query
-    const startsWith = symbols.filter(symbol => 
-      symbol.startsWith(searchQuery) && symbol !== searchQuery
+    // Priority 1: Exact symbol match
+    const exactSymbolMatch = symbols.filter(item => 
+      item.symbol.toUpperCase() === searchQuery
     );
     
-    // Priority 3: Contains query
-    const contains = symbols.filter(symbol => 
-      symbol.includes(searchQuery) && 
-      !symbol.startsWith(searchQuery) && 
-      symbol !== searchQuery
+    // Priority 2: Symbol starts with query
+    const symbolStartsWith = symbols.filter(item => 
+      item.symbol.toUpperCase().startsWith(searchQuery) && 
+      item.symbol.toUpperCase() !== searchQuery
+    );
+    
+    // Priority 3: Name starts with query
+    const nameStartsWith = symbols.filter(item => 
+      item.name.toUpperCase().startsWith(searchQuery) &&
+      !item.symbol.toUpperCase().startsWith(searchQuery)
+    );
+    
+    // Priority 4: Symbol contains query
+    const symbolContains = symbols.filter(item => 
+      item.symbol.toUpperCase().includes(searchQuery) && 
+      !item.symbol.toUpperCase().startsWith(searchQuery) && 
+      item.symbol.toUpperCase() !== searchQuery
+    );
+    
+    // Priority 5: Name contains query
+    const nameContains = symbols.filter(item => 
+      item.name.toUpperCase().includes(searchQuery) &&
+      !item.name.toUpperCase().startsWith(searchQuery) &&
+      !item.symbol.toUpperCase().includes(searchQuery)
     );
 
     // Combine results with priority
-    const results = [...exactMatch, ...startsWith, ...contains].slice(0, parseInt(limit));
+    const results = [
+      ...exactSymbolMatch, 
+      ...symbolStartsWith, 
+      ...nameStartsWith,
+      ...symbolContains,
+      ...nameContains
+    ].slice(0, parseInt(limit));
 
     return res.status(200).json({
       success: true,

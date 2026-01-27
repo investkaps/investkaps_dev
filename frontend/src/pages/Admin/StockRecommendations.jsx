@@ -120,34 +120,6 @@ const StockRecommendations = () => {
     setView('create');
   };
   
-  const handleRefreshPrices = async () => {
-    try {
-      setRefreshing(true);
-      setStatusMessage(null);
-      
-      const response = await stockRecommendationAPI.refreshPrices();
-      
-      if (response.success) {
-        setStatusMessage({
-          type: 'success',
-          text: `Successfully refreshed ${response.updated} stock price(s). ${response.failed > 0 ? `Failed: ${response.failed}` : ''}`
-        });
-        
-        // Clear message after 5 seconds
-        setTimeout(() => setStatusMessage(null), 5000);
-      }
-    } catch (error) {
-      setStatusMessage({
-        type: 'error',
-        text: `Failed to refresh prices: ${error.message}`
-      });
-      
-      // Clear error message after 5 seconds
-      setTimeout(() => setStatusMessage(null), 5000);
-    } finally {
-      setRefreshing(false);
-    }
-  };
   
   const handleEditClick = (recommendation) => {
     setSelectedRecommendation(recommendation);
@@ -177,13 +149,6 @@ const StockRecommendations = () => {
         <Title>Stock Recommendations</Title>
         {view === 'list' && (
           <ButtonGroup>
-            <RefreshButton 
-              onClick={handleRefreshPrices}
-              disabled={refreshing}
-              className={refreshing ? 'refreshing' : ''}
-            >
-              <FaSync /> {refreshing ? 'Refreshing...' : 'Refresh Prices'}
-            </RefreshButton>
             <CreateButton onClick={handleCreateClick}>
               <FaPlus /> Create Recommendation
             </CreateButton>

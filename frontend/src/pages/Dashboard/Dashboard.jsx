@@ -546,13 +546,6 @@ const Dashboard = () => {
       try {
         setLoadingRecommendations(true);
         
-        // First, refresh prices if they're stale (>10 minutes old)
-        try {
-          await stockRecommendationAPI.refreshPrices();
-        } catch (refreshErr) {
-          // Continue even if refresh fails - we'll still show cached prices
-        }
-        
         // Fetch recommendations based on user role
         let recResponse;
         if (isAdminUser) {

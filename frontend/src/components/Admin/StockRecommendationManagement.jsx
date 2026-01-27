@@ -17,15 +17,16 @@ const StockRecommendationManagement = () => {
   const [pdfRecommendation, setPdfRecommendation] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState(null);
-  
-  // Stock price fetching state
-  const [priceLoading, setPriceLoading] = useState(false);
-  const [priceMessage, setPriceMessage] = useState(null);
   const [fetchingPrice, setFetchingPrice] = useState(false);
+  const [updatingPrices, setUpdatingPrices] = useState(false);
+  const [lastPriceUpdate, setLastPriceUpdate] = useState(null);
+  const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
+  
   const [formData, setFormData] = useState({
     title: '',
     stockSymbol: '',
     stockName: '',
+    exchange: '',
     currentPrice: '',
     targetPrice: '',
     targetPrice2: '',
@@ -45,67 +46,142 @@ const StockRecommendationManagement = () => {
     fetchRecommendations();
     fetchStrategies();
   }, []);
-  
-  const handleFetchPrice = async () => {
-    if (!formData.stockSymbol) {
-      setError('Please enter a stock symbol first');
-      return;
-    }
 
-    const fetchStockPrice = async (symbol) => {
-      try {
-        setFetchingPrice(true);
-        setError(null);
-        setPriceMessage(null);
-        
-        const response = await adminAPI.updateStockPrices([symbol]);
-        
-        if (response.success && response.prices[symbol]) {
-          setFormData(prev => ({
-            ...prev,
-            currentPrice: response.prices[symbol]
-          }));
-          setPriceMessage({ type: 'success', text: `Price updated: ${response.prices[symbol]}` });
-        }
-      } catch (err) {
-        setError(err.message || 'Failed to fetch stock price');
-      } finally {
-        setFetchingPrice(false);
+  // Auto-update prices every 5 minutes
+  useEffect(() => {
+    if (!autoUpdateEnabled) return;
+
+    // Update immediately on mount
+    const updatePrices = async () => {
+      if (recommendations.length > 0) {
+        await updateAllPrices();
       }
     };
 
-    fetchStockPrice(formData.stockSymbol);
+    // Initial update after recommendations are loaded
+    if (recommendations.length > 0 && !lastPriceUpdate) {
+      updatePrices();
+    }
+
+    // Set up interval for auto-updates
+    const intervalId = setInterval(() => {
+      if (recommendations.length > 0) {
+        updatePrices();
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(intervalId);
+  }, [recommendations.length, autoUpdateEnabled]);
+
+  const handleFetchPrice = async () => {
+    if (!formData.stockSymbol || !formData.exchange) {
+      setError('Please select a stock symbol first');
+      return;
+    }
+
+    try {
+      setFetchingPrice(true);
+      setError(null);
+      
+      const response = await adminAPI.fetchSinglePrice(formData.exchange, formData.stockSymbol);
+      
+      if (response.success && response.data.ltp) {
+        setFormData(prev => ({
+          ...prev,
+          currentPrice: response.data.ltp
+        }));
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to fetch stock price');
+    } finally {
+      setFetchingPrice(false);
+    }
   };
 
   const updateAllPrices = async () => {
+    if (recommendations.length === 0) {
+      return;
+    }
+
     try {
-      setPriceLoading(true);
-      setPriceMessage(null);
+      setUpdatingPrices(true);
+      setRefreshMessage(null);
       
-      // Get all unique symbols from recommendations
-      const symbols = [...new Set(recommendations.map(rec => rec.stockSymbol))];
-      
-      if (symbols.length === 0) {
-        setPriceMessage({ type: 'error', text: 'No stock symbols found' });
-        return;
+      // Group recommendations by exchange for efficient batch fetching
+      const byExchange = {};
+      recommendations.forEach(rec => {
+        const exchange = rec.exchange || 'NSE';
+        if (!byExchange[exchange]) {
+          byExchange[exchange] = [];
+        }
+        byExchange[exchange].push(rec);
+      });
+
+      let totalUpdated = 0;
+      let errors = [];
+
+      // Fetch prices for each exchange
+      for (const [exchange, recs] of Object.entries(byExchange)) {
+        try {
+          const symbols = recs.map(r => r.stockSymbol);
+          const response = await adminAPI.fetchBatchPrices(exchange, symbols);
+          
+          if (response.success && response.data.prices) {
+            // Update recommendations in database
+            for (const rec of recs) {
+              const newPrice = response.data.prices[rec.stockSymbol];
+              if (newPrice && newPrice !== rec.currentPrice) {
+                try {
+                  await adminAPI.updateStockRecommendation(rec._id, {
+                    ...rec,
+                    currentPrice: newPrice
+                  });
+                  totalUpdated++;
+                } catch (updateErr) {
+                  console.error(`Failed to update ${rec.stockSymbol}:`, updateErr);
+                  errors.push(rec.stockSymbol);
+                }
+              }
+            }
+          }
+        } catch (exchangeErr) {
+          console.error(`Error fetching prices for ${exchange}:`, exchangeErr);
+          errors.push(`${exchange} exchange`);
+        }
       }
+
+      // Refresh recommendations list
+      await fetchRecommendations();
       
-      const response = await adminAPI.updateStockPrices(symbols);
+      setLastPriceUpdate(new Date());
       
-      if (response.success) {
-        setPriceMessage({ 
-          type: 'success', 
-          text: `Updated ${response.updated.length} stock prices` 
+      if (errors.length > 0) {
+        setRefreshMessage({
+          type: 'warning',
+          text: `Updated ${totalUpdated} prices. Failed: ${errors.join(', ')}`
         });
-        // Refresh recommendations to show updated prices
-        fetchRecommendations();
+      } else {
+        setRefreshMessage({
+          type: 'success',
+          text: `✓ Updated ${totalUpdated} stock prices at ${new Date().toLocaleTimeString()}`
+        });
       }
+
+      // Clear message after 5 seconds
+      setTimeout(() => setRefreshMessage(null), 5000);
+
     } catch (err) {
-      setPriceMessage({ type: 'error', text: err.message || 'Failed to update prices' });
+      console.error('Error updating all prices:', err);
+      setRefreshMessage({
+        type: 'error',
+        text: `Failed to update prices: ${err.message}`
+      });
     } finally {
-      setPriceLoading(false);
+      setUpdatingPrices(false);
     }
   };
+  
+
 
   const fetchRecommendations = async () => {
     try {
@@ -146,55 +222,6 @@ const StockRecommendationManagement = () => {
     } catch (err) {
       console.error('Error fetching strategies:', err);
       setStrategies([]);
-    }
-  };
-
-  const handleRefreshPrices = async () => {
-    try {
-      setRefreshing(true);
-      setRefreshMessage(null);
-      
-      const response = await stockRecommendationAPI.refreshPrices();
-      
-      if (response.success) {
-        let messageText = `Successfully refreshed ${response.updated} stock price(s).`;
-        
-        if (response.failed > 0) {
-          messageText += ` Failed: ${response.failed}`;
-          
-          // Show detailed errors if available
-          if (response.errors && response.errors.length > 0) {
-            messageText += `\nErrors: ${response.errors.join(', ')}`;
-          }
-        }
-        
-        setRefreshMessage({
-          type: response.failed > 0 ? 'warning' : 'success',
-          text: messageText
-        });
-        
-        // Update recommendations with fresh data from response
-        if (response.data) {
-          setRecommendations(response.data);
-          setTotalRecommendations(response.data.length);
-        } else {
-          // Fallback: fetch recommendations if data not in response
-          await fetchRecommendations();
-        }
-        
-        // Clear message after 8 seconds (longer for error messages)
-        setTimeout(() => setRefreshMessage(null), 8000);
-      }
-    } catch (error) {
-      setRefreshMessage({
-        type: 'error',
-        text: `Failed to refresh prices: ${error.message}`
-      });
-      
-      // Clear error message after 8 seconds
-      setTimeout(() => setRefreshMessage(null), 8000);
-    } finally {
-      setRefreshing(false);
     }
   };
 
@@ -357,21 +384,37 @@ const StockRecommendationManagement = () => {
   return (
     <div className="stock-recommendation-management">
       <div className="admin-section-header">
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button 
-            className="admin-button"
-            onClick={updateAllPrices}
-            disabled={priceLoading}
-            style={{
-              backgroundColor: priceLoading ? '#6c757d' : '#007bff',
-              color: 'white'
-            }}
-          >
-            {priceLoading ? '🔄 Updating Prices...' : '📊 Update All Prices'}
-          </button>
-          <button className="admin-button primary" onClick={handleCreateNew}>
-            Create New Recommendation
-          </button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <button 
+              className="admin-button"
+              onClick={updateAllPrices}
+              disabled={updatingPrices}
+              style={{
+                backgroundColor: updatingPrices ? '#6c757d' : '#007bff',
+                color: 'white'
+              }}
+            >
+              {updatingPrices ? '🔄 Updating...' : '📊 Update All Prices'}
+            </button>
+            <button className="admin-button primary" onClick={handleCreateNew}>
+              Create New Recommendation
+            </button>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#666', cursor: 'pointer' }}>
+              <input 
+                type="checkbox" 
+                checked={autoUpdateEnabled}
+                onChange={(e) => setAutoUpdateEnabled(e.target.checked)}
+                style={{ cursor: 'pointer' }}
+              />
+              Auto-update every 5 min
+            </label>
+          </div>
+          {lastPriceUpdate && (
+            <div style={{ fontSize: '13px', color: '#666' }}>
+              Last updated: {lastPriceUpdate.toLocaleTimeString()}
+            </div>
+          )}
         </div>
       </div>
 
@@ -405,27 +448,6 @@ const StockRecommendationManagement = () => {
           <button className="admin-button" onClick={fetchRecommendations}>
             Try Again
           </button>
-        </div>
-      )}
-
-      {priceMessage && (
-        <div 
-          className={`admin-alert ${priceMessage.type}`}
-          style={{
-            padding: '12px 16px',
-            borderRadius: '4px',
-            marginBottom: '16px',
-            whiteSpace: 'pre-line',
-            backgroundColor: 
-              priceMessage.type === 'success' ? '#d4edda' : '#f8d7da',
-            color: 
-              priceMessage.type === 'success' ? '#155724' : '#721c24',
-            border: `1px solid ${
-              priceMessage.type === 'success' ? '#c3e6cb' : '#f5c6cb'
-            }`
-          }}
-        >
-          {priceMessage.text}
         </div>
       )}
 
@@ -505,49 +527,67 @@ const StockRecommendationManagement = () => {
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="stockSymbol">Stock Symbol</label>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <div style={{ flex: 1 }}>
-                    <SymbolAutocomplete
-                      value={formData.stockSymbol}
-                      onChange={(value) => setFormData(prev => ({ ...prev, stockSymbol: value }))}
-                      onSelect={(symbol) => {
-                        setFormData(prev => ({ ...prev, stockSymbol: symbol }));
-                        // Auto-fetch price when symbol is selected
-                        setTimeout(() => handleFetchPrice(), 100);
-                      }}
-                      placeholder="Search stock symbol (e.g., RELIANCE, TCS, INFY)"
-                    />
-                  </div>
-                  <button 
-                    type="button"
-                    className="admin-button primary" 
-                    onClick={handleFetchPrice}
-                    disabled={fetchingPrice || !formData.stockSymbol}
-                    style={{ minWidth: '120px' }}
-                  >
-                    {fetchingPrice ? 'Fetching...' : 'Get Price'}
-                  </button>
+                <div style={{ position: 'relative' }}>
+                  <SymbolAutocomplete
+                    value={formData.stockSymbol}
+                    onChange={(value) => setFormData(prev => ({ ...prev, stockSymbol: value }))}
+                    onSelect={(item) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        stockSymbol: item.symbol,
+                        stockName: item.name,
+                        exchange: item.exchange
+                      }));
+                    }}
+                    placeholder="Search by symbol"
+                  />
+                  {formData.exchange && (
+                    <span style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      fontSize: '11px',
+                      color: '#999',
+                      textTransform: 'uppercase',
+                      background: '#f0f0f0',
+                      padding: '4px 8px',
+                      borderRadius: '3px',
+                      fontWeight: '600',
+                      pointerEvents: 'none'
+                    }}>
+                      {formData.exchange}
+                    </span>
+                  )}
                 </div>
                 <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
-                  Type to search from 142,000+ symbols. Price fetches automatically on selection.
+                  Search by symbol. Name and exchange auto-populate.
                 </small>
               </div>
 
               <div className="form-group">
                 <label htmlFor="stockName">Stock Name</label>
-                <input
-                  type="text"
-                  id="stockName"
-                  name="stockName"
+                <SymbolAutocomplete
                   value={formData.stockName}
-                  onChange={handleFormChange}
-                  required
+                  onChange={(value) => setFormData(prev => ({ ...prev, stockName: value }))}
+                  onSelect={(item) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      stockSymbol: item.symbol,
+                      stockName: item.name,
+                      exchange: item.exchange
+                    }));
+                  }}
+                  placeholder="Search by company name"
                 />
+                <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
+                  Search by company name. Symbol and exchange auto-populate.
+                </small>
               </div>
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
+            <div className="form-row" style={{ alignItems: 'flex-start' }}>
+              <div className="form-group" style={{ flex: 1 }}>
                 <label htmlFor="currentPrice">Current Price (₹)</label>
                 <input
                   type="number"
@@ -557,15 +597,27 @@ const StockRecommendationManagement = () => {
                   onChange={handleFormChange}
                   step="0.01"
                   required
-                  style={{ 
-                    color: '#0d6efd', 
-                    fontWeight: 'bold',
-                    fontSize: '16px'
-                  }}
+                  placeholder="Enter manually or fetch"
+                  style={{ fontSize: '16px', width: '100%' }}
                 />
+                <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
+                  Click "Fetch Price" to get live LTP from market
+                </small>
+              </div>
+              
+              <div style={{ paddingTop: '28px' }}>
+                <button 
+                  type="button"
+                  className="admin-button primary" 
+                  onClick={handleFetchPrice}
+                  disabled={fetchingPrice || !formData.stockSymbol || !formData.exchange}
+                  style={{ minWidth: '120px', whiteSpace: 'nowrap' }}
+                >
+                  {fetchingPrice ? 'Fetching...' : 'Fetch Price'}
+                </button>
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ flex: 1 }}>
                 <label htmlFor="targetPrice">Target 1 (₹) *</label>
                 <input
                   type="number"
@@ -579,7 +631,7 @@ const StockRecommendationManagement = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="form-group" style={{ flex: 1 }}>
                 <label htmlFor="stopLoss">Stop Loss (₹)</label>
                 <input
                   type="number"

@@ -49,8 +49,6 @@ const SuggestionItem = styled.li`
   cursor: pointer;
   transition: background-color 0.2s ease;
   font-size: 14px;
-  font-family: 'Courier New', monospace;
-  font-weight: 500;
 
   &:hover {
     background-color: #f0f7ff;
@@ -63,6 +61,29 @@ const SuggestionItem = styled.li`
   &.highlighted {
     background-color: #e3f2fd;
   }
+`;
+
+const SymbolText = styled.div`
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 2px;
+`;
+
+const NameText = styled.div`
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 2px;
+`;
+
+const ExchangeText = styled.span`
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+  background: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-left: 8px;
 `;
 
 const NoResults = styled.div`
@@ -112,10 +133,7 @@ const SymbolAutocomplete = ({
   }, []);
 
   const searchSymbols = async (query) => {
-    console.log('🔍 Searching symbols for query:', query);
-    
     if (!query || query.length < 1) {
-      console.log('⚠️ Query too short, clearing suggestions');
       setSuggestions([]);
       setShowSuggestions(false);
       return;
@@ -123,21 +141,16 @@ const SymbolAutocomplete = ({
 
     setLoading(true);
     try {
-      console.log('📡 Calling API: searchSymbols with query:', query);
       const response = await adminAPI.searchSymbols(query, 50);
-      console.log('✅ API Response:', response);
       
       if (response.success) {
-        console.log('📋 Found symbols:', response.symbols?.length || 0);
         setSuggestions(response.symbols || []);
         setShowSuggestions(true);
       } else {
-        console.warn('⚠️ API returned success=false');
         setSuggestions([]);
       }
     } catch (error) {
-      console.error('❌ Error searching symbols:', error);
-      console.error('Error details:', error.message, error.response);
+      console.error('Error searching symbols:', error);
       setSuggestions([]);
     } finally {
       setLoading(false);
@@ -146,7 +159,6 @@ const SymbolAutocomplete = ({
 
   const handleInputChange = (e) => {
     const newValue = e.target.value.toUpperCase();
-    console.log('⌨️ Input changed to:', newValue);
     setInputValue(newValue);
     setHighlightedIndex(-1);
     
@@ -160,22 +172,21 @@ const SymbolAutocomplete = ({
     }
 
     debounceTimer.current = setTimeout(() => {
-      console.log('⏱️ Debounce complete, triggering search for:', newValue);
       searchSymbols(newValue);
     }, 300);
   };
 
-  const handleSelectSuggestion = (symbol) => {
-    setInputValue(symbol);
+  const handleSelectSuggestion = (item) => {
+    setInputValue(item.symbol);
     setShowSuggestions(false);
     setSuggestions([]);
     setHighlightedIndex(-1);
     
     if (onSelect) {
-      onSelect(symbol);
+      onSelect(item); // Pass full object with exchange, symbol, name
     }
     if (onChange) {
-      onChange(symbol);
+      onChange(item.symbol);
     }
   };
 
@@ -225,13 +236,17 @@ const SymbolAutocomplete = ({
           {loading ? (
             <LoadingText>Searching...</LoadingText>
           ) : suggestions.length > 0 ? (
-            suggestions.map((symbol, index) => (
+            suggestions.map((item, index) => (
               <SuggestionItem
-                key={symbol}
-                onClick={() => handleSelectSuggestion(symbol)}
+                key={`${item.exchange}:${item.symbol}`}
+                onClick={() => handleSelectSuggestion(item)}
                 className={index === highlightedIndex ? 'highlighted' : ''}
               >
-                {symbol}
+                <SymbolText>
+                  {item.symbol}
+                  <ExchangeText>{item.exchange}</ExchangeText>
+                </SymbolText>
+                <NameText>{item.name}</NameText>
               </SuggestionItem>
             ))
           ) : (
