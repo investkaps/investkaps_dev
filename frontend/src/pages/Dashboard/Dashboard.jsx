@@ -158,6 +158,8 @@ const Dashboard = () => {
         if (currentUser.id && !isVerified) {
           try {
             const response = await userAPI.getKYCStatusByClerkId(currentUser.id);
+            console.log('KYC Status Check Response:', response);
+            console.log('isVerified:', response.kycStatus?.isVerified);
             if (response.success && response.kycStatus?.isVerified) {
               setKycResult({
                 success: true,
@@ -166,10 +168,27 @@ const Dashboard = () => {
                 isAlreadyVerified: true
               });
               
+              // Pre-fill PAN if available
+              if (response.kycStatus.panNumber) {
+                setKycForm(prev => ({
+                  ...prev,
+                  pan: response.kycStatus.panNumber
+                }));
+                
+                // Set PAN as verified
+                setPanStatus({
+                  checking: false,
+                  verified: true,
+                  validated: true,
+                  existsForOther: false,
+                  message: 'PAN already verified for your account'
+                });
+              }
+              
               // KYC done - unlock all other steps
               setSteps(prevSteps => ({
                 ...prevSteps,
-                kyc: { ...prevSteps.kyc, completed: true },
+                kyc: { ...prevSteps.kyc, completed: true, active: true },
                 phone: { ...prevSteps.phone, active: true },
                 signing: { ...prevSteps.signing, active: true },
                 payment: { ...prevSteps.payment, active: true }
@@ -194,10 +213,27 @@ const Dashboard = () => {
                 isAlreadyVerified: true
               });
               
+              // Pre-fill PAN if available
+              if (response.kycStatus.panNumber) {
+                setKycForm(prev => ({
+                  ...prev,
+                  pan: response.kycStatus.panNumber
+                }));
+                
+                // Set PAN as verified
+                setPanStatus({
+                  checking: false,
+                  verified: true,
+                  validated: true,
+                  existsForOther: false,
+                  message: 'PAN already verified for your account'
+                });
+              }
+              
               // KYC done - unlock all other steps
               setSteps(prevSteps => ({
                 ...prevSteps,
-                kyc: { ...prevSteps.kyc, completed: true },
+                kyc: { ...prevSteps.kyc, completed: true, active: true },
                 phone: { ...prevSteps.phone, active: true },
                 signing: { ...prevSteps.signing, active: true },
                 payment: { ...prevSteps.payment, active: true }
@@ -377,8 +413,8 @@ const Dashboard = () => {
         if (panCheckResult.exists && panCheckResult.isVerified) {
           // Check if this PAN belongs to the current user
           const isCurrentUser = panCheckResult.user && 
-            (panCheckResult.user.email === currentUser?.email || 
-             panCheckResult.user.id === currentUser?.id);
+            (panCheckResult.user.clerkId === currentUser?.id || 
+             panCheckResult.user.email === currentUser?.email);
           
           if (isCurrentUser) {
             // PAN belongs to current user - mark as verified
@@ -400,7 +436,7 @@ const Dashboard = () => {
             // Update steps to mark KYC as completed
             setSteps(prevSteps => ({
               ...prevSteps,
-              kyc: { ...prevSteps.kyc, completed: true },
+              kyc: { ...prevSteps.kyc, completed: true, active: true },
               signing: { ...prevSteps.signing, active: true }
             }));
           } else {
@@ -463,7 +499,7 @@ const Dashboard = () => {
         // KYC done - unlock all other steps
         setSteps(prevSteps => ({
           ...prevSteps,
-          kyc: { ...prevSteps.kyc, completed: true },
+          kyc: { ...prevSteps.kyc, completed: true, active: true },
           phone: { ...prevSteps.phone, active: true },
           signing: { ...prevSteps.signing, active: true },
           payment: { ...prevSteps.payment, active: true }
@@ -881,7 +917,7 @@ const Dashboard = () => {
                                       // KYC done - unlock all other steps
                                       setSteps(prevSteps => ({
                                         ...prevSteps,
-                                        kyc: { ...prevSteps.kyc, completed: true },
+                                        kyc: { ...prevSteps.kyc, completed: true, active: true },
                                         phone: { ...prevSteps.phone, active: true },
                                         signing: { ...prevSteps.signing, active: true },
                                         payment: { ...prevSteps.payment, active: true }

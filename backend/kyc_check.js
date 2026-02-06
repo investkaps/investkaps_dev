@@ -1,264 +1,203 @@
-// nsekra_kyc_check.js
-// KYC verification module for API use
+import axios from "axios";
+import crypto from "crypto";
 
-import axios from 'axios';
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
-import crypto from 'crypto';
-import net from 'net';
-import readline from 'readline';
+const TOKEN_URL = "https://camskra.com/restAuth/api/v1/getToken";
+const PAN_ENQUIRY_URL = "https://camskra.com/CAMSWS_KRA/KRA_API/PANEnquiry";
+const PAN_DOWNLOAD_URL = "https://camskra.com/CAMSWS_KRA/KRA_API/PANdownload";
 
-// ===========================
-// KYC CREDENTIALS FROM ENV (lazy initialization)
-// ===========================
-let KYC_CREDENTIALS = null;
+const CLIENT_CODE = "KAPOLIV";
 
-const getKYCCredentials = () => {
-  if (!KYC_CREDENTIALS) {
-    const USERNAME = process.env.KYC_USERNAME;
-    const PASSWORD = process.env.KYC_PASSWORD;
-    const PASSKEY = process.env.KYC_PASSKEY;
-    const POS_CODE = process.env.KYC_POS_CODE;
+// Helper function to get credentials (reads from env at runtime)
+function getCredentials() {
+  return {
+    clientId: process.env.CAMS_CLIENT_ID,
+    secretKey: process.env.CAMS_SECRET_KEY
+  };
+}
 
-    // Validate required credentials
-    if (!USERNAME || !PASSWORD || !PASSKEY || !POS_CODE) {
-      console.error('ERROR: Missing KYC credentials in environment variables');
-      console.error('Required: KYC_USERNAME, KYC_PASSWORD, KYC_PASSKEY, KYC_POS_CODE');
-      throw new Error('Missing KYC credentials');
-    }
+// ================= TOKEN CACHE =================
+let cachedToken = null;
+let tokenExpiry = null;
 
-    KYC_CREDENTIALS = { USERNAME, PASSWORD, PASSKEY, POS_CODE };
+const ENC_DEC_KEY = Buffer.from(
+  "LzM+aHwsv/M4aL3YAIbwN4NhbHUHtsTaFGIvyZmUiSY=",
+  "base64"
+);
+
+const IV_KEY = Buffer.from(
+  "5S3a+G4uChnTD+8DcgFHUQ==",
+  "base64"
+);
+
+// ================= AES =================
+
+function encryptPayload(payload) {
+  const cipher = crypto.createCipheriv("aes-256-cbc", ENC_DEC_KEY, IV_KEY);
+  let encrypted = cipher.update(JSON.stringify(payload), "utf8", "base64");
+  encrypted += cipher.final("base64");
+  return encrypted;
+}
+
+function decryptPayload(data) {
+  const decipher = crypto.createDecipheriv("aes-256-cbc", ENC_DEC_KEY, IV_KEY);
+  let decrypted = decipher.update(data, "base64", "utf8");
+  decrypted += decipher.final("utf8");
+  return JSON.parse(decrypted);
+}
+
+// ================= TOKEN WITH CACHING & RETRY =================
+
+export async function getToken(maxRetries = 3) {
+  const tokenRequestId = `TOKEN_${Date.now()}`;
+  
+  const { clientId, secretKey } = getCredentials();
+  
+  // Return cached token if still valid
+  if (cachedToken && tokenExpiry && Date.now() < tokenExpiry) {
+    console.log('✅ Token: cached');
+    return cachedToken;
   }
-  return KYC_CREDENTIALS;
-};
 
-// ===========================
-// LOGGING (save log in backend folder)
-// ===========================
-const logsPath = path.join(process.cwd(), "logs");
-if (!fs.existsSync(logsPath)) {
-  fs.mkdirSync(logsPath, { recursive: true });
-}
-const logFile = path.join(logsPath, "kyc_validation.log");
+  console.log('� Token: requesting...');
 
-function log(message, level = "INFO") {
-  const timestamp = new Date().toISOString().replace("T", " ").slice(0, 19);
-  const line = `${timestamp} - ${level} - ${message}\n`;
-  fs.appendFileSync(logFile, line);
-  if (level === "ERROR") {
-    console.error(line.trim());
-  } else {
-    console.log(line.trim());
-  }
-}
-
-// ===========================
-// CONNECTIVITY TEST
-// ===========================
-function chkConnectivity() {
-  return new Promise((resolve) => {
-    const socket = net.createConnection(443, "www.nsekra.com");
-    socket.setTimeout(5000);
-
-    socket.on("connect", () => {
-      log("Connection test to www.nsekra.com successful");
-      socket.end();
-      resolve(true);
-    });
-
-    socket.on("error", (err) => {
-      log(`Connection test failed: ${err.message}`, "ERROR");
-      resolve(false);
-    });
-
-    socket.on("timeout", () => {
-      log("Connection test timed out", "ERROR");
-      socket.destroy();
-      resolve(false);
-    });
-  });
-}
-
-// ===========================
-// FETCH ENCRYPTED PASSWORD
-// ===========================
-async function getEncryptedPassword(passkey, password) {
-  const url = "https://www.nsekra.com/intermediary/getpassword";
-  const xmlData = `<?xml version="1.0" encoding="UTF-8"?>
-<GetPassword>
-    <Passkey>${passkey}</Passkey>
-    <Password>${password}</Password>
-</GetPassword>`;
-
-  try {
-    const response = await axios.post(url, xmlData, {
-      headers: {
-        "Content-Type": "application/xml; charset=utf-8",
-        Accept: "application/xml",
-        "User-Agent": "Mozilla/5.0",
-      },
-      timeout: 15000,
-      maxRedirects: 0,
-    });
-
-    const text = response.data;
-    const match =
-      text.match(/<GetPasswordResult>(.*?)<\/GetPasswordResult>/) ||
-      text.match(/<PASSWORD>(.*?)<\/PASSWORD>/);
-    return match ? match[1] : null;
-  } catch (err) {
-    log(`Password fetch error: ${err.message}`, "ERROR");
-    return null;
-  }
-}
-
-// ===========================
-// FETCH KYC DETAILS
-// ===========================
-async function fetchKycDetails(pan, dob, posCode, username, encryptedPassword, passkey) {
-  const url = "https://www.nsekra.com/intermediary/kycfetch";
-  const currentDate = new Date().toLocaleDateString("en-GB").replace(/\//g, "-");
-
-  const xmlData = `<?xml version="1.0" encoding="UTF-8"?>
-<APP_REQ_ROOT>
-    <APP_PAN_INQ>
-        <APP_PAN_NO>${pan}</APP_PAN_NO>
-        <APP_PAN_DOB>${dob}</APP_PAN_DOB>
-        <APP_POS_CODE>${posCode}</APP_POS_CODE>
-    </APP_PAN_INQ>
-    <APP_SUMM_REC>
-        <APP_REQ_DATE>${currentDate}</APP_REQ_DATE>
-    </APP_SUMM_REC>
-    <USERNAME>${username}</USERNAME>
-    <PASSWORD>${encryptedPassword}</PASSWORD>
-    <PASSKEY>${passkey}</PASSKEY>
-</APP_REQ_ROOT>`;
-
-  try {
-    const response = await axios.post(url, xmlData, {
-      headers: {
-        "Content-Type": "application/xml; charset=utf-8",
-        Accept: "application/xml",
-        "User-Agent": "Mozilla/5.0",
-      },
-      timeout: 15000,
-    });
-
-    const rawXml = response.data;
-
-    // Error case
-    const errorMatch = rawXml.match(/<ERROR>[\s\S]*?<\/ERROR>/);
-    if (errorMatch) {
-      const codeMatch = rawXml.match(/<ERROR_CODE>(.*?)<\/ERROR_CODE>/);
-      const msgMatch = rawXml.match(/<ERROR_MSG>(.*?)<\/ERROR_MSG>/);
-      return [{ error: `${codeMatch?.[1] || "UNKNOWN"}: ${msgMatch?.[1] || "Unknown error"}` }, rawXml];
-    }
-
-    // Normal case (map fields)
-    const fieldMappings = {
-      APP_PAN_NO: ["PAN", "PAN Number"],
-      APP_NAME: ["Name", "Full Name"],
-      APP_STATUS: ["Status", "KYC Status"],
-      APP_STATUSDT: ["StatusDate", "Status Date"],
-      APP_KYC_MODE: ["KYCMode", "KYC Mode (0-4)"],
-      APP_IPV_FLAG: ["IPVFlag", "In-Person Verification"],
-      APP_F_NAME: ["FatherName", "Father's Name"],
-      APP_DOB_DT: ["DOB", "Date of Birth"],
-      APP_GEN: ["Gender", "Gender"],
-      APP_COR_ADD1: ["Address1", "Address Line 1"],
-      APP_COR_CITY: ["City", "City"],
-      APP_COR_PINCD: ["Pincode", "PIN Code"],
-      APP_COR_STATE: ["State", "State Code"],
-      APP_MOB_NO: ["Mobile", "Mobile Number"],
-      APP_EMAIL: ["Email", "Email Address"],
-    };
-
-    let kycData = {};
-    for (const [tag, [key, description]] of Object.entries(fieldMappings)) {
-      const match = rawXml.match(new RegExp(`<${tag}>(.*?)</${tag}>`, "i"));
-      kycData[key] = {
-        value: match ? match[1] : "N/A",
-        description,
+  // Retry logic for token fetch
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const payload = {
+        clientCode: CLIENT_CODE,
+        grantType: "client_credentials",
+        scope: "KYC"
       };
-    }
-
-    return [kycData, rawXml];
-  } catch (err) {
-    log(`KYC fetch error: ${err.message}`, "ERROR");
-    return [{ error: err.message }, null];
-  }
-}
-
-// ===========================
-// AUDIT LOGGING (without folder creation)
-// ===========================
-function logAudit(rawXmlResponse, kycData, pan) {
-  // Just log the verification without creating folders
-  const timestamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 15);
-  const xmlHash = rawXmlResponse ? crypto.createHash("sha256").update(rawXmlResponse).digest("hex").substring(0, 8) : "none";
-  
-  log(`KYC Verification for PAN: ${pan}, Timestamp: ${timestamp}, Hash: ${xmlHash}`, "INFO");
-  
-  return `KYC verified at ${timestamp}`;
-}
-
-// ===========================
-// API FUNCTION
-// ===========================
-async function verifyKYC(pan, dob) {
-  try {
-    // Check connectivity first
-    if (!(await chkConnectivity())) {
-      return { success: false, error: "Cannot connect to www.nsekra.com" };
-    }
-
-    if (!pan || !dob) {
-      return { success: false, error: "PAN and DOB cannot be empty" };
-    }
-
-    // Format inputs
-    pan = pan.toUpperCase();
-    
-    // Get credentials
-    const { USERNAME, PASSWORD, PASSKEY, POS_CODE } = getKYCCredentials();
-    
-    // Get encrypted password
-    log(`Fetching encrypted password for PAN: ${pan}`);
-    const encryptedPassword = await getEncryptedPassword(PASSKEY, PASSWORD);
-
-    if (!encryptedPassword) {
-      return { success: false, error: "Failed to retrieve encrypted password" };
-    }
-
-    // Fetch KYC details
-    log(`Fetching KYC details for PAN: ${pan}`);
-    const [kycData, rawXml] = await fetchKycDetails(pan, dob, POS_CODE, USERNAME, encryptedPassword, PASSKEY);
-
-    if (kycData && !kycData.error) {
-      // Log audit without creating folders
-      const auditInfo = logAudit(rawXml, kycData, pan);
-      log(`KYC verification logged: ${auditInfo}`);
       
-      // Return success with data
-      return { 
-        success: true, 
-        data: kycData,
-        auditInfo: auditInfo
-      };
-    } else {
-      return { 
-        success: false, 
-        error: kycData.error || "Unknown error fetching KYC details" 
-      };
+      const res = await axios.post(TOKEN_URL, payload, {
+        auth: {
+          username: clientId,
+          password: secretKey
+        },
+        timeout: 15000
+      });
+
+      // Check for CAMS error response format
+      if (res.data.returnCode && res.data.returnCode !== "0") {
+        console.error('❌ CAMS API returned error:', res.data.returnMsg);
+        console.error('Return Code:', res.data.returnCode);
+        console.error('Client ID:', res.data.clientId || 'Not provided');
+        throw new Error(`CAMS API error: ${res.data.returnMsg} (Code: ${res.data.returnCode})`);
+      }
+
+      if (!res.data.accessToken) {
+        console.error('❌ No accessToken in response');
+        console.error('Response format:', JSON.stringify(res.data, null, 2));
+        throw new Error("Token not returned from CAMS");
+      }
+
+      // Cache token for 55 minutes (tokens valid for 60 min)
+      cachedToken = res.data.accessToken;
+      tokenExpiry = Date.now() + (55 * 60 * 1000);
+      
+      console.log('✅ Token: received');
+      return cachedToken;
+
+    } catch (err) {
+      if (attempt === maxRetries) {
+        cachedToken = null;
+        tokenExpiry = null;
+        console.error('❌ Token failed:', err.message);
+        throw new Error(`CAMS token API error: ${err.message}`);
+      }
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
     }
-  } catch (error) {
-    log(`Unexpected error in verifyKYC: ${error.message}`, "ERROR");
-    return { 
-      success: false, 
-      error: `Internal server error: ${error.message}` 
-    };
   }
 }
 
-export { verifyKYC };
+// ================= PAN ENQUIRY =================
+
+export async function panEnquiry(token, pan) {
+  const enquiryRequestId = `ENQ_${Date.now()}`;
+  const { clientId } = getCredentials();
+  
+  try {
+    const payload = { PAN: [{ pan }] };
+    const encrypted = encryptPayload(payload);
+
+    const res = await axios.post(
+      PAN_ENQUIRY_URL,
+      { data: encrypted },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ClientId: clientId,
+          "Content-Type": "application/json"
+        },
+        timeout: 20000
+      }
+    );
+
+    if (!res.data || !res.data.data) {
+      throw new Error('Invalid response from CAMS enquiry API');
+    }
+
+    const decrypted = decryptPayload(res.data.data);
+
+    if (!decrypted || (!decrypted.PAN && !decrypted.verifyPanResponseList)) {
+      throw new Error('Invalid decrypted response from CAMS enquiry API');
+    }
+
+    console.log('✅ Enquiry:', res.status);
+    return decrypted;
+
+  } catch (err) {
+    if (err.response?.status === 401) {
+      cachedToken = null;
+      tokenExpiry = null;
+      throw new Error('CAMS token expired - please retry');
+    }
+    throw err;
+  }
+}
+
+// ================= PAN DOWNLOAD =================
+
+export async function panDownload(token, pan, dob) {
+  const downloadRequestId = `DL_${Date.now()}`;
+  const { clientId } = getCredentials();
+  
+  try {
+    const payload = { PAN: [{ pan, dob }], sign_required: "N" };
+    const encrypted = encryptPayload(payload);
+
+    const res = await axios.post(
+      PAN_DOWNLOAD_URL,
+      { data: encrypted },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ClientId: clientId,
+          "Content-Type": "application/json"
+        },
+        timeout: 20000
+      }
+    );
+
+    if (!res.data || !res.data.data) {
+      throw new Error('Invalid response from CAMS download API');
+    }
+
+    const decrypted = decryptPayload(res.data.data);
+
+    if (!decrypted) {
+      throw new Error('Invalid decrypted response from CAMS download API');
+    }
+
+    console.log('✅ Download:', res.status);
+    return decrypted;
+
+  } catch (err) {
+    if (err.response?.status === 401) {
+      cachedToken = null;
+      tokenExpiry = null;
+      throw new Error('CAMS token expired - please retry');
+    }
+    throw err;
+  }
+}

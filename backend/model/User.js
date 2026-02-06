@@ -108,6 +108,29 @@ const UserSchema = new mongoose.Schema({
       type: String,
       trim: true,
       default: null
+    },
+    // Nationality from KYC verification
+    nationality: {
+      type: String,
+      trim: true,
+      default: null
+    },
+    // Address from KYC verification
+    address: {
+      type: String,
+      trim: true,
+      default: null
+    },
+    // Mobile from KYC verification
+    mobile: {
+      type: String,
+      trim: true,
+      default: null
+    },
+    // CAMS KRA data (raw responses from CAMS APIs)
+    camsData: {
+      type: Object,
+      default: null
     }
   },
   // All KYC verifications for this user

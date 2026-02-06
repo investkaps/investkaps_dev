@@ -172,12 +172,18 @@ const KycManagement = () => {
                   <span className="admin-detail-label">Gender:</span>
                   <span className="admin-detail-value">{selectedKyc.kycData?.Gender?.value || 'N/A'}</span>
                 </div>
-                {selectedKyc.kycData?.Mobile?.value && (
-                  <div className="admin-detail-row">
-                    <span className="admin-detail-label">Mobile:</span>
-                    <span className="admin-detail-value">{selectedKyc.kycData.Mobile.value}</span>
-                  </div>
-                )}
+                <div className="admin-detail-row">
+                  <span className="admin-detail-label">Nationality:</span>
+                  <span className="admin-detail-value">{selectedKyc.kycData?.Nationality?.value || 'N/A'}</span>
+                </div>
+                <div className="admin-detail-row">
+                  <span className="admin-detail-label">Address:</span>
+                  <span className="admin-detail-value">{selectedKyc.kycData?.Address?.value || 'N/A'}</span>
+                </div>
+                <div className="admin-detail-row">
+                  <span className="admin-detail-label">Mobile:</span>
+                  <span className="admin-detail-value">{selectedKyc.kycData?.Mobile?.value || 'N/A'}</span>
+                </div>
               </div>
 
               {(selectedKyc.kycData?.Address1?.value || selectedKyc.kycData?.City?.value || selectedKyc.kycData?.State?.value) && (
@@ -239,6 +245,36 @@ const KycManagement = () => {
                   <div className="admin-detail-row">
                     <span className="admin-detail-label">KYC Mode:</span>
                     <span className="admin-detail-value">{selectedKyc.kycData.KYCMode.value}</span>
+                  </div>
+                )}
+                {selectedKyc.kycData?.SignFlag?.value && (
+                  <div className="admin-detail-row">
+                    <span className="admin-detail-label">Signature Available:</span>
+                    <span className="admin-detail-value">{selectedKyc.kycData.SignFlag.value === 'Y' ? 'Yes' : 'No'}</span>
+                  </div>
+                )}
+                {selectedKyc.kycData?.IPVFlag?.value && (
+                  <div className="admin-detail-row">
+                    <span className="admin-detail-label">IPV Completed:</span>
+                    <span className="admin-detail-value">{selectedKyc.kycData.IPVFlag.value === 'Y' ? 'Yes' : 'No'}</span>
+                  </div>
+                )}
+                {selectedKyc.kycData?.IPVDate?.value && (
+                  <div className="admin-detail-row">
+                    <span className="admin-detail-label">IPV Date:</span>
+                    <span className="admin-detail-value">{selectedKyc.kycData.IPVDate.value}</span>
+                  </div>
+                )}
+                {selectedKyc.kycData?.ApplicationNo?.value && (
+                  <div className="admin-detail-row">
+                    <span className="admin-detail-label">Application Number:</span>
+                    <span className="admin-detail-value">{selectedKyc.kycData.ApplicationNo.value}</span>
+                  </div>
+                )}
+                {selectedKyc.kycData?.RegistrationDate?.value && (
+                  <div className="admin-detail-row">
+                    <span className="admin-detail-label">Registration Date:</span>
+                    <span className="admin-detail-value">{selectedKyc.kycData.RegistrationDate.value}</span>
                   </div>
                 )}
                 {selectedKyc.message && (

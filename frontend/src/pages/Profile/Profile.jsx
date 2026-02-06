@@ -206,6 +206,26 @@ const Profile = () => {
                       <span className="detail-value">{userDetails.kycStatus.panNumber || 'Not available'}</span>
                     </div>
                     <div className="detail-item">
+                      <span className="detail-label">Nationality</span>
+                      <span className="detail-value">{userDetails.kycStatus.nationality || 'Not available'}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Address</span>
+                      <span className="detail-value">{userDetails.kycStatus.address || 'Not available'}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Mobile</span>
+                      <span className="detail-value">{userDetails.kycStatus.mobile || 'Not available'}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">KYC Mode</span>
+                      <span className="detail-value">{userDetails.kycStatus.camsData?.kycMode || 'Not available'}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">IPV Status</span>
+                      <span className="detail-value">{userDetails.kycStatus.camsData?.ipvFlag === 'Y' ? 'Completed' : 'Not Completed'}</span>
+                    </div>
+                    <div className="detail-item">
                       <span className="detail-label">Verified At</span>
                       <span className="detail-value">{formatDate(userDetails.kycStatus.verifiedAt)}</span>
                     </div>

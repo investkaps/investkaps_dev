@@ -1,82 +1,30 @@
-2026-01-27 11:36:54 info: Server running on port 5000
-2026-01-27 11:36:54 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:39:20 info: Server running on port 5000
-2026-01-27 11:39:20 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:39:23 info: Server running on port 5000
-2026-01-27 11:39:24 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:40:52 info: Server running on port 5000
-2026-01-27 11:40:52 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:41:02 info: Server running on port 5000
-2026-01-27 11:41:02 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:43:22 info: Server running on port 5000
-2026-01-27 11:43:22 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:44:35 info: Server running on port 5000
-2026-01-27 11:44:35 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:44:42 info: Server running on port 5000
-2026-01-27 11:44:42 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:45:51 info: Server running on port 5000
-2026-01-27 11:45:51 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:45:54 info: Server running on port 5000
-2026-01-27 11:45:54 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:45:56 info: Server running on port 5000
-2026-01-27 11:45:56 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:46:01 info: Server running on port 5000
-2026-01-27 11:46:01 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:46:06 info: Server running on port 5000
-2026-01-27 11:46:06 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:50:48 info: Server running on port 5000
-2026-01-27 11:50:48 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:58:23 info: Server running on port 5000
-2026-01-27 11:58:23 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:58:47 info: Server running on port 5000
-2026-01-27 11:58:47 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 11:58:58 info: Server running on port 5000
-2026-01-27 11:58:58 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 12:03:38 info: Server running on port 5000
-2026-01-27 12:03:38 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 12:03:38 info: Server running on port 5000
-2026-01-27 12:03:38 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 12:09:58 info: Loaded 2558 symbols from symbols.json
-2026-01-27 12:14:48 info: Fetching LTP for NSE:TATACAP
-2026-01-27 12:14:58 error: Error fetching single LTP for NSE:TATACAP: timeout of 10000ms exceeded
-2026-01-27 12:14:58 error: Error in getSinglePrice: Failed to fetch price for TATACAP: timeout of 10000ms exceeded
-2026-01-27 12:15:59 info: Server running on port 5000
-2026-01-27 12:15:59 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 12:15:59 info: Server running on port 5000
-2026-01-27 12:15:59 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 12:16:25 info: Server running on port 5000
-2026-01-27 12:16:25 info: Server running on port 5000
-2026-01-27 12:16:25 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 12:16:25 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 12:16:33 info: Server running on port 5000
-2026-01-27 12:16:33 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 12:16:33 info: Server running on port 5000
-2026-01-27 12:16:33 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 12:16:40 info: Server running on port 5000
-2026-01-27 12:16:40 info: Server running on port 5000
-2026-01-27 12:16:40 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 12:16:40 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 12:16:51 info: Server running on port 5000
-2026-01-27 12:16:51 info: Server running on port 5000
-2026-01-27 12:16:51 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 12:16:51 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 12:17:19 info: Fetching LTP for NSE:TATACAP
-2026-01-27 12:17:21 info: LTP fetched successfully: NSE:TATACAP = 339.25
-2026-01-27 12:17:58 info: Server running on port 5000
-2026-01-27 12:17:58 info: E-Signing API available at http://localhost:5000/api/esign
-2026-01-27 12:18:17 info: Loaded 2558 symbols from symbols.json
-2026-01-27 12:18:21 info: Fetching LTP for NSE:TCS
-2026-01-27 12:18:22 info: LTP fetched successfully: NSE:TCS = 3148.8
-2026-01-27 12:18:31 info: Fetching LTP for NSE:RELIABLE
-2026-01-27 12:18:32 error: Error fetching single LTP for NSE:RELIABLE: Request failed with status code 404
-2026-01-27 12:18:32 error: Error in getSinglePrice: Failed to fetch price for RELIABLE: Request failed with status code 404
-2026-01-27 12:18:44 info: Fetching LTP for NSE:WSTCSTPAPR
-2026-01-27 12:18:46 info: LTP fetched successfully: NSE:WSTCSTPAPR = 388.9
-2026-01-27 12:19:13 info: Fetching LTP for NSE:INFY
-2026-01-27 12:19:15 info: LTP fetched successfully: NSE:INFY = 1680.2
-2026-01-27 12:19:28 info: Fetching LTP for NSE:GROWW
-2026-01-27 12:19:29 info: LTP fetched successfully: NSE:GROWW = 162.8
-2026-01-27 12:19:44 info: Fetching LTP for NSE:TCS
-2026-01-27 12:19:45 info: LTP fetched successfully: NSE:TCS = 3144.4
-2026-01-27 17:52:10 info: Server running on port 5000
-2026-01-27 17:52:10 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:00:14 info: Server running on port 5000
+2026-02-06 22:00:14 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:00:20 info: Server running on port 5000
+2026-02-06 22:00:20 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:00:34 info: Server running on port 5000
+2026-02-06 22:00:34 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:00:45 info: Server running on port 5000
+2026-02-06 22:00:45 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:11:42 info: Server running on port 5000
+2026-02-06 22:11:42 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:15:04 info: Server running on port 5000
+2026-02-06 22:15:04 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:15:11 info: Server running on port 5000
+2026-02-06 22:15:11 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:15:18 info: Server running on port 5000
+2026-02-06 22:15:18 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:15:28 info: Server running on port 5000
+2026-02-06 22:15:28 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:15:37 info: Server running on port 5000
+2026-02-06 22:15:37 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:18:29 info: Server running on port 5000
+2026-02-06 22:18:29 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:20:22 info: Server running on port 5000
+2026-02-06 22:20:22 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:20:40 info: Server running on port 5000
+2026-02-06 22:20:40 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:25:14 info: Server running on port 5000
+2026-02-06 22:25:14 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:25:33 info: Server running on port 5000
+2026-02-06 22:25:33 info: E-Signing API available at http://localhost:5000/api/esign

@@ -415,14 +415,10 @@ export const getUserSubscriptions = async (req, res) => {
 export const getActiveSubscription = async (req, res) => {
   try {
     const clerkUserId = req.params.userId;
-    console.log('🔍 Searching for active subscriptions - Clerk ID:', clerkUserId);
-    
+        
     // First, find the User document by Clerk ID
     const user = await User.findOne({ clerkId: clerkUserId });
-    console.log('👤 User found:', user ? `Yes (MongoDB ID: ${user._id})` : 'No');
-    
     if (!user) {
-      console.log('❌ User not found in database');
       return res.status(404).json({
         success: false,
         error: 'User not found'
@@ -437,15 +433,6 @@ export const getActiveSubscription = async (req, res) => {
     .populate('subscription')
     .sort({ createdAt: -1 }); // Most recent first
     
-    console.log(`📦 Found ${subscriptions.length} active subscription(s)`);
-    if (subscriptions.length > 0) {
-      console.log('✅ Subscriptions:', subscriptions.map(s => ({
-        plan: s.subscription?.name,
-        status: s.status,
-        endDate: s.endDate
-      })));
-    }
-    
     // Return array of subscriptions (can be empty)
     res.status(200).json({
       success: true,
@@ -453,7 +440,6 @@ export const getActiveSubscription = async (req, res) => {
       data: subscriptions
     });
   } catch (error) {
-    console.error('💥 Error in getActiveSubscription:', error);
     logger.error('Error fetching active subscriptions:', error);
     res.status(500).json({
       success: false,

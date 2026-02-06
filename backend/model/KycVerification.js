@@ -1,113 +1,134 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const KycVerificationSchema = new mongoose.Schema({
+
+  // ========================
+  // USER LINKS
+  // ========================
+
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: false // Optional because user might not exist in DB yet
+    ref: "User",
+    required: false
   },
+
   clerkId: {
     type: String,
-    required: false // Optional for the same reason
+    required: false
   },
-  email: {
-    type: String,
-    required: false, // Optional but highly recommended
-    trim: true,
-    lowercase: true,
-    index: true // Add index for faster lookups by email
-  },
+
+  
+  // ========================
+  // BASIC KYC INPUT
+  // ========================
+
   pan: {
     type: String,
     required: true,
-    trim: true,
-    uppercase: true
+    uppercase: true,
+    trim: true
+    // Index defined in compound index below
   },
+
   dob: {
     type: String,
     required: true
   },
+
+  // ========================
+  // EXTRACTED FIELDS (for indexing/searching)
+  // ========================
+
+  fullName: {
+    type: String,
+    trim: true
+    // Index defined below
+  },
+
+  // ========================
+  // CAMS STATUS FIELDS
+  // ========================
+
+  // Raw CAMS status code (e.g., "07", "05")
+  camsStatusCode: {
+    type: String,
+    trim: true
+  },
+
+  // Mapped human-readable status
+  kycStatus: {
+    type: String,
+    enum: [
+      "VERIFIED",      // 07 - Fully verified
+      "PENDING",       // 02 - Pending verification
+      "INCOMPLETE",    // 05 - Incomplete documents
+      "REGISTERED",    // 01 - Just registered
+      "ON_HOLD",       // 03 - On hold
+      "REJECTED",      // 04 - Rejected
+      "DEACTIVATED",   // 06 - Deactivated
+      "SUSPENDED",     // 08 - Suspended
+      "EXPIRED",       // 09 - Expired
+      "MODIFIED",      // 10 - Modified
+      "UNKNOWN"        // Unknown/unmapped status
+    ]
+    // Index defined below
+  },
+
+  // Additional CAMS metadata
+  kycMode: String,        // KYC mode from CAMS
+  signFlag: String,       // Signature flag (Y/N)
+  ipvFlag: String,        // IPV flag (Y/N)
+
+  // ========================
+  // STATUS
+  // ========================
+
   status: {
     type: String,
-    enum: ['success', 'failed'],
+    enum: ["success", "failed"],
     required: true
   },
-  kycData: {
-    PAN: {
-      value: String,
-      description: String
-    },
-    Name: {
-      value: String,
-      description: String
-    },
-    Status: {
-      value: String,
-      description: String
-    },
-    StatusDate: {
-      value: String,
-      description: String
-    },
-    KYCMode: {
-      value: String,
-      description: String
-    },
-    IPVFlag: {
-      value: String,
-      description: String
-    },
-    FatherName: {
-      value: String,
-      description: String
-    },
-    DOB: {
-      value: String,
-      description: String
-    },
-    Gender: {
-      value: String,
-      description: String
-    },
-    Address1: {
-      value: String,
-      description: String
-    },
-    City: {
-      value: String,
-      description: String
-    },
-    Pincode: {
-      value: String,
-      description: String
-    },
-    State: {
-      value: String,
-      description: String
-    },
-    Mobile: {
-      value: String,
-      description: String
-    },
-    Email: {
-      value: String,
-      description: String
-    }
+
+  // ========================
+  // CAMS RAW RESPONSES
+  // ========================
+
+  camsEnquiryData: {
+    type: Object   // PANEnquiry decrypted JSON
   },
-  auditInfo: {
-    type: String
+
+  camsDownloadData: {
+    type: Object   // PANDownload decrypted JSON (full KYC)
   },
-  error: {
-    type: String
-  },
+
+  // ========================
+  // OPTIONAL META
+  // ========================
+
+  auditInfo: String,
+
+  error: String,
+
   createdAt: {
     type: Date,
     default: Date.now
   }
+
 });
 
-// Index for faster queries
+
+// ========================
+// INDEXES (No duplicates - only compound indexes)
+// ========================
+
+// Primary lookup indexes
 KycVerificationSchema.index({ pan: 1, createdAt: -1 });
 KycVerificationSchema.index({ clerkId: 1, createdAt: -1 });
 
-export default mongoose.model('KycVerification', KycVerificationSchema);
+// Search and filter indexes
+KycVerificationSchema.index({ fullName: 1 });
+KycVerificationSchema.index({ kycStatus: 1, createdAt: -1 });
+KycVerificationSchema.index({ status: 1, pan: 1 });
+KycVerificationSchema.index({ camsStatusCode: 1 });
+
+export default mongoose.model("KycVerification", KycVerificationSchema);
