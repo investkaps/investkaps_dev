@@ -42,7 +42,15 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 // Restrict CORS to frontend origin if provided, otherwise allow all (useful for dev)
-app.use(cors({ origin: "*" }));
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://investkaps.com',
+  'https://www.investkaps.com'
+];
+app.use(cors({ 
+  origin: allowedOrigins,
+  credentials: true
+}));
 
 
 // Parse JSON requests with increased limit and capture raw body for webhook signature verification
@@ -80,6 +88,16 @@ app.get('/health', (req, res) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
+  });
+});
+
+// Debug endpoint to verify deployment
+app.get('/debug', (req, res) => {
+  res.status(200).json({
+    message: 'Backend is running latest code',
+    timestamp: new Date().toISOString(),
+    version: '2.0',
+    routes: ['/api/users/create', '/api/users/clerk/:clerkId', '/api/users/email/:email']
   });
 });
 
