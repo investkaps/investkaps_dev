@@ -189,6 +189,7 @@ export const AuthProvider = ({ children }) => {
             if (mounted) setCurrentUser(null);
           } else {
             // Clerk not loaded yet; wait for it
+            if (mounted) setLoading(true);
             return;
           }
         }
@@ -204,7 +205,7 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
     return () => { mounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clerkLoaded, clerkUser, clerkAuthLoaded, clerkIsSignedIn]);
+  }, [clerkLoaded && clerkAuthLoaded, clerkUser]);
 
   // sendOTP - same as before but guards if already signed in
   const sendOTP = async (email) => {

@@ -28,8 +28,8 @@ const AdminRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
   
-  // Redirect to dashboard if not admin
-  if (!isAdmin()) {
+  // Redirect to dashboard if not admin (only after auth is loaded)
+  if (!loading && !isAdmin()) {
     return <Navigate to="/dashboard" replace />;
   }
   
