@@ -10,16 +10,10 @@ router.post('/webhook', handleWebhook, userController.createOrUpdateUser);
 // Using a simplified auth check that doesn't require user to exist in DB
 router.post('/create', async (req, res, next) => {
   try {
-    console.log('🟡 Backend: /users/create endpoint called');
-    console.log('🟡 Backend: Request headers:', req.headers);
-    
     // Get token from header
     const token = req.headers.authorization?.split(' ')[1];
     
-    console.log('🟡 Backend: Token extracted:', !!token);
-    
     if (!token) {
-      console.log('❌ Backend: No token provided in request');
       return res.status(401).json({
         success: false,
         error: 'No token provided'
@@ -31,9 +25,7 @@ router.post('/create', async (req, res, next) => {
     try {
       const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
       clerkId = payload.sub;
-      console.log('🟡 Backend: Extracted clerkId from token:', clerkId);
     } catch (err) {
-      console.log('❌ Backend: Failed to parse token:', err.message);
       return res.status(401).json({
         success: false,
         error: 'Invalid token format'
@@ -42,10 +34,8 @@ router.post('/create', async (req, res, next) => {
     
     // Add clerkId to request for the controller
     req.clerkId = clerkId;
-    console.log('🟡 Backend: Proceeding to userController.createUser');
     next();
   } catch (error) {
-    console.error('❌ Backend: Error in user creation middleware:', error);
     return res.status(401).json({
       success: false,
       error: 'Authentication failed'

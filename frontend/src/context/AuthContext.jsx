@@ -81,50 +81,28 @@ export const AuthProvider = ({ children }) => {
         console.warn('❌ Frontend: No Clerk email available for backend user creation');
         return;
       }
-      
-      console.log('🟡 Frontend: Creating backend user for email:', email);
-      
-      // Ensure token stored in localStorage (get via Clerk hook if possible)
-      let tokenString = localStorage.getItem('clerk_jwt') || null;
-      if (!tokenString && typeof getClerkToken === 'function') {
-        try {
-          const tk = await getClerkToken();
-          tokenString = typeof tk === 'string' ? tk : tk?.jwt || null;
-          if (tokenString) localStorage.setItem('clerk_jwt', tokenString);
-        } catch (err) {
-          console.warn('❌ Frontend: Could not fetch token for backend create:', err);
-        }
-      }
 
-      console.log('🟡 Frontend: Token available:', !!tokenString);
-
-      // First check if user already exists by email
+      // First, check if user exists by email
       try {
-        console.log('🔍 Frontend: Checking if user exists by email:', email);
-        await userAPI.getUserByEmail(email);
-        console.log('⚠️ Frontend: User already exists, skipping creation');
-        return; // User already exists, no need to create
-      } catch (err) {
-        console.log('🟡 Frontend: User not found, proceeding with creation:', err.message);
-        // User not found, continue with creation
+        const response = await userAPI.getUserByEmail(maybeClerkUser.primaryEmailAddress.emailAddress);
+        return response.user;
+      } catch (error) {
+        // User not found, proceed with creation
       }
 
-      // Build payload expected by backend
-      const payload = {
+      // If user doesn't exist, create them
+      console.log('👤 CREATING NEW USER:', maybeClerkUser.primaryEmailAddress.emailAddress);
+      const response = await userAPI.createUser({
         clerkId: maybeClerkUser.id,
-        email: email, // Only using Clerk email
-        name: maybeClerkUser.firstName || email.split('@')[0] || 'User',
+        email: maybeClerkUser.primaryEmailAddress.emailAddress,
+        name: maybeClerkUser.firstName || maybeClerkUser.primaryEmailAddress.emailAddress.split('@')[0],
         isVerified: maybeClerkUser.emailAddresses?.[0]?.verification?.status === 'verified'
-      };
+      });
 
-      console.log('🟡 Frontend: Calling userAPI.createUser with payload:', payload);
-
-      // Call backend create; userAPI uses axios instance which attaches token automatically
-      const result = await userAPI.createUser(payload);
-      console.log('✅ Frontend: User created successfully:', result);
+      console.log('✅ NEW USER CREATED IN BACKEND:', response.user.email);
+      return response.user;
     } catch (err) {
-      console.error('❌ Frontend: Failed to create backend user:', err.message || err);
-      console.error('❌ Frontend: Full error:', err);
+      console.error('❌ USER CREATION FAILED:', err.message);
     }
   };
 
@@ -132,40 +110,27 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let mounted = true;
     const checkAuthStatus = async () => {
-      console.log('🔍 AUTH: checkAuthStatus called');
-      console.log('🔍 AUTH: clerkLoaded:', clerkLoaded);
-      console.log('🔍 AUTH: clerkAuthLoaded:', clerkAuthLoaded);
-      console.log('🔍 AUTH: clerkUser:', clerkUser ? clerkUser.id : null);
-      console.log('🔍 AUTH: clerkIsSignedIn:', clerkIsSignedIn);
-      
       setLoading(true);
       try {
         const savedToken = localStorage.getItem('clerk_jwt');
-        console.log('🔍 AUTH: Saved token exists:', !!savedToken);
 
         if (savedToken && !isTokenValid(savedToken)) {
-          console.log('🔍 AUTH: Saved token invalid, clearing...');
           clearLocalAuth();
         }
 
         if (clerkLoaded && clerkUser) {
-          console.log('✅ AUTH: Clerk loaded and user available');
           try {
             // Prefer Clerk hook getToken
             let token = null;
             if (typeof getClerkToken === 'function') {
-              console.log('🔍 AUTH: Getting token via getClerkToken...');
               token = await getClerkToken();
             } else if (clerkUser?.getToken) {
-              console.log('🔍 AUTH: Getting token via clerkUser.getToken...');
               token = await clerkUser.getToken();
             }
 
             const tokenString = typeof token === 'string' ? token : token?.jwt || null;
-            console.log('🔍 AUTH: Token string obtained:', !!tokenString);
             if (tokenString) {
               localStorage.setItem('clerk_jwt', tokenString);
-              console.log('🔍 AUTH: Token saved to localStorage');
             }
 
             const user = {
@@ -176,23 +141,16 @@ export const AuthProvider = ({ children }) => {
               createdAt: clerkUser.createdAt
             };
 
-            console.log('👤 AUTH: User object created:', { id: user.id, email: user.email, name: user.name });
-
             // Try to fetch backend user; fallback to setting Clerk user directly
             try {
-              console.log('🔍 AUTH: Checking if user exists in backend...');
               // First try by clerkId
               let response;
               try {
-                console.log('🔍 AUTH: Trying getUserByClerkId...');
                 response = await userAPI.getUserByClerkId(clerkUser.id);
-                console.log('✅ AUTH: User found by clerkId');
               } catch (clerkIdError) {
-                console.log('⚠️ AUTH: User not found by clerkId, trying email...');
                 // If not found by clerkId, try by email
                 if (clerkUser.primaryEmailAddress?.emailAddress) {
                   response = await userAPI.getUserByEmail(clerkUser.primaryEmailAddress.emailAddress);
-                  console.log('✅ AUTH: User found by email');
                 } else {
                   throw clerkIdError; // Re-throw if no email available
                 }
@@ -200,7 +158,6 @@ export const AuthProvider = ({ children }) => {
               
               if (mounted) {
                 const role = response.user?.role || 'customer';
-                console.log('👤 AUTH: Setting current user with role:', role);
                 setCurrentUser({
                   ...user,
                   profile: response.user?.profile,
@@ -210,15 +167,11 @@ export const AuthProvider = ({ children }) => {
                 });
               }
             } catch (err) {
-              console.log('⚠️ AUTH: Backend user not found, creating new user...');
-              console.log('⚠️ AUTH: Error details:', err.message);
               // If backend user not found, set the clerk user and create backend record
               if (mounted) {
-                console.log('👤 AUTH: Setting current user from Clerk data');
                 setCurrentUser(user);
               }
               // Try to create backend user asynchronously
-              console.log('🔧 AUTH: Calling createOrUpdateBackendUser...');
               createOrUpdateBackendUser(clerkUser);
             }
           } catch (err) {
@@ -229,13 +182,11 @@ export const AuthProvider = ({ children }) => {
         } else {
           // Clerk loaded but no user
           if (clerkLoaded) {
-            console.log('⚠️ AUTH: Clerk loaded but no user');
             const tokenNow = localStorage.getItem('clerk_jwt');
             if (tokenNow && !isTokenValid(tokenNow)) clearLocalAuth();
             if (mounted) setCurrentUser(null);
           } else {
             // Clerk not loaded yet; wait for it
-            console.log('⏳ AUTH: Clerk not loaded yet, waiting...');
             if (mounted) setLoading(true);
             return;
           }
@@ -245,7 +196,6 @@ export const AuthProvider = ({ children }) => {
         clearLocalAuth();
         if (mounted) setCurrentUser(null);
       } finally {
-        console.log('🏁 AUTH: checkAuthStatus completed, loading:', false);
         if (mounted) setLoading(false);
       }
     };

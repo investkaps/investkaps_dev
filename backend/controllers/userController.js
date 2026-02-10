@@ -8,65 +8,55 @@ import UserSubscription from '../model/UserSubscription.js';
  */
 export const createUser = async (req, res) => {
   try {
-    console.log('🟡 createUser called with body:', req.body);
-    console.log('🟡 req.clerkId from token:', req.clerkId);
+    const { clerkId, email, name, isVerified } = req.body;
     
-    const { clerkId: bodyClerkId, email, name, isVerified } = req.body;
+    // Use clerkId from token if not in body
+    const finalClerkId = clerkId || req.clerkId;
     
-    // Use clerkId from token if not provided in body
-    const clerkId = bodyClerkId || req.clerkId;
-    
-    console.log('🟡 Final clerkId:', clerkId);
-    console.log('🟡 Email:', email);
-    
-    if (!clerkId || !email) {
-      console.log('❌ Missing required fields - clerkId:', clerkId, 'email:', email);
+    if (!finalClerkId || !email) {
       return res.status(400).json({
         success: false,
-        error: 'Clerk ID and email are required'
+        error: 'Missing required fields: clerkId and email are required'
       });
     }
-    
+
     // Check if user already exists
-    console.log('🔍 Checking if user exists with clerkId:', clerkId);
-    let user = await User.findOne({ clerkId });
+    const existingUser = await User.findOne({ 
+      $or: [
+        { clerkId: finalClerkId },
+        { email: email.toLowerCase() }
+      ]
+    });
     
-    if (user) {
-      console.log(`⚠️ User already exists with clerkId: ${clerkId}, email: ${user.email}`);
-      return res.status(200).json({
-        success: true,
-        message: 'User already exists',
-        user
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        error: 'User already exists'
       });
     }
-    
-    console.log(`✅ Creating new user with clerkId: ${clerkId}, email: ${email}, name: ${name || email.split('@')[0]}`);
-    
-    // Create new user
-    user = new User({
-      clerkId,
-      email,
+
+    console.log(' NEW USER CREATING:', email.toLowerCase());
+    const user = new User({
+      clerkId: finalClerkId,
+      email: email.toLowerCase(),
       name: name || email.split('@')[0],
       isVerified: isVerified || false
     });
-    
-    console.log('🟡 Saving user to MongoDB...');
-    await user.save();
-    
-    console.log(`✅ User created successfully: ${user._id} with email: ${user.email}`);
-    
-    return res.status(201).json({
+
+    const savedUser = await user.save();
+    console.log(' NEW USER CREATED:', savedUser.email, 'ID:', savedUser._id);
+
+    res.status(201).json({
       success: true,
       message: 'User created successfully',
-      user
+      user: savedUser
     });
+
   } catch (error) {
-    console.error('❌ Error creating user:', error);
-    console.error('❌ Error details:', error.message);
-    console.error('❌ Error stack:', error.stack);
-    return res.status(500).json({
+    console.error(' USER CREATION FAILED:', error.message);
+    res.status(500).json({
       success: false,
-      error: 'Internal server error',
+      error: 'Server error while creating user',
       details: error.message
     });
   }
