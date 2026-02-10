@@ -68,26 +68,41 @@ class LTPService {
       console.log('Timestamp:', new Date().toISOString());
       console.log('Request:', { exchange, symbols });
       console.log('Base URL:', this.baseURL);
-      console.log('Endpoint:', `${this.baseURL}/ltp/batch`);
+      console.log('Endpoint:', `${this.baseURL}/ltp/multi`);
       console.log('Symbols Count:', symbols.length);
       console.log('Symbols:', symbols);
       
-      const symbolsParam = symbols.join(',');
-      console.log('Symbols Param:', symbolsParam);
+      // Convert to EXCHANGE:SYMBOL format for multi endpoint
+      const itemsParam = symbols.map(symbol => `${exchange.toUpperCase()}:${symbol.toUpperCase()}`).join(',');
+      console.log('Items Param:', itemsParam);
       
       logger.info(`Fetching batch LTP for ${symbols.length} symbols from ${exchange}`);
       
-      const response = await axios.get(`${this.baseURL}/ltp/batch`, {
-        params: { exchange, symbols: symbolsParam },
+      const response = await axios.get(`${this.baseURL}/ltp/multi`, {
+        params: { items: itemsParam },
         timeout: this.timeout
       });
 
       console.log('✅ Response Status:', response.status);
       console.log('✅ Response Data:', JSON.stringify(response.data, null, 2));
       console.log('✅ Response Headers:', JSON.stringify(response.headers, null, 2));
+      
+      // Convert multi endpoint response back to expected format
+      const prices = {};
+      for (const symbol of symbols) {
+        const key = `${exchange.toUpperCase()}:${symbol.toUpperCase()}`;
+        prices[symbol] = response.data.prices?.[key] || null;
+      }
+      
+      const result = {
+        exchange: exchange.toUpperCase(),
+        prices: prices
+      };
+      
+      console.log('✅ Converted Result:', JSON.stringify(result, null, 2));
       logger.info(`Batch LTP fetched successfully: ${symbols.length} symbols from ${exchange}`);
       console.log('=== END FETCH BATCH PRICES ===\n');
-      return response.data;
+      return result;
     } catch (error) {
       console.log('❌ ERROR IN FETCH BATCH PRICES');
       console.log('Error Type:', error.constructor.name);

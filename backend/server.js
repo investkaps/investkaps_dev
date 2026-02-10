@@ -8,15 +8,6 @@ import cron from 'node-cron';
 // Load environment variables first, before any other imports that might use them
 dotenv.config();
 
-// Verify environment variables are loaded
-console.log('=== Environment Variables Check ===');
-console.log('Razorpay Key ID available:', !!process.env.RAZORPAY_KEY_ID);
-console.log('Razorpay Key Secret available:', !!process.env.RAZORPAY_KEY_SECRET);
-console.log('KYC_USERNAME available:', !!process.env.KYC_USERNAME);
-console.log('CLERK_PUBLISHABLE_KEY available:', !!process.env.CLERK_PUBLISHABLE_KEY);
-console.log('MONGODB_URI available:', !!process.env.MONGODB_URI);
-console.log('===================================');
-
 // Now import modules that might use environment variables
 import connectDB from './config/db.js';
 import logger from './utils/logger.js';
@@ -81,6 +72,15 @@ app.get('/', (req, res) => {
   res.send('InvestKaps KYC API is running');
 });
 
+// Health check endpoint for Render
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 // E-Signing routes
 app.use('/api', esignRoutes);
 
@@ -141,9 +141,6 @@ if (!fs.existsSync(logsDir)) {
 
 // Start server
 app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}`);
-  logger.info(`E-Signing API available at http://localhost:${PORT}/api/esign`);
-  
   // Initialize subscription scheduler
   // Check for expired subscriptions daily at 1:00 AM
   cron.schedule('0 1 * * *', async () => {

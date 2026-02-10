@@ -95,7 +95,7 @@ async function createSignRequest({ name, email, profileId, pdfBase64, fileName, 
     url: `${LEEGALITY_API_BASE}/sign/request`,
     profileId,
     fileName: payload.file.name,
-    base64Preview: preview
+    pdfSize: cleanBase64.length
   });
 
   // ✅ CRITICAL FIX: Correct authentication header
@@ -108,13 +108,15 @@ async function createSignRequest({ name, email, profileId, pdfBase64, fileName, 
     const resp = await postWithRetry('/sign/request', payload, { headers }, 1);
     makeLog('Signature request created', 'INFO', { status: resp.status });
     
-    // Log the full response structure for debugging
+    // Log essential response data (excluding files/base64 content)
+    const { status, messages, documentId, irn, invitees } = resp.data;
     makeLog('Leegality API Response Structure', 'INFO', {
-      responseData: JSON.stringify(resp.data, null, 2)
+      status,
+      messages,
+      documentId,
+      irn,
+      inviteeCount: invitees?.length || 0
     });
-    console.log('=== LEEGALITY FULL RESPONSE ===');
-    console.log(JSON.stringify(resp.data, null, 2));
-    console.log('=== END RESPONSE ===');
     
     return { success: true, data: resp.data };
   } catch (err) {
@@ -124,7 +126,7 @@ async function createSignRequest({ name, email, profileId, pdfBase64, fileName, 
       message: err.message,
       status,
       response: respData,
-      payloadPreview: { profileId, fileName: payload.file.name, base64Preview: preview }
+      payloadSize: cleanBase64.length
     });
     return { success: false, error: err.message, details: respData, httpStatus: status || 500 };
   }

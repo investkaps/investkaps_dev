@@ -12,18 +12,19 @@ let razorpay = null;
 
 const getRazorpayInstance = () => {
   if (!razorpay) {
-    // Debug log for environment variables
-    console.log('Razorpay Key ID available:', !!process.env.RAZORPAY_KEY_ID);
-    console.log('Razorpay Key Secret available:', !!process.env.RAZORPAY_KEY_SECRET);
-    
     try {
+      console.log('🔑 Initializing Razorpay with key_id:', process.env.RAZORPAY_KEY_ID?.substring(0, 8) + '...');
+      console.log('🔐 Key secret exists:', !!process.env.RAZORPAY_KEY_SECRET);
+      
       razorpay = new Razorpay({
         key_id: process.env.RAZORPAY_KEY_ID,
         key_secret: process.env.RAZORPAY_KEY_SECRET
       });
-      console.log('Razorpay initialized successfully');
-    } catch (error) {
-      console.error('Error initializing Razorpay:', error.message);
+      
+      console.log('✅ Razorpay initialized successfully');
+      } catch (error) {
+      console.error('❌ Error initializing Razorpay:', error.message);
+      console.error('❌ Full error:', error);
       throw new Error('Razorpay initialization failed: ' + error.message);
     }
   }
@@ -492,8 +493,10 @@ export const cancelSubscription = async (req, res) => {
 // Create a Razorpay order for subscription purchase
 export const createOrder = async (req, res) => {
   try {
-    // Check if Razorpay is initialized
-    if (!razorpay) {
+    // Initialize Razorpay if not already done
+    const razorpayInstance = getRazorpayInstance();
+    
+    if (!razorpayInstance) {
       return res.status(500).json({
         success: false,
         error: 'Payment gateway not initialized. Please check server logs.'
@@ -545,7 +548,6 @@ export const createOrder = async (req, res) => {
       }
     };
     
-    const razorpayInstance = getRazorpayInstance();
     const order = await razorpayInstance.orders.create(options);
     
     // Get user details for prefill

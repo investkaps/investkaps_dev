@@ -28,3 +28,90 @@
 2026-02-06 22:25:14 info: E-Signing API available at http://localhost:5000/api/esign
 2026-02-06 22:25:33 info: Server running on port 5000
 2026-02-06 22:25:33 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-06 22:28:20 info: Sending OTP to: 918178218011
+2026-02-06 22:28:20 info: API URL: https://2factor.in/API/V1/4efcf700-b497-11f0-bdde-0200cd936042/SMS/918178218011/AUTOGEN3/OTP1
+2026-02-06 22:28:21 info: 2Factor API Response: {"Status":"Success","Details":"0b55382f-037d-11f1-a6b2-0200cd936042"}
+2026-02-06 22:28:39 info: Verifying OTP (phone-based): 918178218011
+2026-02-06 22:28:39 info: Verify URL: https://2factor.in/API/V1/4efcf700-b497-11f0-bdde-0200cd936042/SMS/VERIFY3/918178218011/6578
+2026-02-06 22:28:40 info: 2Factor Verify Response: {"Status":"Success","Details":"OTP Matched"}
+2026-02-06 22:28:40 info: Response Status: Success, Details: OTP Matched
+2026-02-06 22:28:40 info: ✅ OTP verification successful for 918178218011
+2026-02-06 22:28:40 info: User phone updated in DB: 8178218011
+2026-02-06 22:58:42 info: Server running on port 5000
+2026-02-06 22:58:42 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-10 10:39:12 info: Server running on port 5000
+2026-02-10 10:39:12 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-10 10:40:36 info: Document saved to DB for user 6981fbb56f99a61af223d01b, documentId: 01KH2ZASWRVKYREKGBGTBBVAV0, mongoId: 698abdcc24f274a958a1432a
+2026-02-10 10:44:44 info: Server running on port 5000
+2026-02-10 10:44:44 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-10 10:46:12 info: Server running on port 5000
+2026-02-10 10:46:12 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-10 10:49:16 info: Server running on port 5000
+2026-02-10 10:49:16 info: E-Signing API available at http://localhost:5000/api/esign
+2026-02-10 11:16:19 error: Error saving document to DB: Document validation failed: esign.status: `1` is not a valid enum value for path `esign.status`.
+2026-02-10 11:24:23 error: Error saving document to DB: Document validation failed: esign.status: `1` is not a valid enum value for path `esign.status`.
+2026-02-10 11:28:17 error: Error saving document to DB: Cannot read properties of undefined (reading 'documentId')
+2026-02-10 11:30:12 error: Error saving document to DB: Cannot read properties of undefined (reading 'documentId')
+2026-02-10 11:37:26 info: Loaded 21576 symbols from symbols.json
+2026-02-10 11:37:29 info: Fetching LTP for BSE:TCS
+2026-02-10 11:37:39 error: Error fetching single LTP for BSE:TCS: timeout of 10000ms exceeded
+2026-02-10 11:37:39 error: Error in getSinglePrice: Failed to fetch price for TCS: timeout of 10000ms exceeded
+2026-02-10 11:37:52 info: Fetching LTP for BSE:TCS
+2026-02-10 11:38:02 error: Error fetching single LTP for BSE:TCS: timeout of 10000ms exceeded
+2026-02-10 11:38:02 error: Error in getSinglePrice: Failed to fetch price for TCS: timeout of 10000ms exceeded
+2026-02-10 11:38:22 info: Fetching LTP for BSE:TCS
+2026-02-10 11:38:24 info: LTP fetched successfully: BSE:TCS = 2990
+2026-02-10 11:38:52 info: Telegram bot initialized successfully
+2026-02-10 11:38:53 info: Stock recommendation sent to Telegram chat -1002283029106: TCS
+2026-02-10 11:38:53 info: Recommendation sent to Telegram chat -1002283029106: TCS
+2026-02-10 11:38:54 info: Fetching batch LTP for 1 symbols from NSE
+2026-02-10 11:38:56 info: Batch LTP fetched successfully: 1 symbols from NSE
+2026-02-10 11:43:56 info: Fetching batch LTP for 1 symbols from NSE
+2026-02-10 11:43:58 info: Batch LTP fetched successfully: 1 symbols from NSE
+2026-02-10 11:44:22 error: Error sending email: Missing credentials for "PLAIN"
+2026-02-10 11:44:22 error: Error sending subscription confirmation email: Missing credentials for "PLAIN"
+2026-02-10 11:46:02 info: Loaded 21576 symbols from symbols.json
+2026-02-10 11:46:06 info: Fetching LTP for BSE:TCS
+2026-02-10 11:46:08 info: LTP fetched successfully: BSE:TCS = 2989.75
+2026-02-10 11:46:35 error: Failed to send recommendation to user 6981fbb56f99a61af223d01b: notificationService.sendRecommendationNotification is not a function
+2026-02-10 11:46:35 info: Telegram bot initialized successfully
+2026-02-10 11:46:36 info: Stock recommendation sent to Telegram chat -1002283029106: TCS
+2026-02-10 11:46:36 info: Recommendation sent to Telegram chat -1002283029106: TCS
+2026-02-10 11:46:38 error: Error sending WhatsApp message to 8178218011:
+2026-02-10 11:46:38 info: Recommendation sent to WhatsApp 8178218011: TCS
+2026-02-10 11:49:20 info: Fetching batch LTP for 1 symbols from NSE
+2026-02-10 11:49:21 info: Batch LTP fetched successfully: 1 symbols from NSE
+2026-02-10 11:49:32 info: Fetching LTP for BSE:RELIANCE
+2026-02-10 11:49:34 info: LTP fetched successfully: BSE:RELIANCE = 1461.2
+2026-02-10 11:49:52 error: Failed to send recommendation to user 6981fbb56f99a61af223d01b: notificationService.sendRecommendationNotification is not a function
+2026-02-10 11:49:53 info: Stock recommendation sent to Telegram chat -1002879123670: RELIANCE
+2026-02-10 11:49:53 info: Recommendation sent to Telegram chat -1002879123670: RELIANCE
+2026-02-10 11:49:54 error: Error sending WhatsApp message to 8178218011:
+2026-02-10 11:49:54 info: Recommendation sent to WhatsApp 8178218011: RELIANCE
+2026-02-10 11:49:54 error: Failed to send recommendation to user 6981fbb56f99a61af223d01b: notificationService.sendRecommendationNotification is not a function
+2026-02-10 11:49:55 info: Stock recommendation sent to Telegram chat -1002879123670: RELIANCE
+2026-02-10 11:49:55 info: Recommendation sent to Telegram chat -1002879123670: RELIANCE
+2026-02-10 11:49:55 error: Error sending WhatsApp message to 8178218011:
+2026-02-10 11:49:55 info: Recommendation sent to WhatsApp 8178218011: RELIANCE
+2026-02-10 11:54:49 info: Fetching batch LTP for 3 symbols from NSE
+2026-02-10 11:54:51 error: Error fetching batch LTP: Request failed with status code 502
+2026-02-10 11:54:51 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-02-10 11:57:22 error: Error sending WhatsApp message to 8178218011: Request failed with status code 400
+2026-02-10 12:02:11 info: Fetching batch LTP for 3 symbols from NSE
+2026-02-10 12:02:13 error: Error fetching batch LTP: Request failed with status code 502
+2026-02-10 12:02:13 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-02-10 12:07:09 info: Fetching batch LTP for 3 symbols from NSE
+2026-02-10 12:07:11 error: Error fetching batch LTP: Request failed with status code 502
+2026-02-10 12:07:11 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-02-10 12:12:10 info: Fetching batch LTP for 3 symbols from NSE
+2026-02-10 12:12:12 error: Error fetching batch LTP: Request failed with status code 502
+2026-02-10 12:12:12 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-02-10 12:17:09 info: Fetching batch LTP for 3 symbols from NSE
+2026-02-10 12:17:11 error: Error fetching batch LTP: Request failed with status code 502
+2026-02-10 12:17:11 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-02-10 12:22:09 info: Fetching batch LTP for 3 symbols from NSE
+2026-02-10 12:22:11 error: Error fetching batch LTP: Request failed with status code 502
+2026-02-10 12:22:11 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-02-10 12:27:30 info: Fetching batch LTP for 3 symbols from NSE
+2026-02-10 12:27:32 error: Error fetching batch LTP: Request failed with status code 502
+2026-02-10 12:27:32 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502

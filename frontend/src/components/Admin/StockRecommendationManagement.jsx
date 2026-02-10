@@ -1,9 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { adminAPI } from '../../services/api';
 import stockRecommendationAPI from '../../services/stockRecommendationAPI';
 import PDFReportGenerator from '../PDFReportGenerator/PDFReportGenerator';
 import SymbolAutocomplete from './SymbolAutocomplete';
 import './StockRecommendationManagement.css';
+
+// Import the API instance for authenticated requests
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const api = axios.create({
+  baseURL: API_URL,
+  headers: { 'Content-Type': 'application/json' },
+});
+
+// Attach token from localStorage to every request automatically
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('clerk_jwt');
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 const StockRecommendationManagement = () => {
   const [recommendations, setRecommendations] = useState([]);
@@ -21,6 +39,7 @@ const StockRecommendationManagement = () => {
   const [updatingPrices, setUpdatingPrices] = useState(false);
   const [lastPriceUpdate, setLastPriceUpdate] = useState(null);
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
+  const [testingWhatsApp, setTestingWhatsApp] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -246,6 +265,30 @@ const StockRecommendationManagement = () => {
     });
     setFormMode('create');
     setIsFormVisible(true);
+  };
+
+  const handleTestWhatsApp = async (recommendation) => {
+    setTestingWhatsApp(true);
+    try {
+      const response = await api.post('/admin/test-whatsapp', {
+        recommendationId: recommendation._id,
+        stockSymbol: recommendation.stockSymbol,
+        stockName: recommendation.stockName
+      });
+      
+      const result = response.data;
+      
+      if (result.success) {
+        alert(`✅ WhatsApp test sent successfully!\n\nStock: ${recommendation.stockSymbol}\nMessage: Test message sent to 8178218011`);
+      } else {
+        alert(`❌ WhatsApp test failed!\n\nError: ${result.error}\nDetails: ${result.details || 'No details available'}`);
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || error.message;
+      alert(`❌ WhatsApp test failed!\n\nError: ${errorMessage}`);
+    } finally {
+      setTestingWhatsApp(false);
+    }
   };
 
   const handleEdit = (recommendation) => {
@@ -891,6 +934,18 @@ const StockRecommendationManagement = () => {
                         onClick={() => handleEdit(recommendation)}
                       >
                         Edit
+                      </button>
+                      <button
+                        className="admin-action-button whatsapp"
+                        onClick={() => handleTestWhatsApp(recommendation)}
+                        disabled={testingWhatsApp}
+                        title="Test WhatsApp Message"
+                        style={{
+                          backgroundColor: '#25D366',
+                          color: 'white'
+                        }}
+                      >
+                        {testingWhatsApp ? '🔄 Testing...' : '📱 Test WA'}
                       </button>
                       {recommendation.pdfReport && recommendation.pdfReport.url ? (
                         <button

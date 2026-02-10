@@ -1134,27 +1134,30 @@ const Dashboard = () => {
                             onClick={async () => {
                               // Validate activeDocumentId
                               if (!activeDocumentId || activeDocumentId === 'null' || activeDocumentId === 'undefined') {
+                                console.log('❌ Check Status: No activeDocumentId found');
                                 alert('No active e-signing session found. Please proceed to e-signing first.');
                                 return;
                               }
                               
+                              console.log('🔍 Check Status: Starting status check for document:', activeDocumentId);
                               setIsLoading(true);
                               try {
-                                console.log('Checking status for documentId:', activeDocumentId);
-                                
                                 // First, get the requestId from our database
+                                console.log('📋 Check Status: Getting requestId from database...');
                                 const dbResponse = await esignAPI.checkDocumentStatus(activeDocumentId);
                                 
                                 if (!dbResponse.success || !dbResponse.data?.requestId) {
+                                  console.log('❌ Check Status: No requestId found in database response');
                                   alert('No active e-signing session found. Please proceed to e-signing first.');
                                   setIsLoading(false);
                                   return;
                                 }
                                 
                                 const requestId = dbResponse.data.requestId;
-                                console.log('Checking status for requestId:', requestId);
+                                console.log('🔑 Check Status: Got requestId from DB:', requestId);
                                 
                                 // Call Leegality API directly to check status
+                                console.log('🌐 Check Status: Calling Leegality API...');
                                 const response = await fetch(`https://app1.leegality.com/api/v2.2/sign/request?documentId=${requestId}`, {
                                   method: 'GET',
                                   headers: {
@@ -1165,13 +1168,23 @@ const Dashboard = () => {
                                 
                                 if (response.ok) {
                                   const result = await response.json();
-                                  console.log('Leegality status response:', result);
+                                  console.log('📥 Check Status: Leegality response received:', result);
                                   
-                                  // Check if all invitees have signed
-                                  const allSigned = result.data?.invitees?.every(invitee => invitee.status === 'signed');
+                                  // Handle error response
+                                  if (result.status === 0) {
+                                    console.log('❌ Check Status: Leegality API error:', result.messages?.[0]?.message);
+                                    alert(`Status check failed: ${result.messages?.[0]?.message || 'Unknown error'}`);
+                                    return;
+                                  }
                                   
-                                  if (allSigned) {
+                                  // Check if all invitees have signed (new format)
+                                  const allSigned = result.data?.requests?.every(invitee => invitee.signed === true);
+                                  const hasAuditTrail = !!result.data?.auditTrail;
+                                  console.log('✅ Check Status: All invitees signed:', allSigned, 'Has audit trail:', hasAuditTrail);
+                                  
+                                  if (allSigned && hasAuditTrail) {
                                     // Update our database
+                                    console.log('💾 Check Status: Updating database with completed status...');
                                     await fetch(`${API_URL}/esign/update-status`, {
                                       method: 'POST',
                                       headers: {
@@ -1179,10 +1192,12 @@ const Dashboard = () => {
                                       },
                                       body: JSON.stringify({
                                         documentId: activeDocumentId,
-                                        status: 'completed'
+                                        status: 'completed',
+                                        leegalityResponse: result
                                       })
                                     });
                                     
+                                    console.log('🎉 Check Status: E-signing completed! Updating UI...');
                                     setSteps(prevSteps => ({
                                       ...prevSteps,
                                       signing: { ...prevSteps.signing, completed: true },
@@ -1190,17 +1205,34 @@ const Dashboard = () => {
                                     }));
                                     alert('✓ E-signing completed successfully!');
                                   } else {
-                                    const status = result.data?.invitees?.[0]?.status || 'pending';
-                                    alert(`E-signing status: ${status}. Please complete the signing process.`);
+                                    // Get detailed status from requests array
+                                    const requests = result.data?.requests || [];
+                                    const signedCount = requests.filter(r => r.signed === true).length;
+                                    const totalCount = requests.length;
+                                    const rejectedCount = requests.filter(r => r.rejected === true).length;
+                                    const expiredCount = requests.filter(r => r.expired === true).length;
+                                    
+                                    console.log('⏳ Check Status: Not completed yet');
+                                    console.log(`📊 Check Status: ${signedCount}/${totalCount} signed, ${rejectedCount} rejected, ${expiredCount} expired`);
+                                    
+                                    if (rejectedCount > 0) {
+                                      alert(`E-signing rejected by ${rejectedCount} signer(s). Please restart the process.`);
+                                    } else if (expiredCount > 0) {
+                                      alert(`E-signing links expired for ${expiredCount} signer(s). Please restart the process.`);
+                                    } else {
+                                      alert(`E-signing in progress: ${signedCount}/${totalCount} have signed. Please complete the signing process.`);
+                                    }
                                   }
                                 } else {
+                                  console.log('❌ Check Status: Leegality API call failed');
                                   const errorData = await response.json();
                                   alert('Failed to check status: ' + (errorData.message || 'Unknown error'));
                                 }
                               } catch (err) {
-                                console.error('Error checking e-sign status:', err);
+                                console.error('💥 Check Status: Error occurred:', err);
                                 alert('Error checking status: ' + err.message);
                               } finally {
+                                console.log('🏁 Check Status: Process finished');
                                 setIsLoading(false);
                               }
                             }}

@@ -215,6 +215,52 @@ router.get('/kyc', verifyToken, checkRole('admin'), async (req, res) => {
   }
 });
 
+/**
+ * @route   POST /api/admin/test-whatsapp
+ * @desc    Test WhatsApp message sending
+ * @access  Private (Admin only)
+ */
+router.post('/test-whatsapp', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const { recommendationId, stockSymbol, stockName } = req.body;
+    
+    // Import WhatsApp service
+    const { sendWhatsAppTemplate } = await import('../services/whatsappService.js');
+    
+    // Test phone number (hardcoded for testing)
+    // Note: This number must be in your Meta Business approved recipient list
+    const testPhoneNumber = '919876543210'; // Change to your verified number
+    
+    // Send test message (try without parameters first)
+    const success = await sendWhatsAppTemplate(testPhoneNumber, 'hello_world', []);
+    
+    if (success) {
+      return res.status(200).json({
+        success: true,
+        message: 'Test WhatsApp message sent successfully',
+        details: {
+          phoneNumber: testPhoneNumber,
+          stockSymbol,
+          stockName,
+          template: 'hello_world'
+        }
+      });
+    } else {
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to send WhatsApp message',
+        details: 'Check server logs for detailed error information'
+      });
+    }
+  } catch (error) {
+    console.error('Error in test WhatsApp endpoint:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Server error',
+      details: error.message
+    });
+  }
+});
 
 /**
  * @route   GET /api/admin/set-admin/:email

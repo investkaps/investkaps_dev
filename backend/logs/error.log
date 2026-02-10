@@ -1,0 +1,31 @@
+2026-02-10 11:16:19 error: Error saving document to DB: Document validation failed: esign.status: `1` is not a valid enum value for path `esign.status`.
+2026-02-10 11:24:23 error: Error saving document to DB: Document validation failed: esign.status: `1` is not a valid enum value for path `esign.status`.
+2026-02-10 11:28:17 error: Error saving document to DB: Cannot read properties of undefined (reading 'documentId')
+2026-02-10 11:30:12 error: Error saving document to DB: Cannot read properties of undefined (reading 'documentId')
+2026-02-10 11:37:39 error: Error fetching single LTP for BSE:TCS: timeout of 10000ms exceeded
+2026-02-10 11:37:39 error: Error in getSinglePrice: Failed to fetch price for TCS: timeout of 10000ms exceeded
+2026-02-10 11:38:02 error: Error fetching single LTP for BSE:TCS: timeout of 10000ms exceeded
+2026-02-10 11:38:02 error: Error in getSinglePrice: Failed to fetch price for TCS: timeout of 10000ms exceeded
+2026-02-10 11:44:22 error: Error sending email: Missing credentials for "PLAIN"
+2026-02-10 11:44:22 error: Error sending subscription confirmation email: Missing credentials for "PLAIN"
+2026-02-10 11:46:35 error: Failed to send recommendation to user 6981fbb56f99a61af223d01b: notificationService.sendRecommendationNotification is not a function
+2026-02-10 11:46:38 error: Error sending WhatsApp message to 8178218011:
+2026-02-10 11:49:52 error: Failed to send recommendation to user 6981fbb56f99a61af223d01b: notificationService.sendRecommendationNotification is not a function
+2026-02-10 11:49:54 error: Error sending WhatsApp message to 8178218011:
+2026-02-10 11:49:54 error: Failed to send recommendation to user 6981fbb56f99a61af223d01b: notificationService.sendRecommendationNotification is not a function
+2026-02-10 11:49:55 error: Error sending WhatsApp message to 8178218011:
+2026-02-10 11:54:51 error: Error fetching batch LTP: Request failed with status code 502
+2026-02-10 11:54:51 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-02-10 11:57:22 error: Error sending WhatsApp message to 8178218011: Request failed with status code 400
+2026-02-10 12:02:13 error: Error fetching batch LTP: Request failed with status code 502
+2026-02-10 12:02:13 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-02-10 12:07:11 error: Error fetching batch LTP: Request failed with status code 502
+2026-02-10 12:07:11 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-02-10 12:12:12 error: Error fetching batch LTP: Request failed with status code 502
+2026-02-10 12:12:12 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-02-10 12:17:11 error: Error fetching batch LTP: Request failed with status code 502
+2026-02-10 12:17:11 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-02-10 12:22:11 error: Error fetching batch LTP: Request failed with status code 502
+2026-02-10 12:22:11 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-02-10 12:27:32 error: Error fetching batch LTP: Request failed with status code 502
+2026-02-10 12:27:32 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502

@@ -61,7 +61,17 @@ const sendWhatsAppTemplate = async (phoneNumber, templateName = 'hello_world', t
     return true;
 
   } catch (error) {
-    logger.error(`Error sending WhatsApp message to ${phoneNumber}:`, error.response?.data || error.message);
+    const errorDetails = {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method
+      }
+    };
+    logger.error(`Error sending WhatsApp message to ${phoneNumber}:`, errorDetails);
     return false;
   }
 };
