@@ -68,14 +68,21 @@ export const AuthProvider = ({ children }) => {
   // Create or update backend user helper - only using Clerk email
   const createOrUpdateBackendUser = async (maybeClerkUser) => {
     try {
-      if (!maybeClerkUser) return;
+      console.log('🟡 Frontend: createOrUpdateBackendUser called with:', maybeClerkUser?.id);
+      
+      if (!maybeClerkUser) {
+        console.log('❌ Frontend: No clerkUser provided');
+        return;
+      }
       
       // Get email from Clerk user ONLY - this is our source of truth
       const email = maybeClerkUser.primaryEmailAddress?.emailAddress;
       if (!email) {
-        console.warn('No Clerk email available for backend user creation');
+        console.warn('❌ Frontend: No Clerk email available for backend user creation');
         return;
       }
+      
+      console.log('🟡 Frontend: Creating backend user for email:', email);
       
       // Ensure token stored in localStorage (get via Clerk hook if possible)
       let tokenString = localStorage.getItem('clerk_jwt') || null;
@@ -85,15 +92,20 @@ export const AuthProvider = ({ children }) => {
           tokenString = typeof tk === 'string' ? tk : tk?.jwt || null;
           if (tokenString) localStorage.setItem('clerk_jwt', tokenString);
         } catch (err) {
-          console.warn('Could not fetch token for backend create:', err);
+          console.warn('❌ Frontend: Could not fetch token for backend create:', err);
         }
       }
 
+      console.log('🟡 Frontend: Token available:', !!tokenString);
+
       // First check if user already exists by email
       try {
+        console.log('🔍 Frontend: Checking if user exists by email:', email);
         await userAPI.getUserByEmail(email);
+        console.log('⚠️ Frontend: User already exists, skipping creation');
         return; // User already exists, no need to create
       } catch (err) {
+        console.log('🟡 Frontend: User not found, proceeding with creation:', err.message);
         // User not found, continue with creation
       }
 
@@ -105,10 +117,14 @@ export const AuthProvider = ({ children }) => {
         isVerified: maybeClerkUser.emailAddresses?.[0]?.verification?.status === 'verified'
       };
 
+      console.log('🟡 Frontend: Calling userAPI.createUser with payload:', payload);
+
       // Call backend create; userAPI uses axios instance which attaches token automatically
-      await userAPI.createUser(payload);
+      const result = await userAPI.createUser(payload);
+      console.log('✅ Frontend: User created successfully:', result);
     } catch (err) {
-      console.warn('Failed to create backend user:', err.message || err);
+      console.error('❌ Frontend: Failed to create backend user:', err.message || err);
+      console.error('❌ Frontend: Full error:', err);
     }
   };
 
@@ -116,26 +132,41 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let mounted = true;
     const checkAuthStatus = async () => {
+      console.log('🔍 AUTH: checkAuthStatus called');
+      console.log('🔍 AUTH: clerkLoaded:', clerkLoaded);
+      console.log('🔍 AUTH: clerkAuthLoaded:', clerkAuthLoaded);
+      console.log('🔍 AUTH: clerkUser:', clerkUser ? clerkUser.id : null);
+      console.log('🔍 AUTH: clerkIsSignedIn:', clerkIsSignedIn);
+      
       setLoading(true);
       try {
         const savedToken = localStorage.getItem('clerk_jwt');
+        console.log('🔍 AUTH: Saved token exists:', !!savedToken);
 
         if (savedToken && !isTokenValid(savedToken)) {
+          console.log('🔍 AUTH: Saved token invalid, clearing...');
           clearLocalAuth();
         }
 
         if (clerkLoaded && clerkUser) {
+          console.log('✅ AUTH: Clerk loaded and user available');
           try {
             // Prefer Clerk hook getToken
             let token = null;
             if (typeof getClerkToken === 'function') {
+              console.log('🔍 AUTH: Getting token via getClerkToken...');
               token = await getClerkToken();
             } else if (clerkUser?.getToken) {
+              console.log('🔍 AUTH: Getting token via clerkUser.getToken...');
               token = await clerkUser.getToken();
             }
 
             const tokenString = typeof token === 'string' ? token : token?.jwt || null;
-            if (tokenString) localStorage.setItem('clerk_jwt', tokenString);
+            console.log('🔍 AUTH: Token string obtained:', !!tokenString);
+            if (tokenString) {
+              localStorage.setItem('clerk_jwt', tokenString);
+              console.log('🔍 AUTH: Token saved to localStorage');
+            }
 
             const user = {
               id: clerkUser.id,
@@ -145,16 +176,23 @@ export const AuthProvider = ({ children }) => {
               createdAt: clerkUser.createdAt
             };
 
+            console.log('👤 AUTH: User object created:', { id: user.id, email: user.email, name: user.name });
+
             // Try to fetch backend user; fallback to setting Clerk user directly
             try {
+              console.log('🔍 AUTH: Checking if user exists in backend...');
               // First try by clerkId
               let response;
               try {
+                console.log('🔍 AUTH: Trying getUserByClerkId...');
                 response = await userAPI.getUserByClerkId(clerkUser.id);
+                console.log('✅ AUTH: User found by clerkId');
               } catch (clerkIdError) {
+                console.log('⚠️ AUTH: User not found by clerkId, trying email...');
                 // If not found by clerkId, try by email
                 if (clerkUser.primaryEmailAddress?.emailAddress) {
                   response = await userAPI.getUserByEmail(clerkUser.primaryEmailAddress.emailAddress);
+                  console.log('✅ AUTH: User found by email');
                 } else {
                   throw clerkIdError; // Re-throw if no email available
                 }
@@ -162,6 +200,7 @@ export const AuthProvider = ({ children }) => {
               
               if (mounted) {
                 const role = response.user?.role || 'customer';
+                console.log('👤 AUTH: Setting current user with role:', role);
                 setCurrentUser({
                   ...user,
                   profile: response.user?.profile,
@@ -171,33 +210,42 @@ export const AuthProvider = ({ children }) => {
                 });
               }
             } catch (err) {
+              console.log('⚠️ AUTH: Backend user not found, creating new user...');
+              console.log('⚠️ AUTH: Error details:', err.message);
               // If backend user not found, set the clerk user and create backend record
-              if (mounted) setCurrentUser(user);
+              if (mounted) {
+                console.log('👤 AUTH: Setting current user from Clerk data');
+                setCurrentUser(user);
+              }
               // Try to create backend user asynchronously
+              console.log('🔧 AUTH: Calling createOrUpdateBackendUser...');
               createOrUpdateBackendUser(clerkUser);
             }
           } catch (err) {
-            console.error('Error getting token from Clerk user:', err);
+            console.error('❌ AUTH: Error getting token from Clerk user:', err);
             clearLocalAuth();
             if (mounted) setCurrentUser(null);
           }
         } else {
           // Clerk loaded but no user
           if (clerkLoaded) {
+            console.log('⚠️ AUTH: Clerk loaded but no user');
             const tokenNow = localStorage.getItem('clerk_jwt');
             if (tokenNow && !isTokenValid(tokenNow)) clearLocalAuth();
             if (mounted) setCurrentUser(null);
           } else {
             // Clerk not loaded yet; wait for it
+            console.log('⏳ AUTH: Clerk not loaded yet, waiting...');
             if (mounted) setLoading(true);
             return;
           }
         }
       } catch (err) {
-        console.error('Error in checkAuthStatus:', err);
+        console.error('❌ AUTH: Error in checkAuthStatus:', err);
         clearLocalAuth();
         if (mounted) setCurrentUser(null);
       } finally {
+        console.log('🏁 AUTH: checkAuthStatus completed, loading:', false);
         if (mounted) setLoading(false);
       }
     };

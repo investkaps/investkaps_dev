@@ -8,12 +8,19 @@ import UserSubscription from '../model/UserSubscription.js';
  */
 export const createUser = async (req, res) => {
   try {
+    console.log('🟡 createUser called with body:', req.body);
+    console.log('🟡 req.clerkId from token:', req.clerkId);
+    
     const { clerkId: bodyClerkId, email, name, isVerified } = req.body;
     
     // Use clerkId from token if not provided in body
     const clerkId = bodyClerkId || req.clerkId;
     
+    console.log('🟡 Final clerkId:', clerkId);
+    console.log('🟡 Email:', email);
+    
     if (!clerkId || !email) {
+      console.log('❌ Missing required fields - clerkId:', clerkId, 'email:', email);
       return res.status(400).json({
         success: false,
         error: 'Clerk ID and email are required'
@@ -21,10 +28,11 @@ export const createUser = async (req, res) => {
     }
     
     // Check if user already exists
+    console.log('🔍 Checking if user exists with clerkId:', clerkId);
     let user = await User.findOne({ clerkId });
     
     if (user) {
-      console.log(`User already exists with clerkId: ${clerkId}`);
+      console.log(`⚠️ User already exists with clerkId: ${clerkId}, email: ${user.email}`);
       return res.status(200).json({
         success: true,
         message: 'User already exists',
@@ -32,7 +40,7 @@ export const createUser = async (req, res) => {
       });
     }
     
-    console.log(`Creating new user with clerkId: ${clerkId}, email: ${email}`);
+    console.log(`✅ Creating new user with clerkId: ${clerkId}, email: ${email}, name: ${name || email.split('@')[0]}`);
     
     // Create new user
     user = new User({
@@ -42,9 +50,10 @@ export const createUser = async (req, res) => {
       isVerified: isVerified || false
     });
     
+    console.log('🟡 Saving user to MongoDB...');
     await user.save();
     
-    console.log(`User created successfully: ${user._id}`);
+    console.log(`✅ User created successfully: ${user._id} with email: ${user.email}`);
     
     return res.status(201).json({
       success: true,
@@ -52,10 +61,13 @@ export const createUser = async (req, res) => {
       user
     });
   } catch (error) {
-    console.error('Error creating user:', error);
+    console.error('❌ Error creating user:', error);
+    console.error('❌ Error details:', error.message);
+    console.error('❌ Error stack:', error.stack);
     return res.status(500).json({
       success: false,
-      error: 'Internal server error'
+      error: 'Internal server error',
+      details: error.message
     });
   }
 };

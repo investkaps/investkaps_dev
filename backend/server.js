@@ -33,7 +33,9 @@ import symbolRoutes from './routes/symbolRoutes.js';
 import ltpRoutes from './routes/ltpRoutes.js';
 
 // Connect to MongoDB
-connectDB();
+console.log('🔌 SERVER: Starting MongoDB connection...');
+const dbConnection = connectDB();
+console.log('🔌 SERVER: MongoDB connection initiated');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
