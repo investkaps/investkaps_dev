@@ -19,25 +19,20 @@ const IK15MomentumMP = () => {
           <div className="plan-section">
             <h2 className="section-title">A. Research Focus</h2>
             <p className="section-text">
-              Curated trading ideas using futures and options based on underlying indices and stocks.
+              Dynamic portfolio strategy aiming to outperform the underlying benchmark Nifty500 index by investing in top 15 stocks in the index with rebalancing.
             </p>
             <p className="section-text">
-              The ideas can include single leg pure delta (directional views on underlying) or complex option 
-              strategies largely on indices which may have multiple execution legs. Such complex strategies may 
-              be based upon other first order option greeks such as vega or theta and need not be pure delta based.
+              Weekly rebalancing ensures weak performers get exited and replaced periodiclly once they meet the exit criteria, giving way to new entries.
             </p>
             <p className="section-text">
-              The ideas will be based upon momentum, technical analysis, index or stock views as well as 
-              quantitative analysis for derivatives.
+              Portfolio stocks get weights assigned basis risk parity and ensuring adequate diversification. The ideas will be based upon top momentum, relative strength as against broader market and other sectors and stocks.
             </p>
           </div>
 
           <div className="plan-section">
             <h2 className="section-title">B. Objective</h2>
             <p className="section-text">
-              Maximizing risk adjusted returns in very short term. However, FnO requires extremely quick and 
-              disciplined execution of entry and exit. Subscribers need to be mindful of the same and understand 
-              the risks involved.
+              Aiming to outperform the underlying benchmark Nifty500 index. 
             </p>
           </div>
 
@@ -45,52 +40,31 @@ const IK15MomentumMP = () => {
             <h2 className="section-title">C. Subscription tenor & Pricing</h2>
             <p className="section-text">Monthly/ Quarterly/ Half-yearly subscription plans available.</p>
             <ul className="plan-list">
-              <li>1 month - Rs. 11,999/-</li>
-              <li>3 months - Rs. 29,999/-</li>
-              <li>6 months - Rs. 49,999/-</li>
+              <li>1 month - Rs. 999/-</li>
+              <li>3 months - Rs. 2,999/-</li>
+              <li>6 months - Rs. 5,999/-</li>
+              <li>12 months - Rs. 9,999/-</li>
             </ul>
           </div>
 
           <div className="plan-section">
             <h2 className="section-title">D. Deliverables & Indicative Holding Period</h2>
             <p className="section-text">
-              1 idea on an average per week of subscription period. Holding period starting intraday or few days 
-              upto a month.
+              Porfolio of stocks (out of Nifty500 constituents) with rebalacing per week.
             </p>
           </div>
 
           <div className="plan-section">
             <h2 className="section-title">E. Minimum Capital</h2>
             <p className="section-text">
-              Rs. 300,000 (considering the initial margin on a single lot of future or option sale leg as well as 
-              accomodate any adverse MTM).
-            </p>
-            <p className="section-text">
-              However, please note some strategies for instance selling a straddle involving shorting 2 option legs 
-              will accordingly require much higher initial margin capital.
+              Rs. 300,000 given portfolio of 15 stocks and multiple thereof.
             </p>
           </div>
 
           <div className="plan-section">
             <h2 className="section-title">F. Risk Appetite</h2>
             <p className="section-text">
-              Extremely high risk. Suited for sophisticated and active traders which understand the risks associated 
-              with leveraged instruments such as futures and options as well as basic character of these instruments.
-            </p>
-          </div>
-
-          {/* Warning Box */}
-          <div className="warning-box">
-            <p>
-              Do read SEBI report (refer page 6) on FnO losses by majority of retailers{' '}
-              <a 
-                href="https://www.sebi.gov.in/reports-and-statistics/research/jan-2023/study-analysis-of-profit-and-loss-of-individual-traders-dealing-in-equity-fando-segment_67525.html" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="sebi-link"
-              >
-                here
-              </a>.
+              Low to medium risk. Suited for investors looking for returns on portfolio basis.
             </p>
           </div>
 
