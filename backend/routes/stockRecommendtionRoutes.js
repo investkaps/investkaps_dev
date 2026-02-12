@@ -1,7 +1,7 @@
 import express from 'express';
 const router = express.Router();
 import * as stockRecommendationController from '../controllers/stockRecommendationController.js';
-import { authenticateToken  } from '../middleware/authMiddleware.js';
+import { authenticateToken  } from '../middleware/auth.js';
 import { checkRole  } from '../middleware/roleAuth.js';
 
 // Base route: /api/recommendations

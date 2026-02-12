@@ -2,7 +2,7 @@ import express from 'express';
 const router = express.Router();
 import { check  } from 'express-validator';
 import * as strategyController from '../controllers/strategyController.js';
-import { authenticateToken, requireAdmin  } from '../middleware/authMiddleware.js';
+import { authenticateToken, requireAdmin  } from '../middleware/auth.js';
 
 // All strategy routes are protected by admin middleware
 router.use(authenticateToken);

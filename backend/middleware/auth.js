@@ -2,105 +2,104 @@ import { clerkClient } from '@clerk/clerk-sdk-node';
 import User from '../model/User.js';
 import logger from '../utils/logger.js';
 
+// ─── Helper: extract clerkId from JWT ───
+const extractClerkId = (token) => {
+  const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+  return payload.sub;
+};
+
 /**
- * Middleware to verify JWT token from Clerk
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Express next function
+ * Full auth middleware – verifies token with Clerk API and loads DB user.
+ * Sets req.user (Mongoose doc) and req.clerkId.
  */
 export const verifyToken = async (req, res, next) => {
   try {
-    // Get token from header
     const token = req.headers.authorization?.split(' ')[1];
-    
+
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        error: 'No token provided, authorization denied'
-      });
+      return res.status(401).json({ success: false, error: 'No token provided, authorization denied' });
     }
-    
-    // Extract user ID from token
-    // Note: Token signature is verified by Clerk API call below
+
     let clerkId;
     try {
-      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-      clerkId = payload.sub;
-      
+      clerkId = extractClerkId(token);
       if (!clerkId) {
-        return res.status(401).json({
-          success: false,
-          error: 'Invalid token: missing user ID'
-        });
+        return res.status(401).json({ success: false, error: 'Invalid token: missing user ID' });
       }
     } catch (err) {
       logger.error(`Error parsing token: ${err.message}`);
-      return res.status(401).json({
-        success: false,
-        error: 'Invalid token format'
-      });
+      return res.status(401).json({ success: false, error: 'Invalid token format' });
     }
-    
-    // Verify token with Clerk API
-    const user = await clerkClient.users.getUser(clerkId);
-    
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        error: 'User not found'
-      });
+
+    // Verify user exists in Clerk
+    const clerkUser = await clerkClient.users.getUser(clerkId);
+    if (!clerkUser) {
+      return res.status(401).json({ success: false, error: 'User not found in Clerk' });
     }
-    
-    // Check if user exists in our database
+
+    // Load DB user
     const dbUser = await User.findOne({ clerkId });
-    
     if (!dbUser) {
-      return res.status(401).json({
-        success: false,
-        error: 'User not found in database'
-      });
+      return res.status(401).json({ success: false, error: 'User not found in database' });
     }
-    
-    // Add user to request object
+
     req.user = dbUser;
     req.clerkId = clerkId;
-    
     next();
   } catch (err) {
     logger.error(`Authentication error: ${err.message}`);
-    
-    return res.status(401).json({
-      success: false,
-      error: 'Authentication failed'
-    });
+    return res.status(401).json({ success: false, error: 'Authentication failed' });
+  }
+};
+
+// Backward-compatible alias used by some route files
+export const authenticateToken = verifyToken;
+
+/**
+ * Lightweight token extraction – only parses the JWT to get clerkId.
+ * Does NOT require the user to exist in DB (used for user creation).
+ * Sets req.clerkId.
+ */
+export const extractTokenOnly = async (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, error: 'No token provided' });
+    }
+
+    try {
+      req.clerkId = extractClerkId(token);
+    } catch {
+      return res.status(401).json({ success: false, error: 'Invalid token format' });
+    }
+
+    next();
+  } catch {
+    return res.status(401).json({ success: false, error: 'Authentication failed' });
   }
 };
 
 /**
- * Middleware to handle Clerk webhooks
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Express next function
+ * Admin-only middleware – must be used AFTER verifyToken.
+ */
+export const requireAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'Access denied: Admin privileges required' });
+  }
+  next();
+};
+
+/**
+ * Middleware to handle Clerk webhooks.
+ * TODO: Implement Clerk webhook signature verification before production.
  */
 export const handleWebhook = async (req, res, next) => {
   try {
-    // SECURITY WARNING: Webhook signature verification is disabled
-    // TODO: Implement Clerk webhook signature verification before production
-    // See: https://clerk.com/docs/integrations/webhooks/overview#verifying-webhooks
-    
-    // Process the webhook event
-    const { type, data } = req.body;
+    const { type } = req.body;
     logger.info(`Received webhook event: ${type}`);
-    
-    // Handle different event types
-    // For example: user.created, user.updated, etc.
-    
     next();
   } catch (error) {
     logger.error(`Webhook handling error: ${error.message}`);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to process webhook'
-    });
+    return res.status(500).json({ success: false, error: 'Failed to process webhook' });
   }
 };

@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import { authenticateToken  } from '../middleware/authMiddleware.js';
+import { authenticateToken  } from '../middleware/auth.js';
 import { checkRole  } from '../middleware/roleAuth.js';
 import * as subscriptionService from '../controllers/subscriptionService.js';
 

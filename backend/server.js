@@ -8,13 +8,10 @@ import cron from 'node-cron';
 // Load environment variables first, before any other imports that might use them
 dotenv.config();
 
-// Now import modules that might use environment variables
 import connectDB from './config/db.js';
 import logger from './utils/logger.js';
-
-// Import subscriptionService after dotenv loads to ensure env vars are available
 import * as subscriptionService from './controllers/subscriptionService.js';
-import * as stockRecommendationController from './controllers/stockRecommendationController.js';
+import { globalLimiter } from './middleware/rateLimiter.js';
 
 // Route imports
 import esignRoutes from './routes/esignRoutes.js';
@@ -25,7 +22,6 @@ import setupRoutes from './routes/setupRoutes.js';
 import consolidatedSubscriptionRoutes from './routes/consolidatedSubscriptionRoutes.js';
 import strategyRoutes from './routes/strategyRoutes.js';
 import stockRecommendationRoutes from './routes/stockRecommendtionRoutes.js';
-import testRoutes from './routes/testRoutes.js';
 import phoneRoutes from './routes/phoneRoutes.js';
 import paymentRequestRoutes from './routes/paymentRequestRoutes.js';
 import newsletterRoutes from './routes/newsletterRoutes.js';
@@ -33,54 +29,43 @@ import symbolRoutes from './routes/symbolRoutes.js';
 import ltpRoutes from './routes/ltpRoutes.js';
 
 // Connect to MongoDB
-const dbConnection = connectDB();
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-// Restrict CORS to frontend origin if provided, otherwise allow all (useful for dev)
+// ─── Middleware ───
 const allowedOrigins = [
   'http://localhost:5173',
   'https://investkaps.com',
   'https://www.investkaps.com'
 ];
-app.use(cors({ 
-  origin: allowedOrigins,
-  credentials: true
-}));
+app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(globalLimiter);
 
-
-// Parse JSON requests with increased limit and capture raw body for webhook signature verification
 app.use(express.json({
   limit: '50mb',
   verify: (req, res, buf) => {
-    // Store raw body for webhook signature verification
-    // We only save rawBody for the specific webhook endpoint to avoid extra memory use
     if (req.originalUrl === '/api/payment/webhook') {
       req.rawBody = buf;
     }
   }
 }));
-
-// Parse URL-encoded requests
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Request logging middleware (exclude noisy endpoints)
+// Request logging (skip noisy endpoints)
 app.use((req, res, next) => {
-  // Skip logging for phone status checks to reduce noise
-  if (!req.url.includes('/api/phone/status')) {
+  if (!req.url.includes('/api/phone/status') && !req.url.includes('/health')) {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
   }
   next();
 });
 
-// Routes
+// ─── Health / Root ───
 app.get('/', (req, res) => {
-  res.send('InvestKaps KYC API is running');
+  res.send('InvestKaps API is running');
 });
 
-// Health check endpoint for Render
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'healthy',
@@ -89,77 +74,31 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Debug endpoint to verify deployment
-app.get('/debug', (req, res) => {
-  res.status(200).json({
-    message: 'Backend is running latest code',
-    timestamp: new Date().toISOString(),
-    version: '2.0',
-    routes: ['/api/users/create', '/api/users/clerk/:clerkId', '/api/users/email/:email']
-  });
-});
-
-// E-Signing routes
+// ─── API Routes ───
 app.use('/api', esignRoutes);
-
-// Payment routes are now part of consolidated subscription routes
-
-// User routes
 app.use('/api/users', userRoutes);
-
-// KYC routes
 app.use('/api/kyc', kycRoutes);
-
-// Phone verification routes
 app.use('/api/phone', phoneRoutes);
-
-// Admin routes
 app.use('/api/admin', adminRoutes);
-
-// Setup routes
 app.use('/api/setup', setupRoutes);
-
-// Test routes (for development only)
-app.use('/api/test', testRoutes);
-
-// Consolidated Subscription routes (includes payments and user subscriptions)
 app.use('/api/subscriptions', consolidatedSubscriptionRoutes);
-
-// Strategy routes
 app.use('/api/strategies', strategyRoutes);
-
-// Stock Recommendation routes
 app.use('/api/recommendations', stockRecommendationRoutes);
-
-// Payment Request routes
 app.use('/api/payment-requests', paymentRequestRoutes);
-
-// Newsletter routes
 app.use('/api/newsletter', newsletterRoutes);
-
-
-// Symbol search routes
 app.use('/api/symbols', symbolRoutes);
-
-// LTP (Last Traded Price) routes
 app.use('/api/ltp', ltpRoutes);
 
-// Create directory for uploads if it doesn't exist
-const uploadsDir = path.join(process.cwd(), 'uploads');
-
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+// ─── Ensure directories exist ───
+for (const dir of ['uploads', 'logs']) {
+  const dirPath = path.join(process.cwd(), dir);
+  if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 }
 
-// Create logs directory if it doesn't exist
-const logsDir = path.join(process.cwd(), 'logs');
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
-}
-
-// Start server
+// ─── Start server & cron jobs ───
 app.listen(PORT, () => {
-  // Initialize subscription scheduler
+  console.log(`Server running on port ${PORT}`);
+
   // Check for expired subscriptions daily at 1:00 AM
   cron.schedule('0 1 * * *', async () => {
     try {
@@ -181,5 +120,4 @@ app.listen(PORT, () => {
       logger.error('Error in expiration reminders scheduled task:', error);
     }
   });
-
 });
