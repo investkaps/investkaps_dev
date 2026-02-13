@@ -162,10 +162,10 @@ const Home = () => {
                     <span className="detail-label">Duration</span>
                     <span className="detail-value">12 months</span>
                   </div>
-                  <div className="detail-row highlight">
+                  {/* <div className="detail-row highlight">
                     <span className="detail-label">Returns (Dec 29th)</span>
                     <span className="detail-value gain">+31.2%</span>
-                  </div>
+                  </div> */}
                 </div>
                 {/* <div className="recommendation-timeline">
                   <span className="timeline-text">Duration: 5 months</span>
@@ -205,10 +205,10 @@ const Home = () => {
                     <span className="detail-label">Exit Date</span>
                     <span className="detail-value">Sep 16, 2025</span>
                   </div>
-                  <div className="detail-row highlight">
+                  {/* <div className="detail-row highlight">
                     <span className="detail-label">Returns</span>
                     <span className="detail-value gain">+14.9%</span>
-                  </div>
+                  </div> */}
                 </div>
                 {/* <div className="recommendation-timeline">
                   <span className="timeline-text">Duration: 5 months</span>
@@ -248,10 +248,10 @@ const Home = () => {
                     <span className="detail-label">Exit Date</span>
                     <span className="detail-value">Nov 7, 2025</span>
                   </div>
-                  <div className="detail-row highlight">
+                  {/* <div className="detail-row highlight">
                     <span className="detail-label">Returns</span>
                     <span className="detail-value gain">+9.1%</span>
-                  </div>
+                  </div> */}
                 </div>
                 {/* <div className="recommendation-timeline">
                   <span className="timeline-text">Duration: 5 months</span>
