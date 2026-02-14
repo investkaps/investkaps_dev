@@ -68,10 +68,7 @@ export const AuthProvider = ({ children }) => {
   // Create or update backend user helper - only using Clerk email
   const createOrUpdateBackendUser = async (maybeClerkUser) => {
     try {
-      console.log('🟡 Frontend: createOrUpdateBackendUser called with:', maybeClerkUser?.id);
-      
       if (!maybeClerkUser) {
-        console.log('❌ Frontend: No clerkUser provided');
         return;
       }
       
@@ -91,7 +88,6 @@ export const AuthProvider = ({ children }) => {
       }
 
       // If user doesn't exist, create them
-      console.log('👤 CREATING NEW USER:', maybeClerkUser.primaryEmailAddress.emailAddress);
       const response = await userAPI.createUser({
         clerkId: maybeClerkUser.id,
         email: maybeClerkUser.primaryEmailAddress.emailAddress,
@@ -99,7 +95,6 @@ export const AuthProvider = ({ children }) => {
         isVerified: maybeClerkUser.emailAddresses?.[0]?.verification?.status === 'verified'
       });
 
-      console.log('✅ NEW USER CREATED IN BACKEND:', response.user.email);
       return response.user;
     } catch (err) {
       console.error('❌ USER CREATION FAILED:', err.message);
@@ -259,10 +254,7 @@ export const AuthProvider = ({ children }) => {
         code: otp,
       });
 
-      console.log('OTP verification result status:', result.status);
-      
       if (result.status === 'complete') {
-        console.log('OTP verification successful, setting active session...');
         
         if (clerk?.setActive) {
           await clerk.setActive({ session: result.createdSessionId });
@@ -298,7 +290,6 @@ export const AuthProvider = ({ children }) => {
             // If Clerk hasn't populated user, set minimal info but don't use session email
             // We'll wait for Clerk to provide the proper email
             setCurrentUser({ id: 'pending', name: 'User' });
-            console.log('Waiting for Clerk to provide user data');
             // Backend create will be attempted when clerkUser becomes available (see checkAuthStatus)
           }
         } catch (err) {
@@ -306,7 +297,6 @@ export const AuthProvider = ({ children }) => {
         }
 
         sessionStorage.removeItem('auth_email');
-        console.log('Login successful, returning success response');
         return { success: true, message: 'Login successful' };
       } else {
         console.error('OTP verification failed, status:', result.status);
@@ -372,10 +362,7 @@ export const AuthProvider = ({ children }) => {
 
       const completeSignUp = await signUp.attemptEmailAddressVerification({ code: otp });
 
-      console.log('Registration OTP verification result status:', completeSignUp.status);
-      
       if (completeSignUp.status === 'complete') {
-        console.log('Registration OTP verification successful, setting active session...');
         
         if (clerk?.setActive) {
           await clerk.setActive({ session: completeSignUp.createdSessionId });
@@ -417,7 +404,6 @@ export const AuthProvider = ({ children }) => {
           console.warn('Error creating backend user after registration:', err);
         }
 
-        console.log('Registration completed successfully, returning success response');
         return { success: true, user: completeSignUp.createdUserId, message: 'Registration completed successfully!' };
       } else {
         console.error('Registration OTP verification failed, status:', completeSignUp.status);
@@ -495,7 +481,6 @@ export const AuthProvider = ({ children }) => {
     clearLocalAuth();
     setCurrentUser(null);
     setError(null);
-    console.log('All authentication data cleared');
   };
 
   const value = {

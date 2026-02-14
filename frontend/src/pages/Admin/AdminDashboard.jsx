@@ -26,7 +26,6 @@ const AdminDashboard = () => {
     }
     
     if (currentUser.role !== 'admin') {
-      console.log('Non-admin user attempting to access admin dashboard');
       navigate('/');
     }
   }, [currentUser, navigate]);

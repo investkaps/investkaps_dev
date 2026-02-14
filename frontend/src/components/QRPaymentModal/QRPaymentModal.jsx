@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaTimes as FaClose } from 'react-icons/fa';
+import { isValidName, isValidTransactionId, isValidFileSize, isValidImageType, sanitizeInput } from '../../utils/validators';
 import './QRPaymentModal.css';
 
 const QRPaymentModal = ({ plan, duration, price, onClose, currentUser }) => {
@@ -36,8 +37,27 @@ const QRPaymentModal = ({ plan, duration, price, onClose, currentUser }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.senderName || !formData.transactionId || !formData.transactionImage) {
-      setError('Please fill all fields and upload transaction screenshot');
+    const cleanName = sanitizeInput(formData.senderName);
+    const cleanTxnId = sanitizeInput(formData.transactionId);
+
+    if (!isValidName(cleanName)) {
+      setError('Please enter a valid name (2-100 characters, letters only)');
+      return;
+    }
+    if (!isValidTransactionId(cleanTxnId)) {
+      setError('Please enter a valid Transaction ID (6-50 characters)');
+      return;
+    }
+    if (!formData.transactionImage) {
+      setError('Please upload a transaction screenshot');
+      return;
+    }
+    if (!isValidImageType(formData.transactionImage)) {
+      setError('Please upload a valid image (JPEG, PNG, GIF, or WebP)');
+      return;
+    }
+    if (!isValidFileSize(formData.transactionImage, 5)) {
+      setError('Image size should be less than 5MB');
       return;
     }
 
@@ -46,8 +66,8 @@ const QRPaymentModal = ({ plan, duration, price, onClose, currentUser }) => {
 
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append('senderName', formData.senderName);
-      formDataToSend.append('transactionId', formData.transactionId);
+      formDataToSend.append('senderName', cleanName);
+      formDataToSend.append('transactionId', cleanTxnId);
       formDataToSend.append('transactionImage', formData.transactionImage);
       formDataToSend.append('planId', plan._id);
       formDataToSend.append('planName', plan.name);

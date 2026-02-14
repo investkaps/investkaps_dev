@@ -75,7 +75,6 @@ const StockSearch = ({ onSelectStock, initialValue = '' }) => {
       const response = await adminAPI.getStockDetails(stock.symbol);
       
       if (response.success) {
-        console.log(`Stock details for ${stock.symbol}:`, response.data);
         onSelectStock(response.data);
       } else {
         // Fallback to basic stock data

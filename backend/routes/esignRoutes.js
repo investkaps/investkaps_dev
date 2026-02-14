@@ -38,15 +38,12 @@ router.post('/esign', verifyToken, async (req, res) => {
       });
     }
 
-    // Log metadata (without base64 content)
-    const logEntry = {
-      ts: new Date().toISOString(),
-      profileId,
-      fileName: file?.name || fileName || 'Terms and Conditions',
-      invitee: { name: inviteeName || name || '', email },
-      pdfSize: pdfBase64?.length || 0
-    };
-    console.info('[ESIGN ROUTE] Request metadata:', logEntry);
+    console.log('📤 BACKEND REQUEST:');
+    console.log('   Method: POST /api/esign');
+    console.log('   Profile ID:', profileId);
+    console.log('   Invitee:', { name: inviteeName || name || '', email });
+    console.log('   File Name:', file?.name || fileName || 'Terms and Conditions');
+    console.log('   IRN:', irn || 'auto-generated');
 
     // ✅ FIXED: Pass correct parameters
     const result = await createSignRequest({
@@ -55,16 +52,21 @@ router.post('/esign', verifyToken, async (req, res) => {
       profileId,
       pdfBase64,
       fileName: file?.name || fileName || 'Terms and Conditions',
-      irn
+      irn,
+      fields: file?.fields || undefined
     });
 
     if (result.success) {
-      // Debug: Log the actual response structure
-      console.log(' Leegality Response Structure:', JSON.stringify(result.data, null, 2));
-      
-      // Extract documentId from Leegality response (it's at root level, not nested)
-      const documentId = result.data?.documentId || irn;
-      console.log(' Extracted documentId:', documentId);
+      const documentId = result.data?.documentId;
+      const signUrl = result.data?.invitees?.[0]?.signUrl;
+
+      if (!documentId || !signUrl) {
+        return res.status(502).json({
+          success: false,
+          error: 'Leegality did not return documentId/signUrl',
+          details: result.data
+        });
+      }
       
       // Store in MongoDB
       if (userId && documentId) {
@@ -78,31 +80,46 @@ router.post('/esign', verifyToken, async (req, res) => {
             fileSize: 0,
             mimeType: 'application/pdf',
             esign: {
-              // Store Leegality response (status is numeric from API, we track separately)
-              leegalityStatus: result.data?.status || 1,
-              messages: result.data?.messages || [],
-              data: {
-                documentId: result.data?.documentId || documentId,
-                irn: result.data?.irn || irn,
-                invitees: result.data?.invitees || [],
-                requests: result.data?.invitees || [] // Store as requests for consistency
-              },
-              // Our tracking fields
+              // Store complete initial response
+              initialResponse: result.data,
+              statusResponse: null,
+              // Extracted key fields
+              documentId: result.data?.documentId,
+              irn: result.data?.irn || irn,
               status: 'pending',
               currentStatus: 'pending',
+              // Initial signing details
+              signingDetails: {
+                total: result.data?.invitees?.length || 0,
+                signed: 0,
+                rejected: 0,
+                expired: 0,
+                pending: result.data?.invitees?.length || 0
+              },
+              // Store invitees from initial response
+              invitees: result.data?.invitees?.map(inv => ({
+                name: inv.name,
+                email: inv.email,
+                signUrl: inv.signUrl || '',
+                signed: false,
+                rejected: false,
+                expired: false,
+                active: inv.active !== false,
+                expiryDate: inv.expiryDate || '',
+                signedAt: null,
+                signType: null
+              })) || [],
+              files: [],
+              auditTrail: null,
               createdAt: new Date()
             }
           });
           
           await document.save();
-          console.log('💾 Initial E-Sign Data Saved:', {
-            mongoId: document._id,
-            leegalityDocId: document.esign.data.documentId,
-            irn: document.esign.data.irn,
-            inviteesCount: document.esign.data.invitees?.length,
-            requestsCount: document.esign.data.requests?.length
-          });
-          logger.info(`Document saved to DB for user ${userId}, documentId: ${documentId}, mongoId: ${document._id}`);
+          console.log('💾 DOCUMENT SAVED TO MONGODB:');
+          console.log('   MongoDB ID:', document._id);
+          console.log('   Leegality ID:', document.esign.documentId);
+          console.log('   Status:', document.esign.status);
           
           // Add MongoDB document ID to response for frontend to store
           if (!result.data) result.data = {};
@@ -113,8 +130,18 @@ router.post('/esign', verifyToken, async (req, res) => {
         }
       }
       
+      console.log('📤 BACKEND RESPONSE:');
+      console.log('   Success:', true);
+      console.log('   Document ID:', result.data?.documentId);
+      console.log('   MongoDB ID:', result.data?.mongoDocumentId);
+      console.log('   Sign URL:', signUrl);
+      
       return res.json(result);
     } else {
+      console.log('❌ BACKEND ERROR:');
+      console.log('   Error:', result.error);
+      console.log('   Details:', result.details);
+      
       return res.status(result.httpStatus || 500).json({
         success: false,
         error: result.error || 'Failed to create sign request',
@@ -122,7 +149,49 @@ router.post('/esign', verifyToken, async (req, res) => {
       });
     }
   } catch (err) {
-    console.error('[ESIGN ROUTE] Unexpected error:', err && err.stack ? err.stack : err);
+    console.log('❌ BACKEND CRASH:');
+    console.log('   Error:', err.message);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// GET /api/esign/active - Get active document for current user (MUST be before :requestId wildcard)
+router.get('/esign/active', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    
+    console.log('📤 GET ACTIVE DOCUMENT REQUEST:');
+    console.log('   User ID:', userId);
+    
+    // Find most recent esign document for this user (including completed)
+    const document = await Document.findOne({
+      user: userId,
+      'esign.status': { $in: ['pending', 'SENT', 'SIGNED', 'COMPLETED', 'completed'] }
+    }).sort({ createdAt: -1 });
+    
+    if (!document) {
+      console.log('📤 NO ACTIVE DOCUMENT FOUND');
+      return res.json({ 
+        success: true, 
+        data: { documentId: null, message: 'No active document found' }
+      });
+    }
+    
+    console.log('📥 ACTIVE DOCUMENT FOUND:');
+    console.log('   Document ID:', document._id);
+    console.log('   Status:', document.esign?.status);
+    console.log('   Created:', document.createdAt);
+    
+    return res.json({
+      success: true,
+      data: {
+        documentId: document._id,
+        status: document.esign?.status,
+        createdAt: document.createdAt
+      }
+    });
+  } catch (err) {
+    logger.error('[ESIGN ROUTE] Error fetching active document:', err);
     return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -142,6 +211,10 @@ router.get('/esign/:requestId', async (req, res) => {
     });
   } catch (err) {
     console.error('[ESIGN ROUTE] Error fetching status:', err);
+    console.log('📤 OUTGOING PAYLOAD (500):');
+    console.log('   success: false');
+    console.log('   error: "Internal server error"');
+
     return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
@@ -149,14 +222,26 @@ router.get('/esign/:requestId', async (req, res) => {
 // GET /api/esign/document/:documentId - Check document status by MongoDB ID
 router.get('/esign/document/:documentId', verifyToken, async (req, res) => {
   try {
+    console.log('📤 INCOMING PAYLOAD JSON:');
+    console.log(JSON.stringify({
+      method: req.method,
+      url: req.originalUrl,
+      params: req.params,
+      user: { id: req.user?.id, email: req.user?.email },
+      headers: {
+        'content-type': req.headers['content-type'],
+        'authorization': req.headers.authorization ? 'Bearer [TOKEN]' : 'MISSING'
+      }
+    }, null, 2));
+    
+    console.log('📤 INCOMING PAYLOAD:');
+    console.log('   URL:', req.method + ' ' + req.originalUrl);
+
     const { documentId } = req.params;
-    console.log('📋 E-Sign Status Check: Document ID:', documentId);
     const userId = req.user?.id;
     
-    if (!documentId) {
-      console.log('❌ E-Sign Status Check: Missing documentId');
-      return res.status(400).json({ success: false, error: 'Missing documentId' });
-    }
+    console.log('   Document ID:', documentId);
+    console.log('   User ID:', userId);
     
     // Find document by ID and verify it belongs to the user
     const document = await Document.findOne({
@@ -165,28 +250,74 @@ router.get('/esign/document/:documentId', verifyToken, async (req, res) => {
     });
     
     if (!document) {
-      console.log('❌ E-Sign Status Check: Document not found for user:', userId);
+      console.log('📤 OUTGOING PAYLOAD (404):');
+      console.log('   success: false');
+      console.log('   error: "Document not found or access denied"');
       return res.status(404).json({ 
         success: false, 
         error: 'Document not found or access denied' 
       });
     }
     
-    const responseData = {
-      documentId: document._id,
-      requestId: document.esign?.data?.documentId,  // Leegality documentId for status checking
-      status: document.esign?.currentStatus || 'pending',
-      signedAt: document.esign?.signedAt,
-      signUrl: document.esign?.data?.invitees?.[0]?.signUrl || '',
-      irn: document.esign?.data?.irn,
-      invitees: document.esign?.data?.invitees || []
+    const leegalityDocumentId = document.esign?.documentId;
+    if (!leegalityDocumentId) {
+      console.log('📤 OUTGOING PAYLOAD (400):');
+      console.log('   success: false');
+      console.log('   error: "No Leegality document ID found"');
+      return res.status(400).json({ success: false, error: 'No Leegality document ID found' });
+    }
+    
+    // Check status with Leegality API using corrected function
+    const leegalityResponse = await getDocumentDetails(leegalityDocumentId);
+    
+    if (!leegalityResponse.success) {
+      console.log(' E-Sign Status Check: Leegality API error:', leegalityResponse.error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to check document status with Leegality',
+        details: leegalityResponse.error
+      });
+    }
+    
+    // Update document in MongoDB with latest status
+    const oldStatus = document.esign?.currentStatus || 'SENT';
+    const newStatus = leegalityResponse.data.status;
+    
+    // Update extracted fields - NO base64 files stored
+    document.esign.currentStatus = newStatus;
+    document.esign.status = newStatus;
+    document.esign.signingDetails = leegalityResponse.data.signingDetails;
+    document.esign.invitees = leegalityResponse.data.invitees;
+
+    // Store latest status response (already stripped of files/base64 in getDocumentDetails)
+    document.esign.statusResponse = {
+      checkedAt: new Date().toISOString(),
+      ...leegalityResponse.data
     };
     
-    console.log('✅ E-Sign Status Check: Found document, requestId:', responseData.requestId, 'status:', responseData.status);
+    // Mark as completed if all signed
+    if (leegalityResponse.data.allSigned) {
+      document.esign.status = 'COMPLETED';
+      document.esign.signedAt = new Date();
+      document.esign.completedAt = new Date();
+    }
+    
+    await document.save();
+    
+    console.log('✅ Status updated:', oldStatus, '->', newStatus, '| All signed:', leegalityResponse.data.allSigned);
     
     return res.json({
       success: true,
-      data: responseData
+      data: {
+        documentId: document._id,
+        requestId: leegalityDocumentId,
+        status: newStatus,
+        isCompleted: leegalityResponse.data.allSigned,
+        signedAt: document.esign?.signedAt,
+        irn: document.esign?.irn,
+        signingDetails: leegalityResponse.data.signingDetails,
+        invitees: leegalityResponse.data.invitees
+      }
     });
   } catch (err) {
     logger.error('[ESIGN ROUTE] Error fetching document status:', err);
@@ -274,26 +405,57 @@ router.post('/esign/bypass', verifyToken, async (req, res) => {
 router.post('/esign/webhook', async (req, res) => {
   try {
     logger.info('[ESIGN WEBHOOK] Received callback from Leegality:', req.body);
-    
-    const { requestId, status, signedAt, irn } = req.body;
-    
-    if (!requestId) {
-      return res.status(400).json({ success: false, error: 'Missing requestId' });
+
+    const documentId = req.body?.documentId || req.body?.data?.documentId;
+    const irn = req.body?.irn || req.body?.data?.irn;
+
+    if (!documentId && !irn) {
+      return res.status(400).json({ success: false, error: 'Missing documentId/irn' });
     }
-    
-    // Find document by requestId and update status
-    const document = await Document.findOne({ 'esign.requestId': requestId });
-    
-    if (document) {
-      document.esign.status = status || 'completed';
-      if (signedAt) document.esign.signedAt = new Date(signedAt);
+
+    const document = await Document.findOne({
+      $or: [
+        ...(documentId ? [{ 'esign.documentId': documentId }] : []),
+        ...(irn ? [{ 'esign.irn': irn }] : [])
+      ]
+    });
+
+    if (!document) {
+      logger.warn('[ESIGN WEBHOOK] Document not found', { documentId, irn });
+      return res.status(200).json({ success: true, message: 'Webhook received' });
+    }
+
+    const leegalityDocumentId = document.esign?.documentId || documentId;
+    if (!leegalityDocumentId) {
+      logger.warn('[ESIGN WEBHOOK] No Leegality documentId on stored document', { mongoId: document._id, documentId, irn });
+      return res.status(200).json({ success: true, message: 'Webhook received' });
+    }
+
+    // Do the same thing as status check: call Leegality and update MongoDB
+    const statusResult = await getDocumentDetails(leegalityDocumentId);
+    if (statusResult.success) {
+      const newStatus = statusResult.data.status;
+      document.esign.currentStatus = newStatus;
+      document.esign.status = newStatus;
+      document.esign.signingDetails = statusResult.data.signingDetails;
+      document.esign.invitees = statusResult.data.invitees;
+      document.esign.statusResponse = {
+        checkedAt: new Date().toISOString(),
+        ...statusResult.data
+      };
+
+      if (statusResult.data.allSigned) {
+        document.esign.status = 'COMPLETED';
+        document.esign.signedAt = new Date();
+        document.esign.completedAt = new Date();
+      }
+
       await document.save();
-      
-      logger.info(`[ESIGN WEBHOOK] Document ${document._id} updated with status: ${status}`);
+      logger.info('[ESIGN WEBHOOK] Document updated from webhook', { mongoId: document._id, status: document.esign.status });
     } else {
-      logger.warn(`[ESIGN WEBHOOK] Document not found for requestId: ${requestId}`);
+      logger.warn('[ESIGN WEBHOOK] Status check failed during webhook handling', { mongoId: document._id, error: statusResult.error });
     }
-    
+
     // Always return 200 to acknowledge receipt
     return res.status(200).json({ success: true, message: 'Webhook received' });
     

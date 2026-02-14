@@ -22,13 +22,7 @@ api.interceptors.request.use(
 // Handle errors
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // Log user creation errors specifically
-    if (error.config?.url?.includes('/users/create')) {
-      console.error('❌ USER CREATION API ERROR:', error.response?.data || error.message);
-    }
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Centralized error extractor
@@ -674,6 +668,17 @@ export const esignAPI = {
     } catch (err) {
       const { message } = extractError(err);
       console.error('Error checking document status:', message);
+      throw new Error(message);
+    }
+  },
+  // Get active document for current user from MongoDB
+  getActiveDocument: async () => {
+    try {
+      const res = await api.get('/esign/active');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error getting active document:', message);
       throw new Error(message);
     }
   },

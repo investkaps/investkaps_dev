@@ -1,50 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './Contact.css';
 
 const Contact = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    subject: '',
-    message: ''
-  });
-  
-  const [formStatus, setFormStatus] = useState({
-    submitted: false,
-    error: false,
-    message: ''
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // In a real application, you would send the form data to a server here
-    
-    // Simulate form submission
-    setFormStatus({
-      submitted: true,
-      error: false,
-      message: 'Thank you for your message! We will get back to you shortly.'
-    });
-    
-    // Reset form after submission
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      subject: '',
-      message: ''
-    });
-  };
-
   return (
     <div className="contact-page">
       {/* Contact Information Section */}

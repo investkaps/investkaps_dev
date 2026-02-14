@@ -17,3 +17,7 @@ null
 null
 null
 2026-02-12 10:04:40 info: New newsletter subscription: aiman.singh30@gmail.com
+2026-02-14 01:00:00 info: Running scheduled task: Check expired subscriptions
+2026-02-14 01:00:00 info: Found 0 expired subscriptions to update
+2026-02-14 01:00:00 info: Updated 0 expired subscriptions
+null

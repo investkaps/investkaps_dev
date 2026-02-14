@@ -3,9 +3,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 80vh;
-  padding: 20px;
+  min-height: 100vh;
+  height: 100vh; /* Force full viewport height */
+  padding: 80px 20px 20px 20px; /* Top padding for navbar */
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  position: relative;
+  z-index: 1; /* Below navbar (z-index: 1000) */
+  box-sizing: border-box;
 }
 
 .esign-card {
@@ -262,8 +266,9 @@
 /* Responsive design */
 @media (max-width: 768px) {
   .esign-container {
-    padding: 15px;
-    min-height: 90vh;
+    padding: 80px 15px 20px 15px; /* Maintain top spacing for navbar */
+    min-height: 100vh;
+    height: 100vh; /* Force full height on mobile */
   }
   
   .esign-card {
@@ -286,8 +291,14 @@
 }
 
 @media (max-width: 480px) {
+  .esign-container {
+    padding: 80px 10px 20px 10px; /* Maintain top spacing for navbar */
+    min-height: 100vh;
+    height: 100vh; /* Force full height on small mobile */
+  }
+  
   .esign-card {
-    margin: 10px;
+    margin: 0;
     padding: 25px 15px;
   }
   

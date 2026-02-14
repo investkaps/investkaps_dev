@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
+import { isValidEmail } from '../../utils/validators';
 import './Newsletter.css';
 
 const Newsletter = () => {
@@ -10,7 +11,8 @@ const Newsletter = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!email || !email.includes('@')) {
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!isValidEmail(trimmedEmail)) {
       setStatus({ type: 'error', message: 'Please enter a valid email address' });
       return;
     }
@@ -19,7 +21,7 @@ const Newsletter = () => {
     setStatus({ type: '', message: '' });
 
     try {
-      const response = await axios.post('/api/newsletter/subscribe', { email });
+      await api.post('/newsletter/subscribe', { email: trimmedEmail });
       
       setStatus({ 
         type: 'success', 

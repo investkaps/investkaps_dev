@@ -42,13 +42,14 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(20px);
   position: relative;
-  z-index: 1001;
+  z-index: 1;
 }
 
 .register-content {
-  padding: 3rem;
+  padding: 4rem 3rem;
   display: flex;
   flex-direction: column;
+  min-height: 600px;
 }
 
 .register-header {
@@ -290,6 +291,7 @@
   text-align: center;
   font-size: 0.875rem;
   color: #777;
+  padding-top: 2rem;
 }
 
 .register-footer a {

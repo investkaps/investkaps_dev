@@ -29,3 +29,4 @@
 2026-02-10 12:22:11 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
 2026-02-10 12:27:32 error: Error fetching batch LTP: Request failed with status code 502
 2026-02-10 12:27:32 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-02-14 12:04:45 error: Error parsing token: The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined

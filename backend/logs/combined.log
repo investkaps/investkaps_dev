@@ -116,3 +116,7 @@
 2026-02-10 12:27:32 error: Error fetching batch LTP: Request failed with status code 502
 2026-02-10 12:27:32 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
 2026-02-12 10:04:40 info: New newsletter subscription: aiman.singh30@gmail.com
+2026-02-14 01:00:00 info: Running scheduled task: Check expired subscriptions
+2026-02-14 01:00:00 info: Found 0 expired subscriptions to update
+2026-02-14 01:00:00 info: Updated 0 expired subscriptions
+2026-02-14 12:04:45 error: Error parsing token: The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined

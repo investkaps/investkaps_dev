@@ -33,22 +33,70 @@ const DocumentSchema = new mongoose.Schema({
     required: true
   },
   esign: {
-    requestId: {
-      type: String
+    // Flexible schema to store any Leegality API response
+    // Initial request response + status check responses
+    initialResponse: {
+      type: Object // Stores the complete initial sign request response
     },
-    status: {
-      type: String,
-      enum: ['pending', 'completed', 'failed', 'expired'],
-      default: 'pending'
+    statusResponse: {
+      type: Object // Stores the latest status check response
     },
-    signedAt: {
-      type: Date
-    },
-    signUrl: {
+    // Extracted key fields for easy querying
+    documentId: {
       type: String
     },
     irn: {
       type: String
+    },
+    status: {
+      type: String,
+      enum: ['pending', 'completed', 'failed', 'expired', 'SENT', 'SIGNED', 'COMPLETED', 'REJECTED', 'EXPIRED', 'INACTIVE'],
+      default: 'pending'
+    },
+    currentStatus: {
+      type: String,
+      enum: ['pending', 'completed', 'failed', 'expired', 'SENT', 'SIGNED', 'COMPLETED', 'REJECTED', 'EXPIRED', 'INACTIVE'],
+      default: 'pending'
+    },
+    // Signing details extracted from responses
+    signingDetails: {
+      total: { type: Number, default: 0 },
+      signed: { type: Number, default: 0 },
+      rejected: { type: Number, default: 0 },
+      expired: { type: Number, default: 0 },
+      pending: { type: Number, default: 0 }
+    },
+    // Files and audit trail URLs (from status check)
+    files: [{
+      name: String,
+      url: String
+    }],
+    auditTrail: {
+      url: String
+    },
+    // Invitees/requests (merged from both responses)
+    invitees: [{
+      name: String,
+      email: String,
+      signUrl: String,
+      signed: Boolean,
+      rejected: Boolean,
+      expired: Boolean,
+      active: Boolean,
+      expiryDate: String,
+      signedAt: Date,
+      signType: String
+    }],
+    // Timestamps
+    signedAt: {
+      type: Date
+    },
+    completedAt: {
+      type: Date
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
     }
   },
   createdAt: {

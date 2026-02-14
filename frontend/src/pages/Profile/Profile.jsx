@@ -27,7 +27,7 @@ const Profile = () => {
             return;
           }
         } catch (err) {
-          console.log('Could not fetch by clerkId, trying email...');
+          // clerkId lookup failed, try email
         }
         
         // If that fails, try by email

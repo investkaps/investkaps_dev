@@ -223,16 +223,12 @@ const StockRecommendationManagement = () => {
 
   const fetchStrategies = async () => {
     try {
-      console.log('Fetching strategies...');
       const response = await adminAPI.getAllStrategies();
-      console.log('Strategies response:', response);
       
       // Handle both response formats: {success: true, data: [...]} or direct array [...]
       if (response.success && response.data) {
-        console.log('Strategies data (new format):', response.data);
         setStrategies(response.data);
       } else if (Array.isArray(response)) {
-        console.log('Strategies data (old format - direct array):', response);
         setStrategies(response);
       } else {
         console.error('Failed to fetch strategies:', response.error);

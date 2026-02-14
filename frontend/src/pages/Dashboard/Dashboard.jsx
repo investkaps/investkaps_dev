@@ -10,10 +10,9 @@ import userSubscriptionAPI from '../../services/userSubscriptionAPI';
 import stockRecommendationAPI from '../../services/stockRecommendationAPI';
 import { useNavigate, Link } from 'react-router-dom';
 import OTPInput from '../../components/OTPInput/OTPInput';
+import { isValidPhone, sanitizePhone, isValidPAN, formatPAN } from '../../utils/validators';
 import './Dashboard.css';
 
-// Development mode flag - set to false in production
-const DEV_MODE = true;
 
 const Dashboard = () => {
   const { currentUser, logout } = useAuth();
@@ -65,11 +64,8 @@ const Dashboard = () => {
     message: ''
   });
   
-  // eSign state
-  const [activeDocumentId, setActiveDocumentId] = useState(() => {
-    // Try to get active document ID from localStorage on component mount
-    return localStorage.getItem('activeDocumentId') || null;
-  });
+  // eSign state - will fetch from MongoDB
+  const [activeDocumentId, setActiveDocumentId] = useState(null);
   
   // Subscription and stock recommendations state
   const [activeSubscription, setActiveSubscription] = useState(null);
@@ -77,26 +73,53 @@ const Dashboard = () => {
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [bypassLoading, setBypassLoading] = useState(false);
   
-  // Update localStorage when activeDocumentId changes
+  // Fetch active document from MongoDB on component mount
   useEffect(() => {
-    if (activeDocumentId) {
-      localStorage.setItem('activeDocumentId', activeDocumentId);
-    } else {
-      localStorage.removeItem('activeDocumentId');
-    }
-  }, [activeDocumentId]);
-  
+    const fetchActiveDocument = async () => {
+      try {
+        const response = await esignAPI.getActiveDocument();
+        if (response.success && response.data.documentId) {
+          const status = response.data.status;
+          const isCompleted = status === 'COMPLETED' || status === 'completed';
+
+          if (isCompleted) {
+            setSteps(prevSteps => ({
+              ...prevSteps,
+              signing: { ...prevSteps.signing, completed: true },
+              payment: { ...prevSteps.payment, active: true }
+            }));
+            setActiveDocumentId(null);
+            localStorage.removeItem('active_esign_document_id');
+          } else {
+            setActiveDocumentId(response.data.documentId);
+            localStorage.setItem('active_esign_document_id', response.data.documentId);
+          }
+        }
+      } catch (err) {
+        console.log('No active document found:', err.message);
+      }
+    };
+    
+    fetchActiveDocument();
+  }, []);
+
   // Handle e-sign completion redirect
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const esignStatus = urlParams.get('esign');
     
-    if (esignStatus === 'completed' && activeDocumentId) {
+    const storedActiveDocId = localStorage.getItem('active_esign_document_id');
+    const docIdToCheck = activeDocumentId || storedActiveDocId;
+
+    if (esignStatus === 'completed' && docIdToCheck) {
       // User returned from e-signing, check status
       const checkCompletionStatus = async () => {
         try {
-          const response = await esignAPI.checkDocumentStatus(activeDocumentId);
-          if (response.success && response.data?.status === 'completed') {
+          const response = await esignAPI.checkDocumentStatus(docIdToCheck);
+          const apiStatus = response.data?.status;
+          const isCompleted = response.data?.isCompleted === true || apiStatus === 'COMPLETED' || apiStatus === 'completed';
+
+          if (response.success && isCompleted) {
             setSteps(prevSteps => ({
               ...prevSteps,
               signing: { ...prevSteps.signing, completed: true }
@@ -104,6 +127,9 @@ const Dashboard = () => {
             
             // Show success message
             alert('E-signing completed successfully! ✓');
+
+            // Clear stored active doc id once completed
+            localStorage.removeItem('active_esign_document_id');
           }
         } catch (err) {
           console.error('Error checking e-sign status:', err);
@@ -158,8 +184,6 @@ const Dashboard = () => {
         if (currentUser.id && !isVerified) {
           try {
             const response = await userAPI.getKYCStatusByClerkId(currentUser.id);
-            console.log('KYC Status Check Response:', response);
-            console.log('isVerified:', response.kycStatus?.isVerified);
             if (response.success && response.kycStatus?.isVerified) {
               setKycResult({
                 success: true,
@@ -281,27 +305,8 @@ const Dashboard = () => {
     checkPhoneStatus();
   }, [currentUser, isAdminUser]);
   
-  // Check e-signing status
-  useEffect(() => {
-    if (!currentUser || isAdminUser || !activeDocumentId) return;
-    
-    const checkEsignStatus = async () => {
-      try {
-        const response = await esignAPI.checkDocumentStatus(activeDocumentId);
-        if (response.success && response.data?.status === 'completed') {
-          setSteps(prevSteps => ({
-            ...prevSteps,
-            signing: { ...prevSteps.signing, completed: true },
-            payment: { ...prevSteps.payment, active: true }
-          }));
-        }
-      } catch (err) {
-        // E-signing not completed yet or document not found
-      }
-    };
-    
-    checkEsignStatus();
-  }, [currentUser, isAdminUser, activeDocumentId]);
+  // E-sign status is checked manually via button click
+  // Removed automatic polling to prevent loops and unnecessary API calls
 
   const handleLogout = async () => {
     const result = await logout();
@@ -310,35 +315,14 @@ const Dashboard = () => {
     }
   };
 
-  // This function is deprecated and should not be used directly
-  // It has been replaced with direct state updates to avoid re-render loops
-  const completeStep = (step) => {
-    console.warn('completeStep is deprecated, use direct state updates instead');
-    setSteps(prevSteps => {
-      const newSteps = { ...prevSteps };
-      newSteps[step].completed = true;
-      
-      // Activate and expand next step if available
-      if (step === 'kyc' && !newSteps.signing.active) {
-        newSteps.signing.active = true;
-        newSteps.signing.expanded = true;
-        newSteps.kyc.expanded = false;
-      } else if (step === 'signing' && !newSteps.payment.active) {
-        newSteps.payment.active = true;
-        newSteps.payment.expanded = true;
-        newSteps.signing.expanded = false;
-      }
-      
-      return newSteps;
-    });
-  };
-  
-  // Toggle functionality removed - all sections always expanded
-  
   // Handle phone form input changes
   const handlePhoneInputChange = (e) => {
     const { name, value } = e.target;
-    setPhoneForm(prev => ({ ...prev, [name]: value }));
+    if (name === 'phone') {
+      setPhoneForm(prev => ({ ...prev, phone: sanitizePhone(value) }));
+    } else {
+      setPhoneForm(prev => ({ ...prev, [name]: value }));
+    }
     setPhoneError(null);
   };
 
@@ -351,6 +335,12 @@ const Dashboard = () => {
   // Send OTP to phone number
   const handleSendOTP = async (e) => {
     e.preventDefault();
+    
+    if (!isValidPhone(phoneForm.phone)) {
+      setPhoneError('Please enter a valid 10-digit Indian mobile number');
+      return;
+    }
+    
     setPhoneLoading(true);
     setPhoneError(null);
     
@@ -397,13 +387,18 @@ const Dashboard = () => {
   // Handle KYC form input changes
   const handleKycInputChange = async (e) => {
     const { name, value } = e.target;
-    setKycForm(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    if (name === 'pan') {
+      // Auto-uppercase PAN input
+      const formatted = formatPAN(value);
+      setKycForm(prev => ({ ...prev, pan: formatted }));
+    } else {
+      setKycForm(prev => ({ ...prev, [name]: value }));
+    }
     
     // If PAN field is changed and has a valid format, check if it already exists
-    if (name === 'pan' && value.match(/[A-Z]{5}[0-9]{4}[A-Z]{1}/)) {
+    const panValue = name === 'pan' ? formatPAN(value) : kycForm.pan;
+    if (name === 'pan' && isValidPAN(panValue)) {
       try {
         // Show checking status
         setPanStatus({ checking: true, verified: false, validated: false, existsForOther: false, message: 'Checking PAN...' });
@@ -464,7 +459,6 @@ const Dashboard = () => {
         setPanStatus({ checking: false, verified: false, validated: false, existsForOther: false, message: '' });
       }
     } else if (name === 'pan') {
-      // Reset PAN status if input doesn't match pattern
       setPanStatus({ checking: false, verified: false, validated: false, existsForOther: false, message: '' });
     }
   };
@@ -472,15 +466,24 @@ const Dashboard = () => {
   // Handle KYC verification submission
   const handleKycSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!isValidPAN(kycForm.pan)) {
+      setError('Please enter a valid PAN number (e.g. ABCDE1234F)');
+      return;
+    }
+    if (panStatus.validated && !panStatus.verified && !kycForm.dob) {
+      setError('Please enter your date of birth');
+      return;
+    }
+    
     setIsLoading(true);
     setError(null);
     
     try {
-      // If PAN doesn't exist or isn't verified, proceed with verification
-      // Add email to the KYC form data if available
       const kycData = {
-        ...kycForm,
-        email: currentUser?.email // Include email for better matching
+        pan: formatPAN(kycForm.pan),
+        dob: kycForm.dob,
+        email: currentUser?.email
       };
       
       const data = await kycAPI.verifyKYC(kycData);
@@ -1132,107 +1135,57 @@ const Dashboard = () => {
                             type="button" 
                             className="secondary-btn" 
                             onClick={async () => {
+                              const storedActiveDocId = localStorage.getItem('active_esign_document_id');
+                              const docIdToCheck = activeDocumentId || storedActiveDocId;
+
                               // Validate activeDocumentId
-                              if (!activeDocumentId || activeDocumentId === 'null' || activeDocumentId === 'undefined') {
-                                console.log('❌ Check Status: No activeDocumentId found');
+                              if (!docIdToCheck || docIdToCheck === 'null' || docIdToCheck === 'undefined') {
                                 alert('No active e-signing session found. Please proceed to e-signing first.');
                                 return;
                               }
                               
-                              console.log('🔍 Check Status: Starting status check for document:', activeDocumentId);
                               setIsLoading(true);
                               try {
-                                // First, get the requestId from our database
-                                console.log('📋 Check Status: Getting requestId from database...');
-                                const dbResponse = await esignAPI.checkDocumentStatus(activeDocumentId);
+                                // Use backend endpoint - it handles Leegality API call and file downloads
+                                const response = await esignAPI.checkDocumentStatus(docIdToCheck);
                                 
-                                if (!dbResponse.success || !dbResponse.data?.requestId) {
-                                  console.log('❌ Check Status: No requestId found in database response');
-                                  alert('No active e-signing session found. Please proceed to e-signing first.');
+                                if (!response.success) {
+                                  alert('Failed to check status: ' + (response.error || 'Unknown error'));
                                   setIsLoading(false);
                                   return;
                                 }
                                 
-                                const requestId = dbResponse.data.requestId;
-                                console.log('🔑 Check Status: Got requestId from DB:', requestId);
+                                const data = response.data;
                                 
-                                // Call Leegality API directly to check status
-                                console.log('🌐 Check Status: Calling Leegality API...');
-                                const response = await fetch(`https://app1.leegality.com/api/v2.2/sign/request?documentId=${requestId}`, {
-                                  method: 'GET',
-                                  headers: {
-                                    'X-Auth-Token': 'SZ4WMvKmP4ZNWMNDRsanQ52m0sCOYLCI',
-                                    'Accept': 'application/json'
-                                  }
-                                });
-                                
-                                if (response.ok) {
-                                  const result = await response.json();
-                                  console.log('📥 Check Status: Leegality response received:', result);
+                                // Check completion status
+                                if (data.isCompleted) {
+                                  // Update UI
+                                  setSteps(prevSteps => ({
+                                    ...prevSteps,
+                                    signing: { ...prevSteps.signing, completed: true },
+                                    payment: { ...prevSteps.payment, active: true }
+                                  }));
                                   
-                                  // Handle error response
-                                  if (result.status === 0) {
-                                    console.log('❌ Check Status: Leegality API error:', result.messages?.[0]?.message);
-                                    alert(`Status check failed: ${result.messages?.[0]?.message || 'Unknown error'}`);
-                                    return;
-                                  }
+                                  // Clear active document
+                                  setActiveDocumentId(null);
+                                  localStorage.removeItem('active_esign_document_id');
                                   
-                                  // Check if all invitees have signed (new format)
-                                  const allSigned = result.data?.requests?.every(invitee => invitee.signed === true);
-                                  const hasAuditTrail = !!result.data?.auditTrail;
-                                  console.log('✅ Check Status: All invitees signed:', allSigned, 'Has audit trail:', hasAuditTrail);
-                                  
-                                  if (allSigned && hasAuditTrail) {
-                                    // Update our database
-                                    console.log('💾 Check Status: Updating database with completed status...');
-                                    await fetch(`${API_URL}/esign/update-status`, {
-                                      method: 'POST',
-                                      headers: {
-                                        'Content-Type': 'application/json'
-                                      },
-                                      body: JSON.stringify({
-                                        documentId: activeDocumentId,
-                                        status: 'completed',
-                                        leegalityResponse: result
-                                      })
-                                    });
-                                    
-                                    console.log('🎉 Check Status: E-signing completed! Updating UI...');
-                                    setSteps(prevSteps => ({
-                                      ...prevSteps,
-                                      signing: { ...prevSteps.signing, completed: true },
-                                      payment: { ...prevSteps.payment, active: true }
-                                    }));
-                                    alert('✓ E-signing completed successfully!');
-                                  } else {
-                                    // Get detailed status from requests array
-                                    const requests = result.data?.requests || [];
-                                    const signedCount = requests.filter(r => r.signed === true).length;
-                                    const totalCount = requests.length;
-                                    const rejectedCount = requests.filter(r => r.rejected === true).length;
-                                    const expiredCount = requests.filter(r => r.expired === true).length;
-                                    
-                                    console.log('⏳ Check Status: Not completed yet');
-                                    console.log(`📊 Check Status: ${signedCount}/${totalCount} signed, ${rejectedCount} rejected, ${expiredCount} expired`);
-                                    
-                                    if (rejectedCount > 0) {
-                                      alert(`E-signing rejected by ${rejectedCount} signer(s). Please restart the process.`);
-                                    } else if (expiredCount > 0) {
-                                      alert(`E-signing links expired for ${expiredCount} signer(s). Please restart the process.`);
-                                    } else {
-                                      alert(`E-signing in progress: ${signedCount}/${totalCount} have signed. Please complete the signing process.`);
-                                    }
-                                  }
+                                  alert('✓ E-signing completed successfully!');
+                                } else if (data.status === 'EXPIRED') {
+                                  alert('E-signing link has expired. Please restart the process.');
+                                  setActiveDocumentId(null);
+                                } else if (data.status === 'REJECTED') {
+                                  alert('E-signing was rejected. Please restart the process.');
+                                  setActiveDocumentId(null);
                                 } else {
-                                  console.log('❌ Check Status: Leegality API call failed');
-                                  const errorData = await response.json();
-                                  alert('Failed to check status: ' + (errorData.message || 'Unknown error'));
+                                  // Show progress
+                                  const { signed, total } = data.signingDetails;
+                                  alert(`E-signing in progress: ${signed}/${total} have signed. Please complete the signing process.`);
                                 }
                               } catch (err) {
-                                console.error('💥 Check Status: Error occurred:', err);
+                                console.error('Error checking e-sign status:', err);
                                 alert('Error checking status: ' + err.message);
                               } finally {
-                                console.log('🏁 Check Status: Process finished');
                                 setIsLoading(false);
                               }
                             }}
