@@ -51,6 +51,11 @@ export async function getToken(maxRetries = 3) {
   const tokenRequestId = `TOKEN_${Date.now()}`;
   
   const { clientId, secretKey } = getCredentials();
+  if (!clientId || !secretKey) {
+    cachedToken = null;
+    tokenExpiry = null;
+    throw new Error('CAMS credentials missing: CAMS_CLIENT_ID/CAMS_SECRET_KEY not configured');
+  }
   
   // Return cached token if still valid
   if (cachedToken && tokenExpiry && Date.now() < tokenExpiry) {

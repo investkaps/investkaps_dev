@@ -851,6 +851,14 @@ export const kycAPI = {
       
       return res.data;
     } catch (err) {
+      const status = err?.response?.status;
+      const payload = err?.response?.data;
+      if (status || payload) {
+        console.error('[KYC API] verifyKYC failed', {
+          status,
+          payload
+        });
+      }
       const { message } = extractError(err);
       console.error('Error verifying KYC:', message);
       throw new Error(message);
