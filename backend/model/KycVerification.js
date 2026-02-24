@@ -94,11 +94,35 @@ const KycVerificationSchema = new mongoose.Schema({
   // ========================
 
   camsEnquiryData: {
-    type: Object   // PANEnquiry decrypted JSON
+    type: Object   // PANEnquiry decrypted JSON (not used in current flow)
   },
 
   camsDownloadData: {
-    type: Object   // PANDownload decrypted JSON (full KYC)
+    type: Object   // Extracted structured fields from the EC2 response
+  },
+
+  // ========================
+  // FULL EC2 API RESPONSE (audit / compliance)
+  // ========================
+
+  // The complete, unmodified JSON returned by the AWS EC2 FastAPI service.
+  // Stored for audit and debugging purposes ONLY.
+  // Access must be restricted to admin roles – never returned to the frontend.
+  // Purged automatically via the piiPurgeAt TTL index after 90 days.
+  rawEc2Response: {
+    type: Object
+  },
+
+  // ========================
+  // PII RETENTION POLICY
+  // ========================
+
+  // Auto-purge after 90 days (configurable per-record).
+  // MongoDB TTL index on this field deletes the entire document when it expires.
+  // Retention period: 90 days (DPDP Act – minimum necessary storage principle).
+  piiPurgeAt: {
+    type: Date,
+    default: () => new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days from creation
   },
 
   // ========================
@@ -130,5 +154,9 @@ KycVerificationSchema.index({ fullName: 1 });
 KycVerificationSchema.index({ kycStatus: 1, createdAt: -1 });
 KycVerificationSchema.index({ status: 1, pan: 1 });
 KycVerificationSchema.index({ camsStatusCode: 1 });
+
+// TTL index – MongoDB background job auto-deletes documents when piiPurgeAt elapses.
+// expireAfterSeconds: 0 means "delete as soon as the Date value is reached".
+KycVerificationSchema.index({ piiPurgeAt: 1 }, { expireAfterSeconds: 0, sparse: true });
 
 export default mongoose.model("KycVerification", KycVerificationSchema);

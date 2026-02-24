@@ -1,16 +1,16 @@
-import { clerkClient } from '@clerk/clerk-sdk-node';
+import { verifyToken as clerkVerifyToken } from '@clerk/clerk-sdk-node';
 import User from '../model/User.js';
 import logger from '../utils/logger.js';
 
-// ─── Helper: extract clerkId from JWT ───
-const extractClerkId = (token) => {
-  const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-  return payload.sub;
-};
-
 /**
- * Full auth middleware – verifies token with Clerk API and loads DB user.
- * Sets req.user (Mongoose doc) and req.clerkId.
+ * Full auth middleware – cryptographically verifies the Clerk JWT (signature +
+ * expiry) and loads the DB user.  Sets req.user (Mongoose doc) and req.clerkId.
+ *
+ * SECURITY NOTE: We use clerkVerifyToken() which validates the JWT signature
+ * against Clerk's public key.  A previous version only called
+ * clerkClient.users.getUser(clerkId) which only checked user existence, not
+ * that the caller actually signed the token – a forged JWT with a known clerkId
+ * would have passed.
  */
 export const verifyToken = async (req, res, next) => {
   try {
@@ -20,21 +20,18 @@ export const verifyToken = async (req, res, next) => {
       return res.status(401).json({ success: false, error: 'No token provided, authorization denied' });
     }
 
-    let clerkId;
+    // Cryptographically verify signature and expiry.
+    let payload;
     try {
-      clerkId = extractClerkId(token);
-      if (!clerkId) {
-        return res.status(401).json({ success: false, error: 'Invalid token: missing user ID' });
-      }
+      payload = await clerkVerifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY });
     } catch (err) {
-      logger.error(`Error parsing token: ${err.message}`);
-      return res.status(401).json({ success: false, error: 'Invalid token format' });
+      logger.error(`Token verification failed: ${err.message}`);
+      return res.status(401).json({ success: false, error: 'Invalid or expired token' });
     }
 
-    // Verify user exists in Clerk
-    const clerkUser = await clerkClient.users.getUser(clerkId);
-    if (!clerkUser) {
-      return res.status(401).json({ success: false, error: 'User not found in Clerk' });
+    const clerkId = payload?.sub;
+    if (!clerkId) {
+      return res.status(401).json({ success: false, error: 'Invalid token: missing user ID' });
     }
 
     // Load DB user
@@ -56,8 +53,8 @@ export const verifyToken = async (req, res, next) => {
 export const authenticateToken = verifyToken;
 
 /**
- * Lightweight token extraction – only parses the JWT to get clerkId.
- * Does NOT require the user to exist in DB (used for user creation).
+ * Lightweight token extraction – cryptographically verifies the JWT but does
+ * NOT require the user to exist in DB (used for user creation flow).
  * Sets req.clerkId.
  */
 export const extractTokenOnly = async (req, res, next) => {
@@ -67,10 +64,16 @@ export const extractTokenOnly = async (req, res, next) => {
       return res.status(401).json({ success: false, error: 'No token provided' });
     }
 
+    let payload;
     try {
-      req.clerkId = extractClerkId(token);
+      payload = await clerkVerifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY });
     } catch {
-      return res.status(401).json({ success: false, error: 'Invalid token format' });
+      return res.status(401).json({ success: false, error: 'Invalid or expired token' });
+    }
+
+    req.clerkId = payload?.sub;
+    if (!req.clerkId) {
+      return res.status(401).json({ success: false, error: 'Invalid token: missing user ID' });
     }
 
     next();

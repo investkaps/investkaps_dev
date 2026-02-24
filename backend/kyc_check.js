@@ -1,5 +1,15 @@
 import axios from "axios";
 import crypto from "crypto";
+import logger from "./utils/logger.js";
+
+// ─── SECURITY WARNING ──────────────────────────────────────────────────────
+// This file is legacy / test code for direct CAMS API access.
+// It is NOT called by kycController; the production flow uses kyc_client.js.
+//
+// The AES-256-CBC keys below MUST be moved to environment variables before
+// this file is used in any live environment.  Hardcoded crypto keys are a
+// critical security vulnerability.
+// ─────────────────────────────────────────────────────────────────────────────
 
 const TOKEN_URL = "https://camskra.com/restAuth/api/v1/getToken";
 const PAN_ENQUIRY_URL = "https://camskra.com/CAMSWS_KRA/KRA_API/PANEnquiry";
@@ -19,13 +29,16 @@ function getCredentials() {
 let cachedToken = null;
 let tokenExpiry = null;
 
+// TODO: Move these to environment variables (CAMS_ENC_KEY, CAMS_IV_KEY).
+// Hardcoded keys are a critical security risk – anyone with source access can
+// decrypt all CAMS PAN payloads.
 const ENC_DEC_KEY = Buffer.from(
-  "LzM+aHwsv/M4aL3YAIbwN4NhbHUHtsTaFGIvyZmUiSY=",
+  process.env.CAMS_ENC_KEY || "LzM+aHwsv/M4aL3YAIbwN4NhbHUHtsTaFGIvyZmUiSY=",
   "base64"
 );
 
 const IV_KEY = Buffer.from(
-  "5S3a+G4uChnTD+8DcgFHUQ==",
+  process.env.CAMS_IV_KEY || "5S3a+G4uChnTD+8DcgFHUQ==",
   "base64"
 );
 
@@ -59,11 +72,11 @@ export async function getToken(maxRetries = 3) {
   
   // Return cached token if still valid
   if (cachedToken && tokenExpiry && Date.now() < tokenExpiry) {
-    console.log('✅ Token: cached');
+    logger.info('CAMS token: using cached token');
     return cachedToken;
   }
 
-  console.log('� Token: requesting...');
+  logger.info('CAMS token: requesting new token');
 
   // Retry logic for token fetch
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -84,15 +97,15 @@ export async function getToken(maxRetries = 3) {
 
       // Check for CAMS error response format
       if (res.data.returnCode && res.data.returnCode !== "0") {
-        console.error('❌ CAMS API returned error:', res.data.returnMsg);
-        console.error('Return Code:', res.data.returnCode);
-        console.error('Client ID:', res.data.clientId || 'Not provided');
+        logger.error('CAMS token API returned error', {
+          returnCode: res.data.returnCode,
+          returnMsg: res.data.returnMsg
+        });
         throw new Error(`CAMS API error: ${res.data.returnMsg} (Code: ${res.data.returnCode})`);
       }
 
       if (!res.data.accessToken) {
-        console.error('❌ No accessToken in response');
-        console.error('Response format:', JSON.stringify(res.data, null, 2));
+        logger.error('CAMS token API: no accessToken in response');
         throw new Error("Token not returned from CAMS");
       }
 
@@ -100,14 +113,14 @@ export async function getToken(maxRetries = 3) {
       cachedToken = res.data.accessToken;
       tokenExpiry = Date.now() + (55 * 60 * 1000);
       
-      console.log('✅ Token: received');
+      logger.info('CAMS token: received and cached');
       return cachedToken;
 
     } catch (err) {
       if (attempt === maxRetries) {
         cachedToken = null;
         tokenExpiry = null;
-        console.error('❌ Token failed:', err.message);
+        logger.error('CAMS token: all retries exhausted', { message: err.message });
         throw new Error(`CAMS token API error: ${err.message}`);
       }
       await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
@@ -148,7 +161,7 @@ export async function panEnquiry(token, pan) {
       throw new Error('Invalid decrypted response from CAMS enquiry API');
     }
 
-    console.log('✅ Enquiry:', res.status);
+    logger.info('CAMS PAN enquiry succeeded', { status: res.status });
     return decrypted;
 
   } catch (err) {
@@ -194,7 +207,7 @@ export async function panDownload(token, pan, dob) {
       throw new Error('Invalid decrypted response from CAMS download API');
     }
 
-    console.log('✅ Download:', res.status);
+    logger.info('CAMS PAN download succeeded', { status: res.status });
     return decrypted;
 
   } catch (err) {

@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
@@ -41,22 +42,32 @@ const allowedOrigins = [
   'https://www.investkaps.com'
 ];
 app.use(cors({ origin: allowedOrigins, credentials: true }));
+// Security headers: X-Content-Type-Options, X-Frame-Options, Referrer-Policy, etc.
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'same-site' },
+  contentSecurityPolicy: false, // CSP is handled by the frontend (Vite/React)
+}));
 app.use(globalLimiter);
 
+// KYC routes get a strict 10kb limit – they only receive { pan, dob }.
+// This MUST be registered before the global express.json() so it processes
+// the stream first; body-parser skips re-parsing if the body is already consumed.
+app.use('/api/kyc', express.json({ limit: '10kb' }));
+
 app.use(express.json({
-  limit: '50mb',
+  limit: '1mb',  // Reduced from 50mb; prevents JSON-bomb attacks while allowing esign PDF base64
   verify: (req, res, buf) => {
     if (req.originalUrl === '/api/payment/webhook') {
       req.rawBody = buf;
     }
   }
 }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Request logging (skip noisy endpoints)
 app.use((req, res, next) => {
   if (!req.url.includes('/api/phone/status') && !req.url.includes('/health')) {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    logger.info(`${req.method} ${req.url}`, { ip: req.ip });
   }
   next();
 });

@@ -35,3 +35,25 @@ export const publicFormLimiter = rateLimit({
   legacyHeaders: false,
   message: { success: false, error: 'Too many submissions, please try again later' }
 });
+
+// KYC endpoints: 5 per 15 minutes
+// Key strategy: per-user when authenticated, per-IP as fallback.
+// This prevents both authenticated-user abuse and anonymous enumeration attacks.
+export const kycLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Prefer user-scoped key so a shared NAT/proxy IP doesn't unfairly penalise
+  // all users behind it, while still protecting unauthenticated calls by IP.
+  keyGenerator: (req) => {
+    if (req.user?._id) return `kyc_user_${req.user._id}`;
+    if (req.clerkId) return `kyc_clerk_${req.clerkId}`;
+    return `kyc_ip_${req.ip}`;
+  },
+  message: {
+    success: false,
+    error: 'Too many KYC requests. Please wait 15 minutes before trying again.',
+    code: 'KYC_RATE_LIMITED'
+  }
+});
