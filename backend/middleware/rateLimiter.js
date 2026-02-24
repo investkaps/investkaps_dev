@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 // Global: 300 requests per 15 minutes per IP
 export const globalLimiter = rateLimit({
@@ -49,7 +49,7 @@ export const kycLimiter = rateLimit({
   keyGenerator: (req) => {
     if (req.user?._id) return `kyc_user_${req.user._id}`;
     if (req.clerkId) return `kyc_clerk_${req.clerkId}`;
-    return `kyc_ip_${req.ip}`;
+    return `kyc_ip_${ipKeyGenerator(req)}`;
   },
   message: {
     success: false,

@@ -1,13 +1,13 @@
+// Must be the very first import so process.env is populated before any other
+// module (rateLimiter, kyc_client, etc.) is evaluated by the ESM loader.
+import 'dotenv/config';
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import cron from 'node-cron';
-
-// Load environment variables first, before any other imports that might use them
-dotenv.config();
 
 import connectDB from './config/db.js';
 import logger from './utils/logger.js';
