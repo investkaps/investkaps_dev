@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 // Get API URL from environment variables
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -15,7 +15,7 @@ import './Dashboard.css';
 
 
 const Dashboard = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, loading: authLoading } = useAuth();
   const { isAdmin } = useRole();
   const navigate = useNavigate();
   
@@ -72,36 +72,148 @@ const Dashboard = () => {
   const [stockRecommendations, setStockRecommendations] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [bypassLoading, setBypassLoading] = useState(false);
-  
-  // Fetch active document from MongoDB on component mount
-  useEffect(() => {
-    const fetchActiveDocument = async () => {
-      try {
-        const response = await esignAPI.getActiveDocument();
-        if (response.success && response.data.documentId) {
-          const status = response.data.status;
-          const isCompleted = status === 'COMPLETED' || status === 'completed';
 
-          if (isCompleted) {
-            setSteps(prevSteps => ({
-              ...prevSteps,
-              signing: { ...prevSteps.signing, completed: true },
-              payment: { ...prevSteps.payment, active: true }
-            }));
-            setActiveDocumentId(null);
-            localStorage.removeItem('active_esign_document_id');
-          } else {
-            setActiveDocumentId(response.data.documentId);
-            localStorage.setItem('active_esign_document_id', response.data.documentId);
+  // ─── Dashboard Initialization ────────────────────────────────────────────────
+  // All four initial API checks run in parallel before the dashboard renders.
+  // This prevents the "flash of stale state" where completed steps appear
+  // unchecked for a moment then snap into place.
+  const initRef = useRef(false);
+  const [dashboardReady, setDashboardReady] = useState(false);
+
+  useEffect(() => {
+    if (authLoading || !currentUser) return;
+    if (initRef.current) return;
+    initRef.current = true;
+
+    // Compute admin status synchronously from currentUser.role
+    // (avoids timing gap with isAdminUser state setter)
+    const adminStatus = currentUser.role === 'admin';
+
+    const initDashboard = async () => {
+      // 10 s failsafe – if any check hangs we still open the dashboard
+      await Promise.race([
+        Promise.allSettled([
+
+        // ── 1. Esign: active document ─────────────────────────────────────────
+        (async () => {
+          try {
+            const response = await esignAPI.getActiveDocument();
+            if (response.success && response.data.documentId) {
+              const status = response.data.status;
+              const isCompleted = status === 'COMPLETED' || status === 'completed';
+              if (isCompleted) {
+                setSteps(prev => ({
+                  ...prev,
+                  signing: { ...prev.signing, completed: true },
+                  payment: { ...prev.payment, active: true }
+                }));
+                setActiveDocumentId(null);
+                localStorage.removeItem('active_esign_document_id');
+              } else {
+                setActiveDocumentId(response.data.documentId);
+                localStorage.setItem('active_esign_document_id', response.data.documentId);
+              }
+            }
+          } catch (err) {
+            console.log('No active document found:', err.message);
           }
-        }
-      } catch (err) {
-        console.log('No active document found:', err.message);
-      }
+        })(),
+
+        // ── 2. KYC status ─────────────────────────────────────────────────────
+        (async () => {
+          try {
+            setIsLoading(true);
+            if (adminStatus) {
+              setKycResult({
+                success: true,
+                message: 'As an admin, KYC verification is optional',
+                data: { fullName: currentUser.name, isVerified: true },
+                isAlreadyVerified: true,
+                isAdminBypass: true
+              });
+              setSteps(prev => ({
+                phone: { ...prev.phone, completed: true },
+                kyc: { ...prev.kyc, completed: true, active: true },
+                signing: { ...prev.signing, completed: true, active: true },
+                payment: { ...prev.payment, completed: true, active: true }
+              }));
+              setKycCheckCompleted(true);
+              return;
+            }
+            let isVerified = false;
+            if (currentUser.id && !isVerified) {
+              try {
+                const response = await userAPI.getKYCStatusByClerkId(currentUser.id);
+                if (response.success && response.kycStatus?.isVerified) {
+                  setKycResult({ success: true, message: 'KYC verification already completed', data: response.kycStatus, isAlreadyVerified: true });
+                  if (response.kycStatus.panNumber) {
+                    setKycForm(prev => ({ ...prev, pan: response.kycStatus.panNumber }));
+                    setPanStatus({ checking: false, verified: true, validated: true, existsForOther: false, message: 'PAN already verified for your account' });
+                  }
+                  setSteps(prev => ({ ...prev, kyc: { ...prev.kyc, completed: true, active: true }, phone: { ...prev.phone, active: true }, signing: { ...prev.signing, active: true }, payment: { ...prev.payment, active: true } }));
+                  isVerified = true;
+                }
+              } catch (err) { /* No KYC status by clerkId */ }
+            }
+            if (currentUser.email && !isVerified) {
+              try {
+                const response = await userAPI.getKYCStatusByEmail(currentUser.email);
+                if (response.success && response.kycStatus?.isVerified) {
+                  setKycResult({ success: true, message: 'KYC verification already completed', data: response.kycStatus, isAlreadyVerified: true });
+                  if (response.kycStatus.panNumber) {
+                    setKycForm(prev => ({ ...prev, pan: response.kycStatus.panNumber }));
+                    setPanStatus({ checking: false, verified: true, validated: true, existsForOther: false, message: 'PAN already verified for your account' });
+                  }
+                  setSteps(prev => ({ ...prev, kyc: { ...prev.kyc, completed: true, active: true }, phone: { ...prev.phone, active: true }, signing: { ...prev.signing, active: true }, payment: { ...prev.payment, active: true } }));
+                  isVerified = true;
+                }
+              } catch (err) { /* No KYC status by email */ }
+            }
+            setKycCheckCompleted(true);
+          } catch (err) {
+            console.error('Error checking KYC status:', err);
+          } finally {
+            setIsLoading(false);
+          }
+        })(),
+
+        // ── 3. Phone verification ──────────────────────────────────────────────
+        (async () => {
+          if (adminStatus) return;
+          try {
+            const response = await phoneAPI.checkPhoneStatus();
+            if (response.success && response.phoneVerified) {
+              setSteps(prev => ({ ...prev, phone: { ...prev.phone, completed: true } }));
+              setPhoneForm({ phone: response.phone || '', otp: '' });
+            }
+          } catch (err) { /* Phone not verified yet */ }
+        })(),
+
+        // ── 4. Active subscription ─────────────────────────────────────────────
+        (async () => {
+          try {
+            const subResponse = await userSubscriptionAPI.getActiveSubscription(currentUser.id);
+            if (subResponse.success && subResponse.data) {
+              const subscriptions = Array.isArray(subResponse.data) ? subResponse.data : [subResponse.data];
+              if (subscriptions.length > 0) {
+                setActiveSubscription(subscriptions[0]);
+                setSteps(prev => ({ ...prev, payment: { ...prev.payment, completed: true, active: true } }));
+              }
+            }
+          } catch (err) { /* No active subscription */ }
+        })(),
+
+        ]),
+        // Fallback so the dashboard never hangs if a check stalls
+        new Promise(resolve => setTimeout(resolve, 10_000)),
+      ]);
+
+      setDashboardReady(true);
     };
-    
-    fetchActiveDocument();
-  }, []);
+
+    initDashboard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, currentUser]);
 
   // Handle e-sign completion redirect
   useEffect(() => {
@@ -143,167 +255,8 @@ const Dashboard = () => {
     }
   }, [activeDocumentId]);
   
-  // Check if user is already KYC verified or is admin
-  useEffect(() => {
-    // Skip if user is not available
-    if (!currentUser) return;
-    
-    const checkKycStatus = async () => {      
-      try {
-        setIsLoading(true);
-        
-        // If user is admin, auto-complete all steps (optional for admins)
-        if (isAdminUser) {
-          setKycResult({
-            success: true,
-            message: 'As an admin, KYC verification is optional',
-            data: {
-              fullName: currentUser.name,
-              isVerified: true
-            },
-            isAlreadyVerified: true,
-            isAdminBypass: true
-          });
-          
-          // Update steps all at once to avoid multiple re-renders
-          setSteps(prevSteps => ({
-            phone: { ...prevSteps.phone, completed: true },
-            kyc: { ...prevSteps.kyc, completed: true, active: true },
-            signing: { ...prevSteps.signing, completed: true, active: true },
-            payment: { ...prevSteps.payment, completed: true, active: true }
-          }));
-          
-          setKycCheckCompleted(true);
-          return;
-        }
-        
-        // For regular users, check KYC status
-        let isVerified = false;
-        
-        // Try to get KYC status by clerkId
-        if (currentUser.id && !isVerified) {
-          try {
-            const response = await userAPI.getKYCStatusByClerkId(currentUser.id);
-            if (response.success && response.kycStatus?.isVerified) {
-              setKycResult({
-                success: true,
-                message: 'KYC verification already completed',
-                data: response.kycStatus,
-                isAlreadyVerified: true
-              });
-              
-              // Pre-fill PAN if available
-              if (response.kycStatus.panNumber) {
-                setKycForm(prev => ({
-                  ...prev,
-                  pan: response.kycStatus.panNumber
-                }));
-                
-                // Set PAN as verified
-                setPanStatus({
-                  checking: false,
-                  verified: true,
-                  validated: true,
-                  existsForOther: false,
-                  message: 'PAN already verified for your account'
-                });
-              }
-              
-              // KYC done - unlock all other steps
-              setSteps(prevSteps => ({
-                ...prevSteps,
-                kyc: { ...prevSteps.kyc, completed: true, active: true },
-                phone: { ...prevSteps.phone, active: true },
-                signing: { ...prevSteps.signing, active: true },
-                payment: { ...prevSteps.payment, active: true }
-              }));
-              
-              isVerified = true;
-            }
-          } catch (err) {
-            // No KYC status found by clerkId
-          }
-        }
-        
-        // Try by email if clerkId didn't work and not verified yet
-        if (currentUser.email && !isVerified) {
-          try {
-            const response = await userAPI.getKYCStatusByEmail(currentUser.email);
-            if (response.success && response.kycStatus?.isVerified) {
-              setKycResult({
-                success: true,
-                message: 'KYC verification already completed',
-                data: response.kycStatus,
-                isAlreadyVerified: true
-              });
-              
-              // Pre-fill PAN if available
-              if (response.kycStatus.panNumber) {
-                setKycForm(prev => ({
-                  ...prev,
-                  pan: response.kycStatus.panNumber
-                }));
-                
-                // Set PAN as verified
-                setPanStatus({
-                  checking: false,
-                  verified: true,
-                  validated: true,
-                  existsForOther: false,
-                  message: 'PAN already verified for your account'
-                });
-              }
-              
-              // KYC done - unlock all other steps
-              setSteps(prevSteps => ({
-                ...prevSteps,
-                kyc: { ...prevSteps.kyc, completed: true, active: true },
-                phone: { ...prevSteps.phone, active: true },
-                signing: { ...prevSteps.signing, active: true },
-                payment: { ...prevSteps.payment, active: true }
-              }));
-              
-              isVerified = true;
-            }
-          } catch (err) {
-            // No KYC status found by email
-          }
-        }
-        
-        // Mark check as completed regardless of result
-        setKycCheckCompleted(true);
-        
-      } catch (err) {
-        console.error('Error checking KYC status:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    checkKycStatus();
-  }, [currentUser, isAdminUser]);
-  
-  // Check phone verification status
-  useEffect(() => {
-    if (!currentUser || isAdminUser) return;
-    
-    const checkPhoneStatus = async () => {
-      try {
-        const response = await phoneAPI.checkPhoneStatus();
-        if (response.success && response.phoneVerified) {
-          setSteps(prevSteps => ({
-            ...prevSteps,
-            phone: { ...prevSteps.phone, completed: true }
-          }));
-          setPhoneForm({ phone: response.phone || '', otp: '' });
-        }
-      } catch (err) {
-        // Phone not verified yet
-      }
-    };
-    
-    checkPhoneStatus();
-  }, [currentUser, isAdminUser]);
+  // KYC, phone, esign, and subscription checks are all handled by
+  // the consolidated initDashboard effect above.
   
   // E-sign status is checked manually via button click
   // Removed automatic polling to prevent loops and unnecessary API calls
@@ -524,39 +477,7 @@ const Dashboard = () => {
   // Check if all steps are completed
   const isSetupComplete = steps.phone.completed && steps.kyc.completed && steps.signing.completed && steps.payment.completed;
 
-  // Check active subscription - run this independently of setup completion
-  useEffect(() => {
-    if (!currentUser) return;
-    
-    const checkActiveSubscription = async () => {
-      try {
-        const subResponse = await userSubscriptionAPI.getActiveSubscription(currentUser.id);
-        if (subResponse.success && subResponse.data) {
-          // Backend now returns an array of subscriptions
-          const subscriptions = Array.isArray(subResponse.data) ? subResponse.data : [subResponse.data];
-          
-          // Display the most recent subscription (first in array since sorted by createdAt desc)
-          if (subscriptions.length > 0) {
-            setActiveSubscription(subscriptions[0]);
-            
-            // Mark payment step as both completed AND active if user has active subscription
-            setSteps(prevSteps => ({
-              ...prevSteps,
-              payment: { 
-                ...prevSteps.payment, 
-                completed: true, 
-                active: true 
-              }
-            }));
-          }
-        }
-      } catch (err) {
-        // No active subscription found
-      }
-    };
-    
-    checkActiveSubscription();
-  }, [currentUser]);
+  // Active subscription check is handled by the consolidated initDashboard effect above.
   
   // Re-check payment completion when activeSubscription changes
   useEffect(() => {
@@ -608,6 +529,25 @@ const Dashboard = () => {
     fetchRecommendations();
   }, [currentUser, isSetupComplete, activeSubscription, isAdminUser]);
   
+  // Block render until all initial checks have resolved
+  if (authLoading || !dashboardReady) {
+    return (
+      <div className="dashboard-init-loading">
+        <div className="init-loading-card">
+          <div className="init-spinner"></div>
+          <h2>Loading your dashboard</h2>
+          <p>Checking your account status&hellip;</p>
+          <ul className="init-checklist">
+            <li>KYC verification</li>
+            <li>Phone verification</li>
+            <li>Agreement &amp; signing</li>
+            <li>Subscription</li>
+          </ul>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-page">
       <div className="dashboard-container">
@@ -1113,23 +1053,6 @@ const Dashboard = () => {
                           >
                             Proceed to E-Signing
                           </Link>
-                          
-                          <button 
-                            type="button" 
-                            className="secondary-btn" 
-                            onClick={() => {
-                              if (window.confirm('Are you sure you want to skip e-signing for now? You can complete it later.')) {
-                                setSteps(prevSteps => ({
-                                  ...prevSteps,
-                                  signing: { ...prevSteps.signing, completed: true },
-                                  payment: { ...prevSteps.payment, active: true }
-                                }));
-                                alert('✓ E-signing skipped. You can complete it later from your profile.');
-                              }
-                            }}
-                          >
-                            Skip for Now
-                          </button>
                           
                           <button 
                             type="button" 

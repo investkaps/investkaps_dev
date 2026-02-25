@@ -242,6 +242,11 @@
 .loading {
   position: relative;
   pointer-events: none;
+  color: transparent !important; /* hide button text, spinner takes over */
+}
+
+.loading::before {
+  display: none; /* hide the shimmer sweep during loading */
 }
 
 .loading::after {

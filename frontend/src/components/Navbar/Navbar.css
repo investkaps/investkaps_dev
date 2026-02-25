@@ -56,10 +56,6 @@
 }
 
 /* Special styling for home page when not scrolled */
-body.is-home .navbar:not(.scrolled) .user-name {
-  color: white;
-}
-
 body.is-home .navbar:not(.scrolled) .btn-secondary {
   color: white;
   border-color: rgba(255, 255, 255, 0.3);

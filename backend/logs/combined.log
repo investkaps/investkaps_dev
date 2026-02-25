@@ -120,3 +120,27 @@
 2026-02-14 01:00:00 info: Found 0 expired subscriptions to update
 2026-02-14 01:00:00 info: Updated 0 expired subscriptions
 2026-02-14 12:04:45 error: Error parsing token: The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined
+2026-02-24 12:10:49 info: GET /api/users/clerk/user_39ebrao3TDhn94PT5M3pQZVwhg5 {"ip":"::1"}
+2026-02-24 12:10:49 info: GET /api/users/email/aiman.singh%40kalvium.community {"ip":"::1"}
+2026-02-24 12:10:49 info: GET /api/esign/active {"ip":"::1"}
+2026-02-24 12:10:49 info: GET /api/users/clerk/user_39ebrao3TDhn94PT5M3pQZVwhg5/kyc {"ip":"::1"}
+2026-02-24 12:10:49 info: GET /api/subscriptions/user/user_39ebrao3TDhn94PT5M3pQZVwhg5/active {"ip":"::1"}
+2026-02-24 12:10:50 info: GET /api/users/email/aiman.singh%40kalvium.community/kyc {"ip":"::1"}
+2026-02-24 12:10:50 info: POST /api/users/create {"ip":"::1"}
+2026-02-24 12:10:50 info: GET /api/subscriptions/user/user_39ebrao3TDhn94PT5M3pQZVwhg5/active {"ip":"::1"}
+2026-02-24 12:10:50 info: GET /api/esign/active {"ip":"::1"}
+2026-02-24 12:10:50 info: GET /api/users/email/aiman.singh%40kalvium.community {"ip":"::1"}
+2026-02-24 12:10:50 info: GET /api/users/email/aiman.singh%40kalvium.community {"ip":"::1"}
+2026-02-24 12:10:50 info: GET /api/subscriptions/user/user_39ebrao3TDhn94PT5M3pQZVwhg5/active {"ip":"::1"}
+2026-02-24 12:10:50 info: POST /api/users/create {"ip":"::1"}
+2026-02-24 12:10:52 info: GET /api/kyc/check-pan/RARPS6224N {"ip":"::1"}
+2026-02-24 12:11:02 info: POST /api/kyc/verify {"ip":"::1"}
+2026-02-24 12:11:02 info: KYC request started {"requestId":"KYC_1771915262354_k67bukqr2"}
+2026-02-24 12:11:02 info: Calling KYC API (AWS EC2) {"pan":"RARP****","attempt":1}
+2026-02-24 12:11:04 info: KYC API response received {"status":200,"pan":"RARP****"}
+2026-02-24 12:11:04 info: PAN KYC data fetched successfully {"pan":"RARP****"}
+2026-02-24 12:11:04 info: KYC data fetched from AWS EC2 {"requestId":"KYC_1771915262354_k67bukqr2","pan":"RARP****"}
+2026-02-24 12:11:04 info: KYC data extracted {"requestId":"KYC_1771915262354_k67bukqr2","pan":"RARP****","kycStatus":"VERIFIED"}
+2026-02-24 12:11:04 info: KYC verification record saved {"requestId":"KYC_1771915262354_k67bukqr2","recordId":"699d480083c88f873d439af6"}
+2026-02-24 12:11:04 info: User KYC status updated {"requestId":"KYC_1771915262354_k67bukqr2","userId":"699d47f283c88f873d439aec"}
+2026-02-24 12:11:04 info: KYC request completed successfully {"requestId":"KYC_1771915262354_k67bukqr2","recordId":"699d480083c88f873d439af6","durationMs":2253}

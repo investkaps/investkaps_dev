@@ -193,7 +193,7 @@ function ESignForm() {
             className={`submit-button ${isLoading ? 'loading' : ''}`}
             disabled={isLoading}
           >
-            {isLoading ? 'Processing...' : 'Proceed to E-Sign'}
+            {isLoading ? '​' : 'Proceed to E-Sign'}
           </button>
         </form>
       </div>

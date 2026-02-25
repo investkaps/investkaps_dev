@@ -46,6 +46,15 @@ import StrategicAlpha from './pages/Plans/StrategicAlpha';
 import LeveredRiskFnO from './pages/Plans/LeveredRiskFnO';
 import IK15MomentumMP from './pages/Plans/IK15MomentumMP';  // Add this line
 
+// Scroll to top on every route change
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [pathname]);
+  return null;
+};
+
 // Layout component that conditionally renders the navbar
 const AppLayout = ({ children, scrolled }) => {
   const location = useLocation();
@@ -126,6 +135,7 @@ function App() {
     >
       <AuthProvider>
         <Router>
+          <ScrollToTop />
           <Routes>
             <Route 
               path="/*" 
