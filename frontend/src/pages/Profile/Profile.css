@@ -354,6 +354,101 @@
   border-bottom: none;
 }
 
+/* ── No-content placeholder ──────────────────────────────── */
+
+.pf-no-sub {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #6c757d;
+  font-size: 0.92rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.pf-no-sub-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.pf-no-sub p {
+  margin: 0;
+}
+
+.pf-link {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.pf-link:hover {
+  text-decoration: underline;
+}
+
+/* ── E-Signing cards ─────────────────────────────────────── */
+
+.pf-esign-card {
+  border-left: 4px solid #3498db;
+}
+
+.pf-esign-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pf-esign-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.pf-esign-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.pf-esign-name {
+  font-size: 0.97rem;
+  color: #2c3e50;
+}
+
+.pf-esign-links {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.pf-esign-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.pf-esign-link:hover {
+  opacity: 0.82;
+}
+
+.pf-esign-link--doc {
+  background: #e8f4fd;
+  color: #1a73c8;
+}
+
+.pf-esign-link--audit {
+  background: #f3f0ff;
+  color: #5b3cc4;
+}
+
 /* ── Responsive ──────────────────────────────────────────── */
 
 @media (max-width: 640px) {

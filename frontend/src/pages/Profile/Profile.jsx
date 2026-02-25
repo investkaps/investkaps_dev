@@ -94,6 +94,22 @@ const Profile = () => {
   const kyc = userDetails?.kycStatus;
   const activeSub = userDetails?.userSubscriptions?.find(s => s.status === 'active');
   const pendingRequests = paymentRequests.filter(r => r.status !== 'approved');
+  const esignDocs = (userDetails?.documents || []).filter(d => d.esign);
+
+  const esignStatusLabel = (status) => {
+    const map = { SIGNED: 'Signed', COMPLETED: 'Completed', SENT: 'Awaiting Signature',
+      REJECTED: 'Rejected', EXPIRED: 'Expired', INACTIVE: 'Inactive',
+      completed: 'Completed', pending: 'Pending', failed: 'Failed', expired: 'Expired' };
+    return map[status] || status || 'Unknown';
+  };
+  const esignStatusClass = (status) => {
+    if (!status) return 'pending';
+    const s = status.toLowerCase();
+    if (s === 'signed' || s === 'completed') return 'active';
+    if (s === 'rejected' || s === 'failed') return 'rejected';
+    if (s === 'expired' || s === 'inactive') return 'expired';
+    return 'pending';
+  };
 
   return (
     <div className="pf-page">
@@ -165,9 +181,15 @@ const Profile = () => {
           </section>
 
           {/* Subscription */}
-          {(activeSub || pendingRequests.length > 0 || userDetails?.userSubscriptions?.length > 0) && (
-            <section className="pf-section">
-              <h2 className="pf-section-title">Subscription</h2>
+          <section className="pf-section">
+            <h2 className="pf-section-title">Subscription</h2>
+
+            {!activeSub && pendingRequests.length === 0 && !userDetails?.userSubscriptions?.length && (
+              <div className="pf-card pf-no-sub">
+                <span className="pf-no-sub-icon">📋</span>
+                <p>No active subscription. <a href="/#pricing" className="pf-link">View plans →</a></p>
+              </div>
+            )}
 
               {activeSub && (
                 <div className="pf-card pf-card-green pf-mb">
@@ -252,33 +274,65 @@ const Profile = () => {
                 </div>
               )}
             </section>
-          )}
 
-          {/* Documents */}
-          {userDetails?.documents?.length > 0 && (
-            <section className="pf-section">
-              <h2 className="pf-section-title">Documents</h2>
-              <div className="pf-card">
-                <div className="pf-table-wrap">
-                  <table className="pf-table">
-                    <thead>
-                      <tr><th>Name</th><th>Type</th><th>Date</th><th>Status</th></tr>
-                    </thead>
-                    <tbody>
-                      {userDetails.documents.map((doc, i) => (
-                        <tr key={i}>
-                          <td>{doc.name}</td>
-                          <td>{doc.type}</td>
-                          <td>{fmt(doc.createdAt)}</td>
-                          <td>{doc.esign?.status || 'N/A'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+          {/* E-Signing */}
+          <section className="pf-section">
+            <h2 className="pf-section-title">E-Signing</h2>
+
+            {esignDocs.length === 0 ? (
+              <div className="pf-card pf-no-sub">
+                <span className="pf-no-sub-icon">✍️</span>
+                <p>No e-signed documents yet.</p>
               </div>
-            </section>
-          )}
+            ) : (
+              esignDocs.map((doc, i) => {
+                const es = doc.esign;
+                const statusClass = esignStatusClass(es.currentStatus || es.status);
+                const signedAt = es.signedAt || es.invitees?.find(inv => inv.signedAt)?.signedAt;
+                const completedAt = es.completedAt;
+                const signedFile = es.files?.find(f => f.url);
+                return (
+                  <div key={i} className={`pf-card pf-esign-card pf-mb`}>
+                    <div className="pf-esign-header">
+                      <div className="pf-esign-title-row">
+                        <span className="pf-esign-icon">📄</span>
+                        <div>
+                          <strong className="pf-esign-name">{doc.name}</strong>
+                          <span className="pf-muted pf-ml" style={{ textTransform: 'capitalize' }}>{doc.type}</span>
+                        </div>
+                      </div>
+                      <span className={`pf-badge ${statusClass}`}>
+                        {esignStatusLabel(es.currentStatus || es.status)}
+                      </span>
+                    </div>
+
+                    <div className="pf-grid-2 pf-mt-sm">
+                      <Row label="Document Sent"  value={fmt(es.createdAt || doc.createdAt)} />
+                      {signedAt  && <Row label="Signed On"    value={fmt(signedAt)} />}
+                      {completedAt && <Row label="Completed On" value={fmt(completedAt)} />}
+                      {es.documentId && <Row label="Document ID" value={es.documentId} mono />}
+                      {es.irn        && <Row label="IRN"         value={es.irn} mono />}
+                    </div>
+
+                    {(signedFile || es.auditTrail?.url) && (
+                      <div className="pf-esign-links">
+                        {signedFile && (
+                          <a href={signedFile.url} target="_blank" rel="noopener noreferrer" className="pf-esign-link pf-esign-link--doc">
+                            ⬇ Download Signed Document
+                          </a>
+                        )}
+                        {es.auditTrail?.url && (
+                          <a href={es.auditTrail.url} target="_blank" rel="noopener noreferrer" className="pf-esign-link pf-esign-link--audit">
+                            🔍 View Audit Trail
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </section>
 
         </div>
       </div>
