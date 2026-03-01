@@ -9,9 +9,26 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach token from localStorage to every request automatically
+// Attach a fresh Clerk token to every request.
+// window.Clerk.session.getToken() silently refreshes the JWT if it is near
+// expiry, so we never send a stale / expired token.  We fall back to the
+// value cached in localStorage only when the Clerk session object is not yet
+// available (e.g. during the very first render).
 api.interceptors.request.use(
-  (config) => {
+  async (config) => {
+    try {
+      if (window.Clerk?.session) {
+        const freshToken = await window.Clerk.session.getToken();
+        if (freshToken) {
+          localStorage.setItem('clerk_jwt', freshToken);
+          config.headers.Authorization = `Bearer ${freshToken}`;
+          return config;
+        }
+      }
+    } catch (err) {
+      console.warn('Could not refresh Clerk token, falling back to cached token:', err);
+    }
+    // Fallback: use the last-known token stored in localStorage
     const token = localStorage.getItem('clerk_jwt');
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
