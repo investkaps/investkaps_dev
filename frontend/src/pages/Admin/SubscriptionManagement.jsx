@@ -112,6 +112,20 @@ const SubscriptionManagement = () => {
     updatedFeatures.splice(index, 1);
     setFormData({ ...formData, features: updatedFeatures });
   };
+
+  const moveFeatureUp = (index) => {
+    if (index === 0) return;
+    const features = [...formData.features];
+    [features[index - 1], features[index]] = [features[index], features[index - 1]];
+    setFormData({ ...formData, features });
+  };
+
+  const moveFeatureDown = (index) => {
+    if (index === formData.features.length - 1) return;
+    const features = [...formData.features];
+    [features[index], features[index + 1]] = [features[index + 1], features[index]];
+    setFormData({ ...formData, features });
+  };
   
   const handleStrategySelection = (strategyId) => {
     if (selectedStrategies.includes(strategyId)) {
@@ -145,7 +159,8 @@ const SubscriptionManagement = () => {
       currency: 'INR',
       features: [],
       telegramChatId: '',
-      isActive: true
+      isActive: true,
+      isTrial: false
     });
     setSelectedStrategies([]);
     setIsModalOpen(true);
@@ -173,7 +188,8 @@ const SubscriptionManagement = () => {
       currency: subscription.currency || 'INR',
       features: subscription.features || [],
       telegramChatId: subscription.telegramChatId || '',
-      isActive: subscription.isActive
+      isActive: subscription.isActive,
+      isTrial: subscription.isTrial || false
     });
     
     // Set selected strategies if they exist
@@ -585,6 +601,21 @@ const SubscriptionManagement = () => {
               </div>
 
               <div className="admin-form-group">
+                <label className="admin-checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="isTrial"
+                    checked={formData.isTrial}
+                    onChange={handleInputChange}
+                  />
+                  Trial Plan
+                </label>
+                <small style={{ color: '#6c757d', display: 'block', marginTop: '4px' }}>
+                  Trial plans can only be claimed once per user account and cannot be reclaimed.
+                </small>
+              </div>
+
+              <div className="admin-form-group">
                 <label>Telegram Chat ID</label>
                 <input
                   type="text"
@@ -654,6 +685,24 @@ const SubscriptionManagement = () => {
                         </div>
                       </div>
                       <div className="admin-feature-actions">
+                        <button
+                          type="button"
+                          className="admin-feature-move"
+                          onClick={() => moveFeatureUp(index)}
+                          disabled={index === 0}
+                          title="Move up"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-feature-move"
+                          onClick={() => moveFeatureDown(index)}
+                          disabled={index === formData.features.length - 1}
+                          title="Move down"
+                        >
+                          ↓
+                        </button>
                         <button 
                           type="button" 
                           className="admin-edit-feature" 

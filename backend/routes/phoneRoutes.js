@@ -12,4 +12,7 @@ router.post('/verify-otp', verifyToken, phoneController.verifyOTP);
 // Check phone verification status - requires authentication
 router.get('/status', verifyToken, phoneController.checkPhoneStatus);
 
+// Pre-check: does a phone number already exist in DB? (used for real-time input validation)
+router.get('/check/:phone', verifyToken, phoneController.checkPhoneExists);
+
 export default router;

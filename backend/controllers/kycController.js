@@ -216,13 +216,33 @@ export const verifyAndSaveKYC = async (req, res) => {
       });
     }
     
-    // ── Call AWS EC2 KYC API ────────────────────────────────────────────────
-    // fetchPanKyc returns { raw, data } on success and throws a typed
-    // kycError (with a .code property) on every failure path.
-    let kycRaw, kycData;
+    // ── Per-user KYC attempt tracking: block after 3 failed verification attempts ──
+    if (req.user) {
+      const freshUser = await User.findById(req.user._id).select('kycStatus.kycBlocked kycStatus.kycAttempts');
+      if (freshUser?.kycStatus?.kycBlocked) {
+        return res.status(403).json({
+          success: false,
+          error: 'Your KYC verification has been blocked due to too many failed attempts. Please contact support or ask an admin to unblock your account.',
+          code: 'KYC_BLOCKED',
+          requestId,
+        });
+      }
+    }
+
+    // ── Call internal KYC proxy API ────────────────────────────────────────
+    // fetchPanKyc now returns { raw, data, statusCode, kycStatus, userMessage, isVerified }
+    // on every non-error path; it throws a typed kycError only for transport/service failures.
+    let kycRaw, kycData, proxyStatusCode, proxyKycStatus, proxyUserMessage, proxyIsVerified;
     try {
-      ({ raw: kycRaw, data: kycData } = await fetchPanKyc(sanitizedPAN, sanitizedDOB));
-      logger.info('KYC data fetched from AWS EC2', { requestId, pan: maskPan(sanitizedPAN) });
+      ({
+        raw: kycRaw,
+        data: kycData,
+        statusCode: proxyStatusCode,
+        kycStatus: proxyKycStatus,
+        userMessage: proxyUserMessage,
+        isVerified: proxyIsVerified,
+      } = await fetchPanKyc(sanitizedPAN, sanitizedDOB));
+      logger.info('KYC proxy response received', { requestId, pan: maskPan(sanitizedPAN), statusCode: proxyStatusCode, kycStatus: proxyKycStatus });
     } catch (err) {
       // Map every typed error code to a precise HTTP status + user message.
       // The raw error detail (err.message internals) is NEVER sent to the frontend.
@@ -241,6 +261,37 @@ export const verifyAndSaveKYC = async (req, res) => {
       };
 
       const mapped = EC2_ERROR_MAP[errorCode] ?? EC2_ERROR_MAP.KYC_UNEXPECTED;
+
+      // Increment per-user attempt counter for user-data failures (wrong PAN/DOB)
+      // Do NOT count transient service errors (timeouts, unreachable, etc.)
+      const isUserDataError = ['KYC_VALIDATION_ERROR', 'KYC_CAMS_FAILURE'].includes(errorCode);
+      if (req.user && isUserDataError) {
+        const updated = await User.findByIdAndUpdate(
+          req.user._id,
+          { $inc: { 'kycStatus.kycAttempts': 1 } },
+          { new: true }
+        ).select('kycStatus.kycAttempts kycStatus.kycBlocked');
+        const attempts = updated?.kycStatus?.kycAttempts || 0;
+        if (attempts >= 3) {
+          await User.findByIdAndUpdate(req.user._id, { 'kycStatus.kycBlocked': true });
+          return res.status(403).json({
+            success: false,
+            error: 'Your KYC verification has been blocked after 3 failed attempts. Please contact support.',
+            code: 'KYC_BLOCKED',
+            requestId,
+          });
+        }
+        // Warn the user of remaining attempts
+        const remaining = 3 - attempts;
+        return res.status(mapped.status).json({
+          success: false,
+          error: mapped.error,
+          code: mapped.code,
+          attemptsRemaining: remaining,
+          requestId,
+        });
+      }
+
       return res.status(mapped.status).json({
         success: false,
         error: mapped.error,
@@ -249,7 +300,58 @@ export const verifyAndSaveKYC = async (req, res) => {
       });
     }
 
-    // ── Extract structured fields from the response ───────────────────────
+    // ── Informational (non-verified) status — count attempt, return early ─────
+    // Codes 01/11 (under process) are NOT counted as failed attempts — the user
+    // can't fix them by re-trying with different data.
+    // All other non-verified codes (03/13 on-hold, 04/14 rejected, 05 not-available,
+    // 06 deactivated, unknown) consume one attempt.
+    if (!proxyIsVerified) {
+      logger.info('KYC not verified – returning informational status', {
+        requestId,
+        pan: maskPan(sanitizedPAN),
+        statusCode: proxyStatusCode,
+        kycStatus: proxyKycStatus,
+      });
+
+      // Under-process codes – do not penalise the user
+      const noCountCodes = new Set(['01', '11']);
+      const shouldCount = req.user && proxyStatusCode && !noCountCodes.has(proxyStatusCode);
+
+      let attemptsRemaining = null;
+      if (shouldCount) {
+        const updated = await User.findByIdAndUpdate(
+          req.user._id,
+          { $inc: { 'kycStatus.kycAttempts': 1 } },
+          { new: true }
+        ).select('kycStatus.kycAttempts kycStatus.kycBlocked');
+        const attempts = updated?.kycStatus?.kycAttempts || 0;
+        if (attempts >= 3) {
+          await User.findByIdAndUpdate(req.user._id, { 'kycStatus.kycBlocked': true });
+          return res.status(403).json({
+            success: false,
+            isVerified: false,
+            statusCode: proxyStatusCode,
+            kycStatus: proxyKycStatus,
+            message: 'Your KYC verification has been blocked after 3 failed attempts. Please contact support.',
+            code: 'KYC_BLOCKED',
+            requestId,
+          });
+        }
+        attemptsRemaining = 3 - attempts;
+      }
+
+      return res.status(200).json({
+        success: false,
+        isVerified: false,
+        statusCode: proxyStatusCode,
+        kycStatus: proxyKycStatus,
+        message: proxyUserMessage || 'Unable to determine KYC status. Please try again later.',
+        ...(attemptsRemaining !== null && { attemptsRemaining }),
+        requestId,
+      });
+    }
+
+    // ── Extract structured fields from the verified response ─────────────
     const extractedData = extractKYCData(null, kycData);
     logger.info('KYC data extracted', { requestId, pan: maskPan(sanitizedPAN), kycStatus: extractedData.kycStatus || 'N/A' });
 
@@ -353,11 +455,12 @@ export const verifyAndSaveKYC = async (req, res) => {
       requestId,
       verificationId: record._id,
       isVerified,
-      kycStatus: extractedData.kycStatus || 'UNKNOWN',
+      statusCode: proxyStatusCode,
+      kycStatus: extractedData.kycStatus || proxyKycStatus || 'UNKNOWN',
       statusDescription: extractedData.statusDescription || 'KYC status retrieved',
-      message: isVerified
-        ? 'KYC verification completed successfully.'
-        : `KYC status: ${extractedData.statusDescription || 'could not be confirmed'}. Please contact support if this is unexpected.`,
+      message: proxyUserMessage || (isVerified
+        ? 'KYC verified successfully.'
+        : `KYC status: ${extractedData.statusDescription || 'could not be confirmed'}. Please contact support if this is unexpected.`),
       // Display-safe fields
       fullName: extractedData.fullName || null,
       pan: sanitizedPAN.slice(0, 4) + '****',  // masked – never send full PAN

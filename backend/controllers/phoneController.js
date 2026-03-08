@@ -263,3 +263,21 @@ export const checkPhoneStatus = async (req, res) => {
     });
   }
 };
+
+/**
+ * Check if a phone number is already registered and verified in the database.
+ * Used for real-time pre-check on the phone input field (before OTP is sent).
+ */
+export const checkPhoneExists = async (req, res) => {
+  try {
+    const { phone } = req.params;
+    if (!phone || !/^\d{10}$/.test(phone)) {
+      return res.status(400).json({ success: false, error: 'Invalid phone number format' });
+    }
+    const exists = !!(await User.findOne({ 'profile.phone': phone, 'profile.phoneVerified': true }).lean());
+    return res.status(200).json({ success: true, exists });
+  } catch (error) {
+    logger.error(`Check phone exists error: ${error.message}`);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};

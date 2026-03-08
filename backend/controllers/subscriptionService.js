@@ -130,6 +130,7 @@ export const createSubscription = async (req, res) => {
       features,
       telegramChatId,
       isActive,
+      isTrial,
       displayOrder
     } = req.body;
 
@@ -152,6 +153,7 @@ export const createSubscription = async (req, res) => {
       features: features || [],
       telegramChatId: telegramChatId || null,
       isActive: isActive !== undefined ? isActive : true,
+      isTrial: isTrial !== undefined ? isTrial : false,
       displayOrder: displayOrder || 0,
       strategies: [] // Initialize with empty strategies array
     });
@@ -183,6 +185,7 @@ export const updateSubscription = async (req, res) => {
       strategies,
       telegramChatId,
       isActive,
+      isTrial,
       displayOrder
     } = req.body;
 
@@ -208,6 +211,7 @@ export const updateSubscription = async (req, res) => {
       strategies: strategies !== undefined ? strategies : subscription.strategies,
       telegramChatId: telegramChatId !== undefined ? telegramChatId : subscription.telegramChatId,
       isActive: isActive !== undefined ? isActive : subscription.isActive,
+      isTrial: isTrial !== undefined ? isTrial : subscription.isTrial,
       displayOrder: displayOrder !== undefined ? displayOrder : subscription.displayOrder,
       updatedAt: Date.now()
     };
@@ -627,6 +631,22 @@ export const verifyPayment = async (req, res) => {
       });
     }
     
+    // Enforce trial plan one-per-user limit
+    if (subscription.isTrial) {
+      const trialPlans = await Subscription.find({ isTrial: true }).select('_id').lean();
+      const trialPlanIds = trialPlans.map(p => p._id);
+      const previousTrial = await UserSubscription.findOne({
+        user: userId,
+        subscription: { $in: trialPlanIds }
+      });
+      if (previousTrial) {
+        return res.status(403).json({
+          success: false,
+          error: 'You have already claimed a trial plan. Trial plans can only be claimed once per account.'
+        });
+      }
+    }
+
     // Allow multiple subscriptions - no need to cancel existing ones
     // Users can now have multiple active subscriptions simultaneously
     

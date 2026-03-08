@@ -39,7 +39,10 @@ const StockRecommendationManagement = () => {
   const [updatingPrices, setUpdatingPrices] = useState(false);
   const [lastPriceUpdate, setLastPriceUpdate] = useState(null);
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
-  const [testingWhatsApp, setTestingWhatsApp] = useState(false);
+  const [formSuccessMessage, setFormSuccessMessage] = useState('');
+  const [uploadingPdfId, setUploadingPdfId] = useState(null);
+  const uploadPdfInputRef = React.useRef(null);
+  const uploadPdfTargetRec = React.useRef(null);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -263,27 +266,30 @@ const StockRecommendationManagement = () => {
     setIsFormVisible(true);
   };
 
-  const handleTestWhatsApp = async (recommendation) => {
-    setTestingWhatsApp(true);
+  const handleUploadPDF = (recommendation) => {
+    uploadPdfTargetRec.current = recommendation;
+    uploadPdfInputRef.current?.click();
+  };
+
+  const handleUploadPdfFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !uploadPdfTargetRec.current) return;
+    e.target.value = ''; // reset so same file can be re-selected
+    const rec = uploadPdfTargetRec.current;
+    setUploadingPdfId(rec._id);
     try {
-      const response = await api.post('/admin/test-whatsapp', {
-        recommendationId: recommendation._id,
-        stockSymbol: recommendation.stockSymbol,
-        stockName: recommendation.stockName
-      });
-      
-      const result = response.data;
-      
-      if (result.success) {
-        alert(`✅ WhatsApp test sent successfully!\n\nStock: ${recommendation.stockSymbol}\nMessage: Test message sent to 8178218011`);
-      } else {
-        alert(`❌ WhatsApp test failed!\n\nError: ${result.error}\nDetails: ${result.details || 'No details available'}`);
-      }
-    } catch (error) {
-      const errorMessage = error.response?.data?.error || error.message;
-      alert(`❌ WhatsApp test failed!\n\nError: ${errorMessage}`);
+      const fd = new FormData();
+      fd.append('signedPdf', file);
+      await stockRecommendationAPI.uploadSignedPDF(rec._id, fd);
+      setRefreshMessage({ type: 'success', text: `✅ PDF uploaded successfully for ${rec.stockSymbol}` });
+      setTimeout(() => setRefreshMessage(null), 5000);
+      fetchRecommendations();
+    } catch (err) {
+      setRefreshMessage({ type: 'error', text: `❌ PDF upload failed: ${err.message}` });
+      setTimeout(() => setRefreshMessage(null), 6000);
     } finally {
-      setTestingWhatsApp(false);
+      setUploadingPdfId(null);
+      uploadPdfTargetRec.current = null;
     }
   };
 
@@ -350,7 +356,12 @@ const StockRecommendationManagement = () => {
       }
       
       if (response.success) {
-        setIsFormVisible(false);
+        const action = formMode === 'create' ? 'created' : 'updated';
+        setFormSuccessMessage(`✅ Recommendation ${action} successfully!`);
+        setTimeout(() => {
+          setFormSuccessMessage('');
+          setIsFormVisible(false);
+        }, 1800);
         fetchRecommendations();
       } else {
         setError(response.error || 'Failed to save recommendation');
@@ -837,6 +848,11 @@ const StockRecommendationManagement = () => {
               </div>
             </div>
 
+            {formSuccessMessage && (
+              <div style={{ padding: '12px 16px', borderRadius: '6px', marginBottom: '16px', backgroundColor: '#d1fae5', color: '#065f46', border: '1px solid #6ee7b7', fontWeight: 500 }}>
+                {formSuccessMessage}
+              </div>
+            )}
             <div className="form-actions">
               <button type="submit" className="admin-button primary">
                 {formMode === 'create' ? 'Create Recommendation' : 'Update Recommendation'}
@@ -853,6 +869,14 @@ const StockRecommendationManagement = () => {
           </div>
         </>
       )}
+
+      <input
+        type="file"
+        accept="application/pdf"
+        ref={uploadPdfInputRef}
+        style={{ display: 'none' }}
+        onChange={handleUploadPdfFileChange}
+      />
 
       {recommendations.length === 0 && !loading ? (
         <div className="admin-empty-state">
@@ -931,18 +955,6 @@ const StockRecommendationManagement = () => {
                       >
                         Edit
                       </button>
-                      <button
-                        className="admin-action-button whatsapp"
-                        onClick={() => handleTestWhatsApp(recommendation)}
-                        disabled={testingWhatsApp}
-                        title="Test WhatsApp Message"
-                        style={{
-                          backgroundColor: '#25D366',
-                          color: 'white'
-                        }}
-                      >
-                        {testingWhatsApp ? '🔄 Testing...' : '📱 Test WA'}
-                      </button>
                       {recommendation.pdfReport && recommendation.pdfReport.url ? (
                         <button
                           className="admin-action-button pdf"
@@ -960,6 +972,15 @@ const StockRecommendationManagement = () => {
                           Gen PDF
                         </button>
                       )}
+                      <button
+                        className="admin-action-button pdf"
+                        onClick={() => handleUploadPDF(recommendation)}
+                        disabled={uploadingPdfId === recommendation._id}
+                        title="Upload Signed PDF"
+                        style={{ backgroundColor: '#6366f1', color: 'white' }}
+                      >
+                        {uploadingPdfId === recommendation._id ? '⏳ Uploading...' : '⬆ Upload PDF'}
+                      </button>
                       <button
                         className="admin-action-button delete"
                         onClick={() => handleDelete(recommendation._id)}

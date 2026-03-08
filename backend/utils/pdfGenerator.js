@@ -153,8 +153,19 @@ const generateStockReportPDF = async (data) => {
          .font('Helvetica')
          .text(`Time Frame: ${data.timeFrame.replace('_', ' ').toUpperCase()}`, 60, yPos);
 
+      // Optional chart / analysis image
+      let contentStartY = 310;
+      if (data.chartImage) {
+        try {
+          doc.image(data.chartImage, 50, contentStartY, { width: 495, height: 200, fit: [495, 200] });
+          contentStartY = contentStartY + 215;
+        } catch (_imgErr) {
+          // Skip image if it can't be rendered (unsupported format, corrupted, etc.)
+        }
+      }
+
       // About the Company
-      yPos = addSection('About the Company', data.companyAbout, 310);
+      yPos = addSection('About the Company', data.companyAbout, contentStartY);
 
       // Technical Reason
       yPos = addSection('Technical Analysis', data.technicalReason, yPos);

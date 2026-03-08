@@ -228,9 +228,12 @@ const Pricing = () => {
         duration: selectedDuration
       };
       await subscriptionAPI.verifyPayment(payload);
-      navigate(
-        `/payment-success?payment_id=${paymentResponse.razorpay_payment_id}&order_id=${paymentResponse.razorpay_order_id}`
-      );
+      // Navigate directly to dashboard – avoids the /payment-success page that can
+      // fail to detect the payment ID and show "No payment found".
+      navigate('/dashboard', {
+        replace: true,
+        state: { justPurchased: true, paymentId: paymentResponse.razorpay_payment_id }
+      });
     } catch (e) {
       console.error(e);
       setError(e.response?.data?.message || 'Payment verification failed');

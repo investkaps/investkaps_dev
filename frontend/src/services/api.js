@@ -242,6 +242,18 @@ export const adminAPI = {
       throw new Error(message);
     }
   },
+
+  // Unblock a user's KYC after too many failed attempts
+  unblockKyc: async (id) => {
+    try {
+      const res = await api.put(`/admin/users/${id}/unblock-kyc`);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error unblocking KYC:', message);
+      throw new Error(message);
+    }
+  },
   
   // Get all KYC verifications
   getAllKycVerifications: async () => {
@@ -832,6 +844,18 @@ export const phoneAPI = {
     }
   },
   
+  // Pre-check: is a phone number already registered in the DB?
+  checkPhoneExists: async (phone) => {
+    try {
+      const res = await api.get(`/phone/check/${phone}`);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error checking phone existence:', message);
+      throw new Error(message);
+    }
+  },
+
   // Check phone verification status
   checkPhoneStatus: async () => {
     try {
@@ -840,6 +864,21 @@ export const phoneAPI = {
     } catch (err) {
       const { message } = extractError(err);
       console.error('Error checking phone status:', message);
+      throw new Error(message);
+    }
+  }
+};
+
+// QR/Manual Payment Requests API
+export const paymentRequestAPI = {
+  // Get the current user's payment requests (requires auth token in header)
+  getMyRequests: async () => {
+    try {
+      const res = await api.get('/payment-requests/my-requests');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching payment requests:', message);
       throw new Error(message);
     }
   }
@@ -871,14 +910,15 @@ export const kycAPI = {
       const status = err?.response?.status;
       const payload = err?.response?.data;
       if (status || payload) {
-        console.error('[KYC API] verifyKYC failed', {
-          status,
-          payload
-        });
+        console.error('[KYC API] verifyKYC failed', { status, payload });
+      }
+      // Return structured backend payload (e.g. KYC_BLOCKED, attemptsRemaining)
+      // so the caller can handle it without losing the code/message fields.
+      if (payload && typeof payload === 'object') {
+        return { success: false, ...payload };
       }
       const { message } = extractError(err);
-      console.error('Error verifying KYC:', message);
-      throw new Error(message);
+      return { success: false, error: message };
     }
   },
   

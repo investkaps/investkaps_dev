@@ -144,3 +144,135 @@
 2026-02-24 12:11:04 info: KYC verification record saved {"requestId":"KYC_1771915262354_k67bukqr2","recordId":"699d480083c88f873d439af6"}
 2026-02-24 12:11:04 info: User KYC status updated {"requestId":"KYC_1771915262354_k67bukqr2","userId":"699d47f283c88f873d439aec"}
 2026-02-24 12:11:04 info: KYC request completed successfully {"requestId":"KYC_1771915262354_k67bukqr2","recordId":"699d480083c88f873d439af6","durationMs":2253}
+2026-03-05 13:34:16 info: Email sent: <93c6d870-77d6-6abd-5cf6-fb46be25a0d9@gmail.com>
+2026-03-07 10:53:07 info: GET /api/users/clerk/user_3AbUuhcBmPZOGRew4ZITz9nG92k {"ip":"::1"}
+2026-03-07 10:53:07 info: GET /api/users/email/aimansingh1292%40gmail.com {"ip":"::1"}
+2026-03-07 10:53:08 info: GET /api/users/email/aimansingh1292%40gmail.com {"ip":"::1"}
+2026-03-07 10:53:08 info: POST /api/users/create {"ip":"::1"}
+2026-03-07 10:53:08 info: GET /api/users/email/aimansingh1292%40gmail.com {"ip":"::1"}
+2026-03-07 10:53:08 info: POST /api/users/create {"ip":"::1"}
+2026-03-07 10:53:09 info: GET /api/users/clerk/user_3AbUuhcBmPZOGRew4ZITz9nG92k/kyc {"ip":"::1"}
+2026-03-07 10:53:09 info: GET /api/esign/active {"ip":"::1"}
+2026-03-07 10:53:09 info: GET /api/subscriptions/user/user_3AbUuhcBmPZOGRew4ZITz9nG92k/active {"ip":"::1"}
+2026-03-07 10:53:09 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-03-07 10:53:09 info: GET /api/users/email/aimansingh1292%40gmail.com/kyc {"ip":"::1"}
+2026-03-07 10:53:15 info: GET /api/kyc/check-pan/RARPS6224N {"ip":"::1"}
+2026-03-07 11:01:12 info: GET /api/users/clerk/user_3AbUuhcBmPZOGRew4ZITz9nG92k {"ip":"::1"}
+2026-03-07 11:01:25 info: GET /api/users/clerk/user_3AbUuhcBmPZOGRew4ZITz9nG92k {"ip":"::1"}
+2026-03-07 11:03:56 info: GET /api/users/clerk/user_3AbUuhcBmPZOGRew4ZITz9nG92k {"ip":"::1"}
+2026-03-07 11:04:02 info: GET /api/phone/check/8178218011 {"ip":"::1"}
+2026-03-07 11:04:10 info: GET /api/phone/check/9999999999 {"ip":"::1"}
+2026-03-07 11:04:16 info: GET /api/phone/check/8178218011 {"ip":"::1"}
+2026-03-07 11:04:34 info: GET /api/subscriptions/plans {"ip":"::1"}
+2026-03-07 11:04:34 info: GET /api/subscriptions/user/user_3AbUuhcBmPZOGRew4ZITz9nG92k/active {"ip":"::1"}
+2026-03-07 11:05:07 info: POST /api/payment-requests/submit {"ip":"::1"}
+2026-03-07 11:05:16 info: Email sent: <03119c13-826e-c0d8-9c92-262a2bc9b6dd@gmail.com>
+2026-03-07 11:07:10 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-03-07 11:07:11 info: GET /api/users/email/aiman.singh30%40gmail.com {"ip":"::1"}
+2026-03-07 11:07:11 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-03-07 11:07:19 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-03-07 11:07:20 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-03-07 11:07:23 info: GET /api/payment-requests/all?status=pending {"ip":"::1"}
+2026-03-07 11:07:23 info: GET /api/payment-requests/all?status=pending {"ip":"::1"}
+2026-03-07 11:07:29 info: POST /api/payment-requests/approve/69abb910ad49f57a2fecf901 {"ip":"::1"}
+2026-03-07 11:07:32 info: GET /api/payment-requests/all?status=pending {"ip":"::1"}
+2026-03-07 11:07:33 info: Email sent: <0b13fac0-1036-a309-74f7-6a5f7ea655c1@gmail.com>
+2026-03-07 11:08:11 info: GET /api/recommendations {"ip":"::1"}
+2026-03-07 11:08:11 info: GET /api/strategies {"ip":"::1"}
+2026-03-07 11:08:11 info: GET /api/strategies {"ip":"::1"}
+2026-03-07 11:08:11 info: GET /api/recommendations {"ip":"::1"}
+2026-03-07 11:08:12 info: POST /api/ltp/batch {"ip":"::1"}
+2026-03-07 11:08:12 info: Fetching batch LTP for 4 symbols from NSE
+2026-03-07 11:08:18 info: GET /api/symbols/search?query=TEST&limit=50 {"ip":"::1"}
+2026-03-07 11:08:18 info: Loaded 21576 symbols from symbols.json
+2026-03-07 11:08:19 info: GET /api/symbols/search?query=TEST&limit=50 {"ip":"::1"}
+2026-03-07 11:08:22 error: Error fetching batch LTP: timeout of 10000ms exceeded
+2026-03-07 11:08:22 error: Error in getBatchPrices: Failed to fetch batch prices: timeout of 10000ms exceeded
+2026-03-07 11:08:22 info: GET /api/recommendations {"ip":"::1"}
+2026-03-07 11:08:47 info: POST /api/recommendations {"ip":"::1"}
+2026-03-07 11:08:48 error: Failed to send recommendation to user 69a419b3756bdc7b5178e0b8: notificationService.sendRecommendationNotification is not a function {"stack":"TypeError: notificationService.sendRecommendationNotification is not a function\n    at sendRecommendationToUsers (file:///C:/Users/aiman/Desktop/Projects/investkaps_dev/backend/controllers/stockRecommendationController.js:537:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async createRecommendation (file:///C:/Users/aiman/Desktop/Projects/investkaps_dev/backend/controllers/stockRecommendationController.js:65:7)"}
+2026-03-07 11:08:48 error: Failed to send recommendation to user 69abb63c8edc25122953014d: notificationService.sendRecommendationNotification is not a function {"stack":"TypeError: notificationService.sendRecommendationNotification is not a function\n    at sendRecommendationToUsers (file:///C:/Users/aiman/Desktop/Projects/investkaps_dev/backend/controllers/stockRecommendationController.js:537:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async createRecommendation (file:///C:/Users/aiman/Desktop/Projects/investkaps_dev/backend/controllers/stockRecommendationController.js:65:7)"}
+2026-03-07 11:08:48 info: Telegram bot initialized successfully
+2026-03-07 11:08:49 info: Stock recommendation sent to Telegram chat -1002665874071: TEST
+2026-03-07 11:08:49 info: Recommendation sent to Telegram chat -1002665874071: TEST
+2026-03-07 11:08:51 error: Error sending WhatsApp message to 9987003453: Request failed with status code 400 {"status":400,"statusText":"Bad Request","data":{"error":{"message":"(#131030) Recipient phone number not in allowed list","type":"OAuthException","code":131030,"error_data":{"messaging_product":"whatsapp","details":"Recipient phone number not in allowed list: Add recipient phone number to recipient list and try again."},"fbtrace_id":"Aammbfe8HTXK8rOd68wRytQ"}},"config":{"url":"https://graph.facebook.com/v18.0/815973018255127/messages","method":"post"}}
+2026-03-07 11:08:51 info: Recommendation sent to WhatsApp 9987003453: TEST
+2026-03-07 11:08:51 error: Error sending WhatsApp message to 9987003453: Request failed with status code 400 {"status":400,"statusText":"Bad Request","data":{"error":{"message":"(#131030) Recipient phone number not in allowed list","type":"OAuthException","code":131030,"error_data":{"messaging_product":"whatsapp","details":"Recipient phone number not in allowed list: Add recipient phone number to recipient list and try again."},"fbtrace_id":"AHpA7dEzlH-XuSjXny5HI_G"}},"config":{"url":"https://graph.facebook.com/v18.0/815973018255127/messages","method":"post"}}
+2026-03-07 11:08:51 info: Recommendation sent to WhatsApp 9987003453: TEST
+2026-03-07 11:08:55 info: Email sent: <51dfa800-6cd4-e066-8751-d2ea242af2d8@gmail.com>
+2026-03-07 11:08:55 info: New-recommendation email sent to finacc.kaps@gmail.com: TEST
+2026-03-07 11:08:56 info: POST /api/recommendations {"ip":"::1"}
+2026-03-07 11:08:57 error: Failed to send recommendation to user 69a419b3756bdc7b5178e0b8: notificationService.sendRecommendationNotification is not a function {"stack":"TypeError: notificationService.sendRecommendationNotification is not a function\n    at sendRecommendationToUsers (file:///C:/Users/aiman/Desktop/Projects/investkaps_dev/backend/controllers/stockRecommendationController.js:537:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async createRecommendation (file:///C:/Users/aiman/Desktop/Projects/investkaps_dev/backend/controllers/stockRecommendationController.js:65:7)"}
+2026-03-07 11:08:57 error: Failed to send recommendation to user 69abb63c8edc25122953014d: notificationService.sendRecommendationNotification is not a function {"stack":"TypeError: notificationService.sendRecommendationNotification is not a function\n    at sendRecommendationToUsers (file:///C:/Users/aiman/Desktop/Projects/investkaps_dev/backend/controllers/stockRecommendationController.js:537:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async createRecommendation (file:///C:/Users/aiman/Desktop/Projects/investkaps_dev/backend/controllers/stockRecommendationController.js:65:7)"}
+2026-03-07 11:08:57 info: Stock recommendation sent to Telegram chat -1002665874071: TEST
+2026-03-07 11:08:57 info: Recommendation sent to Telegram chat -1002665874071: TEST
+2026-03-07 11:08:58 error: Error sending WhatsApp message to 9987003453: Request failed with status code 400 {"status":400,"statusText":"Bad Request","data":{"error":{"message":"(#131030) Recipient phone number not in allowed list","type":"OAuthException","code":131030,"error_data":{"messaging_product":"whatsapp","details":"Recipient phone number not in allowed list: Add recipient phone number to recipient list and try again."},"fbtrace_id":"A_lx0pPz9R94UcVuCeWHvW3"}},"config":{"url":"https://graph.facebook.com/v18.0/815973018255127/messages","method":"post"}}
+2026-03-07 11:08:58 info: Recommendation sent to WhatsApp 9987003453: TEST
+2026-03-07 11:08:58 info: Email sent: <4a0bc50c-c71a-210a-4122-3e48d6d21baf@gmail.com>
+2026-03-07 11:08:58 info: New-recommendation email sent to finacc.kaps@gmail.com: TEST
+2026-03-07 11:08:58 error: Error sending WhatsApp message to 9987003453: Request failed with status code 400 {"status":400,"statusText":"Bad Request","data":{"error":{"message":"(#131030) Recipient phone number not in allowed list","type":"OAuthException","code":131030,"error_data":{"messaging_product":"whatsapp","details":"Recipient phone number not in allowed list: Add recipient phone number to recipient list and try again."},"fbtrace_id":"Ap8M1BxQTNIdGQsmG1tn4eJ"}},"config":{"url":"https://graph.facebook.com/v18.0/815973018255127/messages","method":"post"}}
+2026-03-07 11:08:58 info: Recommendation sent to WhatsApp 9987003453: TEST
+2026-03-07 11:09:02 info: Email sent: <6bcef407-89be-d657-3a88-8fe3ef9d3e43@gmail.com>
+2026-03-07 11:09:02 info: New-recommendation email sent to aimansingh1292@gmail.com: TEST
+2026-03-07 11:09:02 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-03-07 11:09:02 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-03-07 11:09:04 info: Email sent: <c5d17446-21df-6c3c-d6e3-f7ea1de97045@gmail.com>
+2026-03-07 11:09:04 info: New-recommendation email sent to finacc.kaps@gmail.com: TEST
+2026-03-07 11:09:07 info: Email sent: <eb785777-a2c6-ed38-bdd7-c5db6b57f0b3@gmail.com>
+2026-03-07 11:09:07 info: New-recommendation email sent to finacc.kaps@gmail.com: TEST
+2026-03-07 11:09:11 info: Email sent: <b511626b-2241-2cb4-a2ee-45bd7b6e875f@gmail.com>
+2026-03-07 11:09:11 info: New-recommendation email sent to aimansingh1292@gmail.com: TEST
+2026-03-07 11:09:29 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-03-07 11:09:30 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-03-07 11:09:31 info: GET /api/subscriptions/admin/plans {"ip":"::1"}
+2026-03-07 11:09:31 info: GET /api/strategies {"ip":"::1"}
+2026-03-07 11:09:32 info: GET /api/strategies {"ip":"::1"}
+2026-03-07 11:09:32 info: GET /api/subscriptions/admin/plans {"ip":"::1"}
+2026-03-07 11:10:09 info: GET /api/recommendations {"ip":"::1"}
+2026-03-07 11:10:09 info: GET /api/strategies {"ip":"::1"}
+2026-03-07 11:10:09 info: GET /api/strategies {"ip":"::1"}
+2026-03-07 11:10:09 info: GET /api/recommendations {"ip":"::1"}
+2026-03-07 11:10:09 info: POST /api/ltp/batch {"ip":"::1"}
+2026-03-07 11:10:09 info: Fetching batch LTP for 6 symbols from NSE
+2026-03-07 11:10:10 error: Error fetching batch LTP: Request failed with status code 502
+2026-03-07 11:10:10 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-03-07 11:10:10 info: GET /api/recommendations {"ip":"::1"}
+2026-03-07 11:10:24 info: PUT /api/recommendations/69abb9f0ad49f57a2fecf997 {"ip":"::1"}
+2026-03-07 11:10:24 info: GET /api/recommendations {"ip":"::1"}
+2026-03-07 11:10:25 info: Updated recommendation sent to Telegram chat -1002665874071: TEST
+2026-03-07 11:10:25 info: Update notification sent to Telegram chat -1002665874071: TEST
+2026-03-07 11:10:29 info: Email sent: <5523a526-e964-7562-306a-9af96d41e6a7@gmail.com>
+2026-03-07 11:10:29 info: Update-recommendation email sent to finacc.kaps@gmail.com: TEST
+2026-03-07 11:10:33 info: Email sent: <8cf65815-f7a7-07b9-54b8-d161dfda3088@gmail.com>
+2026-03-07 11:10:33 info: Update-recommendation email sent to finacc.kaps@gmail.com: TEST
+2026-03-07 11:10:37 info: Email sent: <7ad10473-0c9d-0cae-bcb6-77347cad59b1@gmail.com>
+2026-03-07 11:10:37 info: Update-recommendation email sent to aimansingh1292@gmail.com: TEST
+2026-03-07 11:11:44 info: PUT /api/recommendations/69abb9f0ad49f57a2fecf997 {"ip":"::1"}
+2026-03-07 11:11:44 info: GET /api/recommendations {"ip":"::1"}
+2026-03-07 11:11:44 info: Updated recommendation sent to Telegram chat -1002665874071: TEST
+2026-03-07 11:11:44 info: Update notification sent to Telegram chat -1002665874071: TEST
+2026-03-07 11:11:48 info: Email sent: <e935e04c-a49a-27e7-d6ef-72ff9410287b@gmail.com>
+2026-03-07 11:11:48 info: Update-recommendation email sent to finacc.kaps@gmail.com: TEST
+2026-03-07 11:11:53 info: Email sent: <2eb0d26d-51dc-f155-4261-38f0d631d576@gmail.com>
+2026-03-07 11:11:53 info: Update-recommendation email sent to finacc.kaps@gmail.com: TEST
+2026-03-07 11:11:57 info: Email sent: <e92edd65-6b5c-4566-99eb-a4eed5b1674a@gmail.com>
+2026-03-07 11:11:57 info: Update-recommendation email sent to aimansingh1292@gmail.com: TEST
+2026-03-07 11:15:09 info: POST /api/ltp/batch {"ip":"::1"}
+2026-03-07 11:15:09 info: Fetching batch LTP for 6 symbols from NSE
+2026-03-07 11:15:11 error: Error fetching batch LTP: Request failed with status code 502
+2026-03-07 11:15:11 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-03-07 11:15:11 info: GET /api/recommendations {"ip":"::1"}
+2026-03-07 11:16:52 info: GET /api/recommendations {"ip":"::1"}
+2026-03-07 11:16:52 info: GET /api/strategies {"ip":"::1"}
+2026-03-07 11:16:52 info: GET /api/strategies {"ip":"::1"}
+2026-03-07 11:16:52 info: GET /api/recommendations {"ip":"::1"}
+2026-03-07 11:17:57 info: GET /api/subscriptions/plans {"ip":"::1"}
+2026-03-07 11:17:57 info: GET /api/subscriptions/user/user_3AbUuhcBmPZOGRew4ZITz9nG92k/active {"ip":"::1"}
+2026-03-07 11:18:01 info: POST /api/subscriptions/payment/order {"ip":"::1"}
+2026-03-07 11:18:38 info: POST /api/subscriptions/payment/verify {"ip":"::1"}
+2026-03-07 11:18:43 info: Email sent: <7a32b90d-5e67-fd5a-3135-65cad5ad221a@gmail.com>
+2026-03-07 11:19:14 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-03-07 11:19:15 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-03-07 11:23:46 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-03-07 11:24:35 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-03-07 11:25:01 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}

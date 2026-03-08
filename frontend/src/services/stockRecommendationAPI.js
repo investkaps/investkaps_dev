@@ -95,42 +95,60 @@ const stockRecommendationAPI = {
     }
   },
   
-  // Generate PDF report for a recommendation (admin)
-  generatePDFReport: async (id, reportData) => {
+  // Generate PDF report (draft – downloaded locally, NOT saved to server)
+  // Accepts FormData so an optional chartImage file can be included.
+  generatePDFReport: async (id, formDataOrObj) => {
     try {
-      const res = await api.post(`/recommendations/${id}/generate-pdf`, reportData, {
-        responseType: 'blob' // Important for binary data
+      // Accept either a FormData instance or a plain object
+      let body = formDataOrObj;
+      if (!(formDataOrObj instanceof FormData)) {
+        // Legacy plain-object call – wrap in FormData
+        body = new FormData();
+        Object.entries(formDataOrObj).forEach(([k, v]) => body.append(k, v));
+      }
+
+      const res = await api.post(`/recommendations/${id}/generate-pdf`, body, {
+        responseType: 'blob',
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
-      
+
       // Extract filename from Content-Disposition header
       let filename = `InvestKaps_Report_${new Date().toISOString().split('T')[0]}.pdf`;
-      const contentDisposition = res.headers['content-disposition'];
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-        if (filenameMatch && filenameMatch[1]) {
-          filename = filenameMatch[1];
-        }
+      const cd = res.headers['content-disposition'];
+      if (cd) {
+        const m = cd.match(/filename="(.+)"/);
+        if (m?.[1]) filename = m[1];
       }
-      
-      // Create a blob from the PDF data
+
+      // Trigger browser download
       const blob = new Blob([res.data], { type: 'application/pdf' });
-      
-      // Create a download link and trigger download
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = filename;
       document.body.appendChild(link);
       link.click();
-      
-      // Cleanup
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       return { success: true, message: 'PDF downloaded successfully' };
     } catch (err) {
       const { message } = extractError(err);
       console.error(`Error generating PDF report for ${id}:`, message);
+      throw new Error(message);
+    }
+  },
+
+  // Upload the admin-signed PDF so users can view it
+  uploadSignedPDF: async (id, formData) => {
+    try {
+      const res = await api.post(`/recommendations/${id}/upload-signed-pdf`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error(`Error uploading signed PDF for ${id}:`, message);
       throw new Error(message);
     }
   }

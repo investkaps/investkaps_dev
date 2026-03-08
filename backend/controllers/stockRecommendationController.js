@@ -5,8 +5,9 @@ import notificationService from '../utils/notificationService.js';
 import logger from '../utils/logger.js';
 import { generateStockReportPDF  } from '../utils/pdfGenerator.js';
 import { uploadPDF, deletePDF  } from '../config/cloudinary.js';
-import { sendRecommendationToTelegram  } from '../services/telegramService.js';
+import { sendRecommendationToTelegram, sendUpdatedRecommendationToTelegram  } from '../services/telegramService.js';
 import { sendRecommendationToWhatsApp  } from '../services/whatsappService.js';
+import { sendNewRecommendationEmail, sendUpdatedRecommendationEmail } from '../utils/emailService.js';
 import Subscription from '../model/Subscription.js';
 
 /**
@@ -102,6 +103,19 @@ const createRecommendation = async (req, res) => {
       } catch (whatsappError) {
         logger.error('Failed to send to WhatsApp:', whatsappError);
         // Don't fail the request if WhatsApp fails
+      }
+
+      // Send email notifications to subscribed users
+      try {
+        const usersWithEmail = userSubscriptions
+          .map(us => us.user)
+          .filter(u => u?.email);
+        for (const u of usersWithEmail) {
+          await sendNewRecommendationEmail(u, recommendation);
+          logger.info(`New-recommendation email sent to ${u.email}: ${recommendation.stockSymbol}`);
+        }
+      } catch (emailError) {
+        logger.error('Failed to send new-recommendation emails:', emailError);
       }
     }
 
@@ -264,6 +278,27 @@ const updateRecommendation = async (req, res) => {
         logger.error('Failed to send to WhatsApp:', whatsappError);
         // Don't fail the request if WhatsApp fails
       }
+
+      // Send email notifications to subscribed users
+      try {
+        const usersWithEmail = userSubscriptions
+          .map(us => us.user)
+          .filter(u => u?.email);
+        for (const u of usersWithEmail) {
+          await sendNewRecommendationEmail(u, recommendation);
+          logger.info(`New-recommendation email sent to ${u.email}: ${recommendation.stockSymbol}`);
+        }
+      } catch (emailError) {
+        logger.error('Failed to send new-recommendation emails:', emailError);
+      }
+    }
+
+    // If already published and being updated, send an update notification to Telegram
+    if (wasPublished && req.body.status === 'published') {
+      // Fire-and-forget; don't block the response
+      sendUpdateNotifications(recommendation).catch(err =>
+        logger.error('Background update notifications failed:', err)
+      );
     }
 
     res.status(200).json({
@@ -278,6 +313,37 @@ const updateRecommendation = async (req, res) => {
     });
   }
 };
+
+/** Helper: send update notifications when an already-published recommendation changes */
+async function sendUpdateNotifications(recommendation) {
+  try {
+    const subscriptions = await Subscription.find({
+      strategies: { $in: recommendation.targetStrategies }
+    });
+    const subscriptionIds = subscriptions.map(s => s._id);
+
+    // Telegram
+    const telegramSubscriptions = subscriptions.filter(sub => sub.telegramChatId);
+    for (const subscription of telegramSubscriptions) {
+      await sendUpdatedRecommendationToTelegram(recommendation, subscription.telegramChatId);
+      logger.info(`Update notification sent to Telegram chat ${subscription.telegramChatId}: ${recommendation.stockSymbol}`);
+    }
+
+    // Email
+    const userSubscriptions = await UserSubscription.find({
+      subscription: { $in: subscriptionIds },
+      status: 'active'
+    }).populate('user', 'name email');
+
+    const usersWithEmail = userSubscriptions.map(us => us.user).filter(u => u?.email);
+    for (const u of usersWithEmail) {
+      await sendUpdatedRecommendationEmail(u, recommendation);
+      logger.info(`Update-recommendation email sent to ${u.email}: ${recommendation.stockSymbol}`);
+    }
+  } catch (err) {
+    logger.error('Failed to send update notifications:', err);
+  }
+}
 
 /**
  * Delete a stock recommendation
@@ -550,41 +616,21 @@ const generatePDFReport = async (req, res) => {
       riskLevel: recommendation.riskLevel
     };
 
-    // Generate PDF
-    const pdfBuffer = await generateStockReportPDF(pdfData);
-
-    // Upload PDF to Cloudinary
-    const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-    const filename = `InvestKaps_${recommendation.stockSymbol}_${currentDate}`;
-    
-    // Delete old PDF if exists
-    if (recommendation.pdfReport && recommendation.pdfReport.publicId) {
-      try {
-        await deletePDF(recommendation.pdfReport.publicId);
-      } catch (err) {
-        logger.warn('Failed to delete old PDF from Cloudinary:', err);
-      }
+    // Attach optional chart image uploaded via multipart form
+    if (req.file && req.file.mimetype.startsWith('image/')) {
+      pdfData.chartImage = req.file.buffer;
     }
 
-    // Upload new PDF to Cloudinary
-    const uploadResult = await uploadPDF(pdfBuffer, filename);
+    // Generate PDF buffer (draft – not saved to DB)
+    const pdfBuffer = await generateStockReportPDF(pdfData);
 
-    // Update recommendation with PDF URL
-    recommendation.pdfReport = {
-      url: uploadResult.url,
-      publicId: uploadResult.publicId,
-      generatedAt: new Date()
-    };
-    await recommendation.save();
+    const currentDate = new Date().toISOString().split('T')[0];
+    const filename = `InvestKaps_${recommendation.stockSymbol}_${currentDate}`;
 
-    logger.info(`PDF uploaded to Cloudinary for recommendation ${id}: ${uploadResult.url}`);
-
-    // Set response headers for PDF download
+    // Stream PDF back for download; do NOT save to Cloudinary here
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}.pdf"`);
     res.setHeader('Content-Length', pdfBuffer.length);
-
-    // Send PDF buffer
     res.send(pdfBuffer);
 
   } catch (error) {
@@ -597,6 +643,65 @@ const generatePDFReport = async (req, res) => {
   }
 };
 
+/**
+ * Upload a signed PDF and attach it to the recommendation (shown to users)
+ * @route POST /api/recommendations/:id/upload-signed-pdf
+ * @access Admin only
+ */
+const uploadSignedPDF = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'No PDF file uploaded' });
+    }
+
+    if (req.file.mimetype !== 'application/pdf') {
+      return res.status(400).json({ success: false, error: 'Uploaded file must be a PDF' });
+    }
+
+    const recommendation = await StockRecommendation.findById(id);
+    if (!recommendation) {
+      return res.status(404).json({ success: false, error: 'Recommendation not found' });
+    }
+
+    // Delete old signed PDF from Cloudinary if present
+    if (recommendation.pdfReport?.publicId) {
+      try {
+        await deletePDF(recommendation.pdfReport.publicId);
+      } catch (err) {
+        logger.warn('Failed to delete old signed PDF from Cloudinary:', err);
+      }
+    }
+
+    const currentDate = new Date().toISOString().split('T')[0];
+    const filename = `InvestKaps_Signed_${recommendation.stockSymbol}_${currentDate}`;
+    const uploadResult = await uploadPDF(req.file.buffer, filename);
+
+    recommendation.pdfReport = {
+      url: uploadResult.url,
+      publicId: uploadResult.publicId,
+      generatedAt: new Date()
+    };
+    await recommendation.save();
+
+    logger.info(`Signed PDF uploaded for recommendation ${id}: ${uploadResult.url}`);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Signed PDF uploaded successfully',
+      data: { url: uploadResult.url, publicId: uploadResult.publicId }
+    });
+
+  } catch (error) {
+    logger.error('Error uploading signed PDF:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to upload signed PDF',
+      details: error.message
+    });
+  }
+};
 export {
   createRecommendation,
   getAllRecommendations,
@@ -605,5 +710,6 @@ export {
   deleteRecommendation,
   sendRecommendation,
   getUserRecommendations,
-  generatePDFReport
+  generatePDFReport,
+  uploadSignedPDF
 };

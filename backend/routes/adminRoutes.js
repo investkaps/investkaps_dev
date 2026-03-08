@@ -191,6 +191,31 @@ router.put('/users/:id/role', verifyToken, checkRole('admin'), async (req, res) 
 });
 
 /**
+ * @route   PUT /api/admin/users/:id/unblock-kyc
+ * @desc    Reset a user's KYC block so they can retry verification
+ * @access  Private (Admin only)
+ */
+router.put('/users/:id/unblock-kyc', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    user.kycStatus.kycBlocked = false;
+    user.kycStatus.kycAttempts = 0;
+    await user.save();
+    return res.status(200).json({
+      success: true,
+      message: 'KYC block removed. User can now retry KYC verification.',
+      data: { userId: user._id, email: user.email }
+    });
+  } catch (error) {
+    console.error('Error unblocking KYC:', error);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+/**
  * @route   GET /api/admin/kyc
  * @desc    Get all KYC verifications
  * @access  Private (Admin only)

@@ -107,6 +107,10 @@ const subscriptionSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  isTrial: {
+    type: Boolean,
+    default: false
+  },
   displayOrder: {
     type: Number,
     default: 0

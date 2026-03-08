@@ -184,9 +184,61 @@ const sendRecommendationToSubscriptions = async (recommendation, subscriptions) 
   return results;
 };
 
+/**
+ * Send an "UPDATED" stock recommendation notification to a Telegram chat.
+ * Called when an already-published recommendation is edited.
+ */
+const sendUpdatedRecommendationToTelegram = async (recommendation, chatId) => {
+  try {
+    if (!bot) {
+      bot = initializeTelegramBot();
+      if (!bot) return false;
+    }
+    if (!chatId) return false;
+
+    let targetPricesText = `• Target 1: ₹${recommendation.targetPrice}`;
+    if (recommendation.targetPrice2) targetPricesText += `\n• Target 2: ₹${recommendation.targetPrice2}`;
+    if (recommendation.targetPrice3) targetPricesText += `\n• Target 3: ₹${recommendation.targetPrice3}`;
+
+    const typeEmoji = recommendation.recommendationType === 'buy' ? '🟢' :
+                      recommendation.recommendationType === 'sell' ? '🔴' : '🟡';
+
+    const message = `
+🔄 *UPDATED RECOMMENDATION* 🔄
+
+${typeEmoji} *${recommendation.stockSymbol}* - ${recommendation.stockName}
+
+💰 *Updated Price Details:*
+• Current Price: ₹${recommendation.currentPrice}
+${targetPricesText}
+${recommendation.stopLoss ? `• Stop Loss: ₹${recommendation.stopLoss}` : ''}
+
+📈 *Recommendation:* ${recommendation.recommendationType.toUpperCase()}
+⏰ *Time Frame:* ${recommendation.timeFrame.replace('_', ' ').toUpperCase()}
+
+📝 *Description:*
+${recommendation.description}
+
+💡 *Rationale:*
+${recommendation.rationale}
+
+---
+_InvestKaps - Recommendation Updated_
+    `.trim();
+
+    await bot.sendMessage(chatId, message, { parse_mode: 'Markdown', disable_web_page_preview: true });
+    logger.info(`Updated recommendation sent to Telegram chat ${chatId}: ${recommendation.stockSymbol}`);
+    return true;
+  } catch (error) {
+    logger.error(`Error sending updated recommendation to Telegram chat ${chatId}:`, error);
+    return false;
+  }
+};
+
 export {
   initializeTelegramBot,
   sendRecommendationToTelegram,
+  sendUpdatedRecommendationToTelegram,
   sendRecommendationToSubscriptions,
   sendTelegramMessage,
   sendPDFToTelegram

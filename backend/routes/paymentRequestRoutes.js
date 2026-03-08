@@ -8,6 +8,11 @@ import UserSubscription from '../model/UserSubscription.js';
 import { uploadImage, deleteImage  } from '../config/cloudinary.js';
 import { verifyToken  } from '../middleware/auth.js';
 import { checkRole  } from '../middleware/roleAuth.js';
+import {
+  sendPaymentRequestReceivedEmail,
+  sendPaymentApprovedEmail,
+  sendPaymentRejectedEmail
+} from '../utils/emailService.js';
 
 // Configure multer for memory storage
 const storage = multer.memoryStorage();
@@ -80,6 +85,11 @@ router.post('/submit', upload.single('transactionImage'), async (req, res) => {
     });
 
     await paymentRequest.save();
+
+    // Email confirmation to user (fire-and-forget)
+    sendPaymentRequestReceivedEmail(user, paymentRequest).catch(err =>
+      console.error('Failed to send payment-received email:', err)
+    );
 
     res.status(201).json({
       success: true,
@@ -217,6 +227,13 @@ router.post('/approve/:id', verifyToken, checkRole('admin'), async (req, res) =>
     paymentRequest.userSubscription = userSubscription._id;
     await paymentRequest.save();
 
+    // Email the user that their payment was approved (fire-and-forget)
+    if (paymentRequest.user?.email) {
+      sendPaymentApprovedEmail(paymentRequest.user, paymentRequest, userSubscription).catch(err =>
+        console.error('Failed to send payment-approved email:', err)
+      );
+    }
+
     res.json({
       success: true,
       message: 'Payment request approved successfully',
@@ -264,6 +281,19 @@ router.post('/reject/:id', verifyToken, checkRole('admin'), async (req, res) => 
     paymentRequest.rejectedAt = new Date();
     paymentRequest.adminNotes = adminNotes || 'Payment verification failed';
     await paymentRequest.save();
+
+    // Fetch user details for the email if not already populated
+    const userForEmail = paymentRequest.user
+      ? (typeof paymentRequest.user === 'object' && paymentRequest.user.email
+          ? paymentRequest.user
+          : await User.findById(paymentRequest.user).select('name email'))
+      : null;
+
+    if (userForEmail?.email) {
+      sendPaymentRejectedEmail(userForEmail, paymentRequest).catch(err =>
+        console.error('Failed to send payment-rejected email:', err)
+      );
+    }
 
     res.json({
       success: true,

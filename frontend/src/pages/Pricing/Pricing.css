@@ -286,11 +286,15 @@
 }
 
 .modern-plan-card h3 {
-  font-size: 1.7rem;
+  font-size: clamp(1.1rem, 3.5vw, 1.7rem);
   margin: 0;
   color: #2d3748;
   font-weight: 700;
   text-align: center;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  line-height: 1.25;
 }
 
 .modern-plan-pricing {

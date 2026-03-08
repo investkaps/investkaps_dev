@@ -1,108 +1,92 @@
 /**
  * CAMS KRA Status Code Mapping Utility
- * 
- * Maps CAMS numeric status codes to human-readable status strings
- * Reference: CAMS KRA API Documentation
+ *
+ * Status codes returned by the internal KYC proxy API (/pan-download):
+ *   01 / 11  UNDER_PROCESS
+ *   02 / 12  KYC_REGISTERED  (verified ✓)
+ *   03 / 13  ON_HOLD
+ *   04 / 14  KYC_REJECTED
+ *   05       NOT_AVAILABLE
+ *   06       DEACTIVATED
+ *   07       KYC_VALIDATED   (verified ✓)
+ *   22       MUTUAL_FUND_VERIFIED (verified ✓)
  */
 
-// CAMS KYC Status Code Mapping
+// Codes that represent a fully verified KYC
+export const VERIFIED_CODES = new Set(['02', '07', '12', '22']);
+
+// Codes that are "informational" — not errors, not verified
 const CAMS_STATUS_MAP = {
-  '01': { status: 'REGISTERED', description: 'KYC Registered' },
-  '02': { status: 'PENDING', description: 'KYC Pending' },
-  '03': { status: 'ON_HOLD', description: 'KYC On Hold' },
-  '04': { status: 'REJECTED', description: 'KYC Rejected' },
-  '05': { status: 'INCOMPLETE', description: 'KYC Incomplete' },
-  '06': { status: 'DEACTIVATED', description: 'KYC Deactivated' },
-  '07': { status: 'VERIFIED', description: 'KYC Verified' },
-  '08': { status: 'SUSPENDED', description: 'KYC Suspended' },
-  '09': { status: 'EXPIRED', description: 'KYC Expired' },
-  '10': { status: 'MODIFIED', description: 'KYC Modified' }
+  '01': { status: 'UNDER_PROCESS',        description: 'KYC Under Process',          userMessage: 'Your KYC verification is currently under process.' },
+  '02': { status: 'KYC_REGISTERED',       description: 'KYC Registered',             userMessage: 'KYC verified successfully.' },
+  '03': { status: 'ON_HOLD',              description: 'KYC On Hold',                userMessage: 'Your KYC verification is currently on hold.' },
+  '04': { status: 'KYC_REJECTED',         description: 'KYC Rejected',               userMessage: 'Your KYC has been rejected. Please re-submit KYC.' },
+  '05': { status: 'NOT_AVAILABLE',        description: 'PAN Not Available',          userMessage: 'No KYC record found for this PAN.' },
+  '06': { status: 'DEACTIVATED',          description: 'KYC Deactivated',            userMessage: 'Your KYC record is deactivated.' },
+  '07': { status: 'KYC_VALIDATED',        description: 'KYC Validated',              userMessage: 'KYC verified successfully.' },
+  '11': { status: 'UNDER_PROCESS',        description: 'KYC Under Process',          userMessage: 'Your KYC verification is currently under process.' },
+  '12': { status: 'KYC_REGISTERED',       description: 'KYC Registered',             userMessage: 'KYC verified successfully.' },
+  '13': { status: 'ON_HOLD',              description: 'KYC On Hold',                userMessage: 'Your KYC verification is currently on hold.' },
+  '14': { status: 'KYC_REJECTED',         description: 'KYC Rejected',               userMessage: 'Your KYC has been rejected. Please re-submit KYC.' },
+  '22': { status: 'MUTUAL_FUND_VERIFIED', description: 'Mutual Fund KYC Verified',   userMessage: 'KYC verified successfully.' },
 };
 
 /**
- * Map CAMS numeric status code to readable status
- * @param {string} camsCode - CAMS status code (e.g., "07")
- * @returns {object} - { status, description, rawCode }
+ * Map a status_code from the proxy API to its descriptor.
+ * @param {string|number} code
+ * @returns {{ status: string, description: string, userMessage: string, rawCode: string }}
  */
-export function mapCAMSStatus(camsCode) {
-  if (!camsCode) {
-    return {
-      status: 'UNKNOWN',
-      description: 'Status not available',
-      rawCode: null
-    };
+export function mapCAMSStatus(code) {
+  if (!code && code !== 0) {
+    return { status: 'UNKNOWN', description: 'Status not available', userMessage: 'Unable to determine KYC status. Please try again later.', rawCode: null };
   }
 
-  const normalized = String(camsCode).padStart(2, '0');
-  const mapping = CAMS_STATUS_MAP[normalized];
+  const normalized = String(code).padStart(2, '0');
+  const entry = CAMS_STATUS_MAP[normalized];
 
-  if (mapping) {
-    return {
-      status: mapping.status,
-      description: mapping.description,
-      rawCode: normalized
-    };
+  if (entry) {
+    return { ...entry, rawCode: normalized };
   }
 
-  // Unknown status code
   return {
     status: 'UNKNOWN',
-    description: `Unknown CAMS status code: ${normalized}`,
-    rawCode: normalized
+    description: `Unknown KYC status code: ${normalized}`,
+    userMessage: 'Unable to determine KYC status. Please try again later.',
+    rawCode: normalized,
   };
 }
 
 /**
- * Check if KYC status is verified/active
- * @param {string} camsCode - CAMS status code
- * @returns {boolean}
+ * Returns true when the status_code represents a fully verified KYC.
+ * @param {string|number} code
  */
-export function isKYCVerified(camsCode) {
-  const normalized = String(camsCode).padStart(2, '0');
-  return normalized === '07'; // Only "07" is fully verified
+export function isKYCVerified(code) {
+  if (!code && code !== 0) return false;
+  return VERIFIED_CODES.has(String(code).padStart(2, '0'));
 }
 
 /**
- * Check if KYC status is actionable (needs user action)
- * @param {string} camsCode - CAMS status code
- * @returns {boolean}
- */
-export function isKYCActionable(camsCode) {
-  const normalized = String(camsCode).padStart(2, '0');
-  return ['02', '05'].includes(normalized); // Pending or Incomplete
-}
-
-/**
- * Extract KYC status from CAMS response
- * Handles both enquiry and download response formats
- * @param {object} camsResponse - CAMS API response
- * @returns {object} - Mapped status object
+ * Extract KYC status from a legacy CAMS nested response (enquiry/download format).
+ * Only used when the response still wraps data in kycData / verifyPanResponseList.
  */
 export function extractCAMSStatus(camsResponse) {
-  // Try kycData format (download) first, then verifyPanResponseList (enquiry)
-  const panData = camsResponse?.kycData?.[0] || 
-                  camsResponse?.verifyPanResponseList?.[0] || 
-                  camsResponse?.PAN?.[0];
-  
+  const panData =
+    camsResponse?.kycData?.[0] ||
+    camsResponse?.verifyPanResponseList?.[0] ||
+    camsResponse?.PAN?.[0];
+
   if (!panData) {
-    return {
-      status: 'UNKNOWN',
-      description: 'No PAN data in response',
-      rawCode: null
-    };
+    return { status: 'UNKNOWN', description: 'No PAN data in response', rawCode: null };
   }
 
-  // CAMS uses different field names for status
-  // Download uses 'status', enquiry uses 'updateStatus' or 'camskra'
   const statusCode = panData.status || panData.updateStatus || panData.kycStatus || panData.camskra;
-  
   return mapCAMSStatus(statusCode);
 }
 
 export default {
   mapCAMSStatus,
   isKYCVerified,
-  isKYCActionable,
   extractCAMSStatus,
-  CAMS_STATUS_MAP
+  CAMS_STATUS_MAP,
+  VERIFIED_CODES,
 };

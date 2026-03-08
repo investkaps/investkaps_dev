@@ -5,10 +5,10 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 import { useAuth } from '../../context/AuthContext';
 import { useRole } from '../../hooks/useRole';
-import { kycAPI, userAPI, phoneAPI, esignAPI } from '../../services/api';
+import { kycAPI, userAPI, phoneAPI, esignAPI, paymentRequestAPI } from '../../services/api';
 import userSubscriptionAPI from '../../services/userSubscriptionAPI';
 import stockRecommendationAPI from '../../services/stockRecommendationAPI';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import OTPInput from '../../components/OTPInput/OTPInput';
 import { isValidPhone, sanitizePhone, isValidPAN, formatPAN } from '../../utils/validators';
 import './Dashboard.css';
@@ -18,6 +18,20 @@ const Dashboard = () => {
   const { currentUser, logout, loading: authLoading } = useAuth();
   const { isAdmin } = useRole();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Show a success banner when user is redirected here after a completed payment
+  const [paymentSuccessBanner, setPaymentSuccessBanner] = useState(
+    () => !!location.state?.justPurchased
+  );
+  useEffect(() => {
+    if (paymentSuccessBanner) {
+      const t = setTimeout(() => setPaymentSuccessBanner(false), 7000);
+      // Clear the router state so it doesn't re-appear on refresh
+      window.history.replaceState({}, '');
+      return () => clearTimeout(t);
+    }
+  }, [paymentSuccessBanner]);
   
   // Memoize admin status to prevent continuous checks
   const [isAdminUser, setIsAdminUser] = useState(false);
@@ -48,6 +62,7 @@ const Dashboard = () => {
   const [sessionId, setSessionId] = useState(null);
   const [phoneError, setPhoneError] = useState(null);
   const [phoneLoading, setPhoneLoading] = useState(false);
+  const [phoneAlreadyExists, setPhoneAlreadyExists] = useState(false);
   // KYC form state
   const [kycForm, setKycForm] = useState({
     pan: '',
@@ -56,6 +71,8 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [kycResult, setKycResult] = useState(null);
+  const [kycAttemptsRemaining, setKycAttemptsRemaining] = useState(null);
+  const [kycBlocked, setKycBlocked] = useState(false);
   const [panStatus, setPanStatus] = useState({
     checking: false,
     verified: false,
@@ -72,6 +89,8 @@ const Dashboard = () => {
   const [stockRecommendations, setStockRecommendations] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [bypassLoading, setBypassLoading] = useState(false);
+  // QR / manual payment request statuses
+  const [pendingPaymentRequests, setPendingPaymentRequests] = useState([]);
 
   // ─── Dashboard Initialization ────────────────────────────────────────────────
   // All four initial API checks run in parallel before the dashboard renders.
@@ -203,6 +222,17 @@ const Dashboard = () => {
           } catch (err) { /* No active subscription */ }
         })(),
 
+        // ── 5. QR / manual payment request statuses ───────────────────────────
+        (async () => {
+          try {
+            const prResponse = await paymentRequestAPI.getMyRequests();
+            if (prResponse?.data) {
+              const requests = Array.isArray(prResponse.data) ? prResponse.data : prResponse.data?.data || [];
+              setPendingPaymentRequests(requests);
+            }
+          } catch (err) { /* No payment requests yet */ }
+        })(),
+
         ]),
         // Fallback so the dashboard never hangs if a check stalls
         new Promise(resolve => setTimeout(resolve, 10_000)),
@@ -272,10 +302,25 @@ const Dashboard = () => {
   const handlePhoneInputChange = (e) => {
     const { name, value } = e.target;
     if (name === 'phone') {
-      setPhoneForm(prev => ({ ...prev, phone: sanitizePhone(value) }));
-    } else {
-      setPhoneForm(prev => ({ ...prev, [name]: value }));
+      const sanitized = sanitizePhone(value);
+      setPhoneForm(prev => ({ ...prev, phone: sanitized }));
+      setPhoneAlreadyExists(false);
+      setPhoneError(null);
+      // Pre-check DB when 10 digits are entered
+      if (sanitized.length === 10) {
+        (async () => {
+          try {
+            const result = await phoneAPI.checkPhoneExists(sanitized);
+            if (result.exists) {
+              setPhoneAlreadyExists(true);
+              setPhoneError('This phone number is already registered with another account.');
+            }
+          } catch { /* silently ignore check errors */ }
+        })();
+      }
+      return;
     }
+    setPhoneForm(prev => ({ ...prev, [name]: value }));
     setPhoneError(null);
   };
 
@@ -291,6 +336,11 @@ const Dashboard = () => {
     
     if (!isValidPhone(phoneForm.phone)) {
       setPhoneError('Please enter a valid 10-digit Indian mobile number');
+      return;
+    }
+
+    if (phoneAlreadyExists) {
+      setPhoneError('This phone number is already registered with another account.');
       return;
     }
     
@@ -398,13 +448,13 @@ const Dashboard = () => {
             });
           }
         } else {
-          // PAN not verified yet - user can proceed
+          // PAN not verified yet - user can proceed; show no message for available PANs
           setPanStatus({ 
             checking: false, 
             verified: false,
-            validated: true, // PAN is available, user can proceed
+            validated: true,
             existsForOther: false,
-            message: 'PAN available - please enter your date of birth' 
+            message: ''
           });
         }
       } catch (error) {
@@ -442,17 +492,12 @@ const Dashboard = () => {
       const data = await kycAPI.verifyKYC(kycData);
       
       if (data.success) {
-        // Check if user is already verified
+        // Verified — unlock all other steps
         if (data.isDuplicate || data.isAlreadyVerified) {
-          setKycResult({
-            ...data,
-            message: 'Your KYC verification has already been completed successfully'
-          });
+          setKycResult({ ...data, message: 'Your KYC verification has already been completed successfully' });
         } else {
           setKycResult(data);
         }
-        
-        // KYC done - unlock all other steps
         setSteps(prevSteps => ({
           ...prevSteps,
           kyc: { ...prevSteps.kyc, completed: true, active: true },
@@ -460,13 +505,21 @@ const Dashboard = () => {
           signing: { ...prevSteps.signing, active: true },
           payment: { ...prevSteps.payment, active: true }
         }));
-        
-        // Mark KYC check as completed
         setKycCheckCompleted(true);
       } else {
-        setError(data.error || 'KYC verification failed');
+        // Non-verified informational statuses (under process, on hold, rejected, etc.)
+        if (data.code === 'KYC_BLOCKED') {
+          setKycBlocked(true);
+          setError(null);
+        } else {
+          if (typeof data.attemptsRemaining === 'number') {
+            setKycAttemptsRemaining(data.attemptsRemaining);
+          }
+          setError(data.message || data.error || 'KYC verification failed');
+        }
       }
     } catch (err) {
+      // Only genuine network failures reach here now (verifyKYC returns payloads on API errors)
       setError('Failed to connect to KYC service. Please try again later.');
       console.error('KYC verification error:', err);
     } finally {
@@ -560,6 +613,76 @@ const Dashboard = () => {
             Logout
           </button>
         </div>
+
+        {/* Payment success banner – shown when redirected from Razorpay checkout */}
+        {paymentSuccessBanner && (
+          <div className="payment-success-banner">
+            ✅ Payment successful! Your subscription has been activated.
+            <button className="dismiss-banner" onClick={() => setPaymentSuccessBanner(false)}>&#x2715;</button>
+          </div>
+        )}
+
+        {/* Persistent banner: subscription is active but setup steps not all done */}
+        {activeSubscription && !isSetupComplete && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '14px 20px',
+            marginBottom: '16px',
+            borderRadius: '10px',
+            backgroundColor: '#fffbeb',
+            border: '1px solid #fcd34d',
+            color: '#92400e',
+            fontWeight: 500,
+            fontSize: '0.95rem',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.07)'
+          }}>
+            <span style={{ fontSize: '1.3rem' }}>🎉</span>
+            <span>
+              <strong>Payment received — your subscription is active!</strong>
+              &nbsp;Please complete the remaining steps below to fully activate your account and access all features.
+            </span>
+          </div>
+        )}
+
+        {/* ── QR / Manual Payment Request Status ─── visible regardless of setup state */}
+        {pendingPaymentRequests.length > 0 && (
+          <div className="payment-requests-section">
+            <h2>QR / Manual Payment Status</h2>
+            <div className="payment-requests-list">
+              {pendingPaymentRequests.map(req => (
+                <div key={req._id} className="payment-request-card">
+                  <div className="pr-info">
+                    <span className="pr-plan">{req.planName || 'Plan'}</span>
+                    {req.amount && <span className="pr-amount">₹{req.amount}</span>}
+                    <span className="pr-date">{new Date(req.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <span className={`pr-status-badge pr-status-${req.status}`}>
+                    {req.status === 'pending' ? '⏳ Pending Review' : req.status === 'approved' ? '✅ Approved' : '❌ Rejected'}
+                  </span>
+                  {req.status === 'pending' && (
+                    <p className="pr-note">Your payment has been submitted. An admin will review and activate your subscription shortly.</p>
+                  )}
+                  {req.status === 'rejected' && req.rejectionReason && (
+                    <p className="pr-note pr-rejected-note">Reason: {req.rejectionReason}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Subscription active but onboarding not complete ── */}
+        {activeSubscription && !isSetupComplete && !isAdminUser && (
+          <div className="subscription-pending-notice">
+            <span className="notice-icon">ℹ️</span>
+            <div className="notice-body">
+              <strong>Subscription purchased!</strong> You have an active <em>{activeSubscription.subscription?.name || 'plan'}</em> subscription.
+              Complete the onboarding steps below to start receiving recommendations.
+            </div>
+          </div>
+        )}
 
         {/* Show simplified status box for completed setup or admin users */}
         {(isSetupComplete || isAdminUser) && (
@@ -774,8 +897,27 @@ const Dashboard = () => {
                 <div className="checklist-content">
                     {!steps.kyc.completed ? (
                       <div className="step-form">
-                        {error && <div className="error-message">{error}</div>}
-                        
+                        {/* Attempts remaining info */}
+                        {kycAttemptsRemaining !== null && (
+                          <div className="info-message" style={{ marginBottom: '12px' }}>
+                            ⚠️ {kycAttemptsRemaining} attempt{kycAttemptsRemaining !== 1 ? 's' : ''} remaining before your account is blocked.
+                          </div>
+                        )}
+
+                        {/* Any backend-provided message or generic error */}
+                        {error && (
+                          <div className="error-message" style={{ marginBottom: '12px' }}>
+                            <p>{error}</p>
+                          </div>
+                        )}
+
+                        {/* If account is actually blocked (backend returned KYC_BLOCKED), show a concise inline notice and disable the form */}
+                        {kycBlocked && (
+                          <div className="error-message" style={{ marginBottom: '12px' }}>
+                            <p>Your KYC option is currently blocked. Please contact support to unblock your account.</p>
+                          </div>
+                        )}
+
                         <form onSubmit={handleKycSubmit} className="kyc-form">
                           <div className="form-group">
                             <label htmlFor="pan">PAN Card Number</label>
@@ -889,6 +1031,8 @@ const Dashboard = () => {
                             )}
                           </div>
                         </form>
+                          </>
+                        )}
                       </div>
                     ) : (
                       <div className="step-result">

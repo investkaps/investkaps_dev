@@ -130,6 +130,15 @@ const UserSchema = new mongoose.Schema({
     camsData: {
       type: Object,
       default: null
+    },
+    // Per-user KYC attempt tracking (max 3 failed attempts then blocked)
+    kycAttempts: {
+      type: Number,
+      default: 0
+    },
+    kycBlocked: {
+      type: Boolean,
+      default: false
     }
   },
   // All KYC verifications for this user

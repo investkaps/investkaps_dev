@@ -1,5 +1,6 @@
 import axios from 'axios';
 import logger from '../utils/logger.js';
+import { mapCAMSStatus, isKYCVerified } from '../utils/camsStatusMapper.js';
 
 // ─── Configuration (validated at startup) ────────────────────────────────────
 const KYC_API_URL = process.env.KYC_API_URL;
@@ -98,32 +99,49 @@ export async function fetchPanKyc(pan, dob) {
 
       const raw = response.data; // full payload – stored verbatim for audit
 
-      // ── CAMS business-error inside an HTTP-200 response ──────────────────
-      // EC2 returns { success: false, error/message } when CAMS rejects the
-      // request (PAN not found, DOB mismatch, invalid PAN, etc.).
-      // These are NOT retryable – fail immediately.
+      // ── Inspect status_code from the proxy API ───────────────────────────
+      // The proxy always returns at least { success, status_code, status }.
+      // status_code drives all routing; raw.success alone is not sufficient.
+      const statusCode = raw.status_code ? String(raw.status_code).padStart(2, '0') : null;
+
+      logger.info('KYC proxy response', { pan: masked, statusCode, status: raw.status, success: raw.success });
+
+      // Successful KYC codes: 02, 07, 12, 22
+      const VERIFIED_CODES = new Set(['02', '07', '12', '22']);
+      // Informational (non-error, non-verified) codes that bubble up to the controller
+      const INFO_CODES = new Set(['01', '03', '04', '05', '06', '11', '13', '14']);
+
+      if (statusCode && VERIFIED_CODES.has(statusCode)) {
+        // KYC is verified — data must be present
+        if (!raw.data) {
+          throw kycError('KYC_EMPTY_RESPONSE', 'Verification service returned an incomplete response.');
+        }
+        const mapped = mapCAMSStatus(statusCode);
+        logger.info('PAN KYC data fetched successfully', { pan: masked, statusCode });
+        return { raw, data: raw.data, statusCode, kycStatus: mapped.status, userMessage: mapped.userMessage, isVerified: true };
+      }
+
+      if (statusCode && INFO_CODES.has(statusCode)) {
+        // Informational result — not an error, not verified either.
+        // Return to controller which will respond without saving KYC as verified.
+        const mapped = mapCAMSStatus(statusCode);
+        return { raw, data: null, statusCode, kycStatus: mapped.status, userMessage: mapped.userMessage, isVerified: false };
+      }
+
+      // Legacy / unknown: fall back to the old success flag
       if (raw.success === false) {
-        // Log the raw error internally for ops visibility.
         const camsMsg = raw.error || raw.message || raw.detail || 'unknown CAMS error';
-        logger.warn('KYC API: CAMS business failure', { pan: masked, camsMsg });
-        // Expose only a safe, generic typed error to the controller.
-        throw kycError(
-          'KYC_CAMS_FAILURE',
-          // Attempt to map common CAMS messages to actionable user messages.
-          resolveCamsUserMessage(camsMsg)
-        );
+        logger.warn('KYC API: CAMS business failure', { pan: masked, camsMsg, statusCode });
+        throw kycError('KYC_CAMS_FAILURE', resolveCamsUserMessage(camsMsg));
       }
 
       if (!raw.data) {
         throw kycError('KYC_EMPTY_RESPONSE', 'Verification service returned an incomplete response.');
       }
 
-      logger.info('PAN KYC data fetched successfully', { pan: masked });
-
-      // Return BOTH the raw envelope (for DB storage) and the data sub-object
-      // (for field extraction).  The controller decides what to persist and
-      // what to return to the frontend.
-      return { raw, data: raw.data };
+      // Fallback: success=true but no known status_code
+      logger.warn('KYC proxy returned unrecognised status_code', { pan: masked, statusCode });
+      return { raw, data: raw.data, statusCode, kycStatus: 'UNKNOWN', userMessage: 'Unable to determine KYC status. Please try again later.', isVerified: false };
 
     } catch (error) {
       lastError = error;
