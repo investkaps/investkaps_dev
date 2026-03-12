@@ -1031,8 +1031,6 @@ const Dashboard = () => {
                             )}
                           </div>
                         </form>
-                          </>
-                        )}
                       </div>
                     ) : (
                       <div className="step-result">

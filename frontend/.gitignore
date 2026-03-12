@@ -25,3 +25,4 @@ package-lock.json
 *.sln
 *.sw?
 CODE_AUDIT_SUMMARY.md
+README.md
