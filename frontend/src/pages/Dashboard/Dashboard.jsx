@@ -12,7 +12,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import OTPInput from '../../components/OTPInput/OTPInput';
 import { isValidPhone, sanitizePhone, isValidPAN, formatPAN } from '../../utils/validators';
 import Loading from '../../components/Loading/Loading';
-
+import './Dashboard.css';
 
 const Dashboard = () => {
   const { currentUser, logout, loading: authLoading } = useAuth();
