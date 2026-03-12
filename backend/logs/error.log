@@ -44,3 +44,5 @@
 2026-03-07 11:10:10 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
 2026-03-07 11:15:11 error: Error fetching batch LTP: Request failed with status code 502
 2026-03-07 11:15:11 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-03-12 11:12:17 error: Error fetching batch LTP: timeout of 10000ms exceeded
+2026-03-12 11:12:17 error: Error in getBatchPrices: Failed to fetch batch prices: timeout of 10000ms exceeded

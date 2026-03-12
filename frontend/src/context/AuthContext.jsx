@@ -105,6 +105,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let mounted = true;
     const checkAuthStatus = async () => {
+      // If Clerk hasn't initialised yet, keep the loading spinner up and wait.
+      // We MUST NOT call setLoading(false) here or ProtectedRoute will see
+      // loading=false + currentUser=null and redirect to /login before Clerk
+      // has had a chance to restore the session.
+      if (!clerkLoaded || !clerkAuthLoaded) {
+        if (mounted) setLoading(true);
+        return;
+      }
+
       setLoading(true);
       try {
         const savedToken = localStorage.getItem('clerk_jwt');
@@ -175,16 +184,10 @@ export const AuthProvider = ({ children }) => {
             if (mounted) setCurrentUser(null);
           }
         } else {
-          // Clerk loaded but no user
-          if (clerkLoaded) {
-            const tokenNow = localStorage.getItem('clerk_jwt');
-            if (tokenNow && !isTokenValid(tokenNow)) clearLocalAuth();
-            if (mounted) setCurrentUser(null);
-          } else {
-            // Clerk not loaded yet; wait for it
-            if (mounted) setLoading(true);
-            return;
-          }
+          // Clerk is fully loaded and confirms no active session
+          const tokenNow = localStorage.getItem('clerk_jwt');
+          if (tokenNow && !isTokenValid(tokenNow)) clearLocalAuth();
+          if (mounted) setCurrentUser(null);
         }
       } catch (err) {
         console.error('❌ AUTH: Error in checkAuthStatus:', err);
@@ -198,7 +201,7 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
     return () => { mounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clerkLoaded && clerkAuthLoaded, clerkUser]);
+  }, [clerkLoaded, clerkAuthLoaded, clerkUser]);
 
   // sendOTP - same as before but guards if already signed in
   const sendOTP = async (email) => {

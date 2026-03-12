@@ -276,3 +276,36 @@
 2026-03-07 11:23:46 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
 2026-03-07 11:24:35 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
 2026-03-07 11:25:01 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-03-12 11:11:35 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-03-12 11:11:35 info: GET /api/users/email/aiman.singh30%40gmail.com {"ip":"::1"}
+2026-03-12 11:11:36 info: GET /api/esign/active {"ip":"::1"}
+2026-03-12 11:11:36 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH/kyc {"ip":"::1"}
+2026-03-12 11:11:36 info: GET /api/subscriptions/user/user_38FIedQidROhaT30VNmLVpP5SDH/active {"ip":"::1"}
+2026-03-12 11:11:36 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-03-12 11:11:36 info: GET /api/users/email/aiman.singh30%40gmail.com/kyc {"ip":"::1"}
+2026-03-12 11:11:36 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-03-12 11:11:45 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-03-12 11:11:45 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-03-12 11:11:52 info: GET /api/admin/kyc {"ip":"::1"}
+2026-03-12 11:11:52 info: GET /api/admin/kyc {"ip":"::1"}
+2026-03-12 11:12:02 info: GET /api/subscriptions/admin/plans {"ip":"::1"}
+2026-03-12 11:12:02 info: GET /api/strategies {"ip":"::1"}
+2026-03-12 11:12:02 info: GET /api/strategies {"ip":"::1"}
+2026-03-12 11:12:02 info: GET /api/subscriptions/admin/plans {"ip":"::1"}
+2026-03-12 11:12:03 info: GET /api/strategies {"ip":"::1"}
+2026-03-12 11:12:03 info: GET /api/strategies {"ip":"::1"}
+2026-03-12 11:12:06 info: GET /api/payment-requests/all?status=pending {"ip":"::1"}
+2026-03-12 11:12:06 info: GET /api/payment-requests/all?status=pending {"ip":"::1"}
+2026-03-12 11:12:06 info: GET /api/strategies {"ip":"::1"}
+2026-03-12 11:12:06 info: GET /api/recommendations {"ip":"::1"}
+2026-03-12 11:12:07 info: GET /api/strategies {"ip":"::1"}
+2026-03-12 11:12:07 info: GET /api/recommendations {"ip":"::1"}
+2026-03-12 11:12:07 info: POST /api/ltp/batch {"ip":"::1"}
+2026-03-12 11:12:07 info: Fetching batch LTP for 6 symbols from NSE
+2026-03-12 11:12:17 error: Error fetching batch LTP: timeout of 10000ms exceeded
+2026-03-12 11:12:17 error: Error in getBatchPrices: Failed to fetch batch prices: timeout of 10000ms exceeded
+2026-03-12 11:12:17 info: GET /api/recommendations {"ip":"::1"}
+2026-03-12 11:12:28 info: GET /api/admin/users {"ip":"::1"}
+2026-03-12 11:12:29 info: GET /api/admin/kyc {"ip":"::1"}
+2026-03-12 11:12:29 info: GET /api/admin/users {"ip":"::1"}
+2026-03-12 11:12:29 info: GET /api/admin/kyc {"ip":"::1"}

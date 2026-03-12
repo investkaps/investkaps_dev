@@ -11,7 +11,7 @@ import stockRecommendationAPI from '../../services/stockRecommendationAPI';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import OTPInput from '../../components/OTPInput/OTPInput';
 import { isValidPhone, sanitizePhone, isValidPAN, formatPAN } from '../../utils/validators';
-import './Dashboard.css';
+import Loading from '../../components/Loading/Loading';
 
 
 const Dashboard = () => {
@@ -584,21 +584,7 @@ const Dashboard = () => {
   
   // Block render until all initial checks have resolved
   if (authLoading || !dashboardReady) {
-    return (
-      <div className="dashboard-init-loading">
-        <div className="init-loading-card">
-          <div className="init-spinner"></div>
-          <h2>Loading your dashboard</h2>
-          <p>Checking your account status&hellip;</p>
-          <ul className="init-checklist">
-            <li>KYC verification</li>
-            <li>Phone verification</li>
-            <li>Agreement &amp; signing</li>
-            <li>Subscription</li>
-          </ul>
-        </div>
-      </div>
-    );
+    return <Loading message="Loading your dashboard…" />;
   }
 
   return (

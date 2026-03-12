@@ -55,21 +55,15 @@ const KycVerificationSchema = new mongoose.Schema({
     trim: true
   },
 
-  // Mapped human-readable status
+  // Mapped human-readable status (normalized, matches camsStatusMapper output)
   kycStatus: {
     type: String,
     enum: [
-      "VERIFIED",      // 07 - Fully verified
-      "PENDING",       // 02 - Pending verification
-      "INCOMPLETE",    // 05 - Incomplete documents
-      "REGISTERED",    // 01 - Just registered
-      "ON_HOLD",       // 03 - On hold
-      "REJECTED",      // 04 - Rejected
-      "DEACTIVATED",   // 06 - Deactivated
-      "SUSPENDED",     // 08 - Suspended
-      "EXPIRED",       // 09 - Expired
-      "MODIFIED",      // 10 - Modified
-      "UNKNOWN"        // Unknown/unmapped status
+      'VERIFIED',  // codes 02, 07, 12, 22
+      'PENDING',   // codes 01, 11
+      'ON_HOLD',   // codes 03, 13
+      'REJECTED',  // codes 04, 14
+      'UNKNOWN'    // codes 05, 06, or unrecognised
     ]
     // Index defined below
   },

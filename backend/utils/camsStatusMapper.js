@@ -16,19 +16,21 @@
 export const VERIFIED_CODES = new Set(['02', '07', '12', '22']);
 
 // Codes that are "informational" — not errors, not verified
+// status values are normalized to the DB enum:
+//   VERIFIED | PENDING | ON_HOLD | REJECTED | UNKNOWN
 const CAMS_STATUS_MAP = {
-  '01': { status: 'UNDER_PROCESS',        description: 'KYC Under Process',          userMessage: 'Your KYC verification is currently under process.' },
-  '02': { status: 'KYC_REGISTERED',       description: 'KYC Registered',             userMessage: 'KYC verified successfully.' },
-  '03': { status: 'ON_HOLD',              description: 'KYC On Hold',                userMessage: 'Your KYC verification is currently on hold.' },
-  '04': { status: 'KYC_REJECTED',         description: 'KYC Rejected',               userMessage: 'Your KYC has been rejected. Please re-submit KYC.' },
-  '05': { status: 'NOT_AVAILABLE',        description: 'PAN Not Available',          userMessage: 'No KYC record found for this PAN.' },
-  '06': { status: 'DEACTIVATED',          description: 'KYC Deactivated',            userMessage: 'Your KYC record is deactivated.' },
-  '07': { status: 'KYC_VALIDATED',        description: 'KYC Validated',              userMessage: 'KYC verified successfully.' },
-  '11': { status: 'UNDER_PROCESS',        description: 'KYC Under Process',          userMessage: 'Your KYC verification is currently under process.' },
-  '12': { status: 'KYC_REGISTERED',       description: 'KYC Registered',             userMessage: 'KYC verified successfully.' },
-  '13': { status: 'ON_HOLD',              description: 'KYC On Hold',                userMessage: 'Your KYC verification is currently on hold.' },
-  '14': { status: 'KYC_REJECTED',         description: 'KYC Rejected',               userMessage: 'Your KYC has been rejected. Please re-submit KYC.' },
-  '22': { status: 'MUTUAL_FUND_VERIFIED', description: 'Mutual Fund KYC Verified',   userMessage: 'KYC verified successfully.' },
+  '01': { status: 'PENDING',   description: 'KYC Under Process',        userMessage: 'Your KYC verification is currently under process.' },
+  '02': { status: 'VERIFIED',  description: 'KYC Registered',           userMessage: 'KYC verified successfully.' },
+  '03': { status: 'ON_HOLD',   description: 'KYC On Hold',              userMessage: 'Your KYC verification is currently on hold.' },
+  '04': { status: 'REJECTED',  description: 'KYC Rejected',             userMessage: 'Your KYC has been rejected. Please re-submit KYC.' },
+  '05': { status: 'UNKNOWN',   description: 'PAN Not Available',        userMessage: 'No KYC record found for this PAN.' },
+  '06': { status: 'UNKNOWN',   description: 'KYC Deactivated',          userMessage: 'Your KYC record is deactivated.' },
+  '07': { status: 'VERIFIED',  description: 'KYC Validated',            userMessage: 'KYC verified successfully.' },
+  '11': { status: 'PENDING',   description: 'KYC Under Process',        userMessage: 'Your KYC verification is currently under process.' },
+  '12': { status: 'VERIFIED',  description: 'KYC Registered',           userMessage: 'KYC verified successfully.' },
+  '13': { status: 'ON_HOLD',   description: 'KYC On Hold',              userMessage: 'Your KYC verification is currently on hold.' },
+  '14': { status: 'REJECTED',  description: 'KYC Rejected',             userMessage: 'Your KYC has been rejected. Please re-submit KYC.' },
+  '22': { status: 'VERIFIED',  description: 'Mutual Fund KYC Verified', userMessage: 'KYC verified successfully.' },
 };
 
 /**
