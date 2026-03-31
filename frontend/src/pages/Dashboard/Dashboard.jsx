@@ -24,6 +24,11 @@ const Dashboard = () => {
   const [paymentSuccessBanner, setPaymentSuccessBanner] = useState(
     () => !!location.state?.justPurchased
   );
+  // Show a banner when user is redirected here after QR payment submission
+  const [qrPaymentSubmittedBanner, setQrPaymentSubmittedBanner] = useState(
+    () => !!location.state?.paymentSubmitted
+  );
+  const paymentRequestsRef = useRef(null);
   useEffect(() => {
     if (paymentSuccessBanner) {
       const t = setTimeout(() => setPaymentSuccessBanner(false), 7000);
@@ -32,6 +37,22 @@ const Dashboard = () => {
       return () => clearTimeout(t);
     }
   }, [paymentSuccessBanner]);
+
+  // Handle QR payment submission banner and scroll to payment requests
+  useEffect(() => {
+    if (qrPaymentSubmittedBanner) {
+      const t = setTimeout(() => setQrPaymentSubmittedBanner(false), 7000);
+      // Scroll to payment requests section
+      setTimeout(() => {
+        if (paymentRequestsRef.current) {
+          paymentRequestsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300);
+      // Clear the router state so it doesn't re-appear on refresh
+      window.history.replaceState({}, '');
+      return () => clearTimeout(t);
+    }
+  }, [qrPaymentSubmittedBanner]);
   
   // Memoize admin status to prevent continuous checks
   const [isAdminUser, setIsAdminUser] = useState(false);
@@ -608,6 +629,14 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/* QR Payment submitted banner */}
+        {qrPaymentSubmittedBanner && (
+          <div className="payment-success-banner" style={{ backgroundColor: '#e0f2fe', borderColor: '#0284c7', color: '#075985' }}>
+            ✓ Payment request submitted! Check the status below. Admin will verify and activate your subscription within 24 hours.
+            <button className="dismiss-banner" onClick={() => setQrPaymentSubmittedBanner(false)}>&#x2715;</button>
+          </div>
+        )}
+
         {/* Persistent banner: subscription is active but setup steps not all done */}
         {activeSubscription && !isSetupComplete && (
           <div style={{
@@ -634,7 +663,7 @@ const Dashboard = () => {
 
         {/* ── QR / Manual Payment Request Status ─── visible regardless of setup state */}
         {pendingPaymentRequests.length > 0 && (
-          <div className="payment-requests-section">
+          <div className="payment-requests-section" ref={paymentRequestsRef}>
             <h2>QR / Manual Payment Status</h2>
             <div className="payment-requests-list">
               {pendingPaymentRequests.map(req => (

@@ -112,6 +112,22 @@ const Pricing = () => {
     setShowPaymentMethodModal(true);
   };
 
+  // ---- Handle QR payment success
+  const handleQRPaymentSuccess = (paymentRequestData) => {
+    setShowQRModal(false);
+    setSelectedPlan(null);
+    
+    // Navigate to dashboard with notification about the pending payment
+    navigate('/dashboard', {
+      replace: true,
+      state: { 
+        paymentSubmitted: true, 
+        planName: selectedPlan?.name,
+        planDuration: selectedDuration
+      }
+    });
+  };
+
   // ---- Create order & open Razorpay
   const createOrder = async () => {
     if (!selectedPlan) return;
@@ -452,6 +468,7 @@ const Pricing = () => {
             setShowQRModal(false);
             setSelectedPlan(null);
           }}
+          onSuccess={handleQRPaymentSuccess}
           currentUser={currentUser}
         />
       )}

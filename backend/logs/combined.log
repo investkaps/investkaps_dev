@@ -309,3 +309,84 @@
 2026-03-12 11:12:29 info: GET /api/admin/kyc {"ip":"::1"}
 2026-03-12 11:12:29 info: GET /api/admin/users {"ip":"::1"}
 2026-03-12 11:12:29 info: GET /api/admin/kyc {"ip":"::1"}
+2026-03-31 13:42:33 info: GET /api/users/clerk/user_37se5KXYjZRQJb5KLkDskh55zFh {"ip":"::1"}
+2026-03-31 13:42:33 info: GET /api/users/email/mailme.kapil%40gmail.com {"ip":"::1"}
+2026-03-31 13:42:33 info: GET /api/users/clerk/user_37se5KXYjZRQJb5KLkDskh55zFh/kyc {"ip":"::1"}
+2026-03-31 13:42:33 info: GET /api/esign/active {"ip":"::1"}
+2026-03-31 13:42:33 info: GET /api/subscriptions/user/user_37se5KXYjZRQJb5KLkDskh55zFh/active {"ip":"::1"}
+2026-03-31 13:42:34 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-03-31 13:42:34 info: GET /api/users/email/mailme.kapil%40gmail.com {"ip":"::1"}
+2026-03-31 13:42:34 info: POST /api/users/create {"ip":"::1"}
+2026-03-31 13:42:34 info: GET /api/users/email/mailme.kapil%40gmail.com/kyc {"ip":"::1"}
+2026-03-31 13:42:34 info: GET /api/users/email/mailme.kapil%40gmail.com {"ip":"::1"}
+2026-03-31 13:42:34 info: POST /api/users/create {"ip":"::1"}
+2026-03-31 13:45:15 info: GET /api/users/clerk/user_37se5KXYjZRQJb5KLkDskh55zFh {"ip":"::1"}
+2026-03-31 13:45:15 info: GET /api/users/email/mailme.kapil%40gmail.com {"ip":"::1"}
+2026-03-31 13:45:15 info: GET /api/users/email/mailme.kapil%40gmail.com {"ip":"::1"}
+2026-03-31 13:45:15 info: GET /api/esign/active {"ip":"::1"}
+2026-03-31 13:45:15 info: GET /api/users/clerk/user_37se5KXYjZRQJb5KLkDskh55zFh/kyc {"ip":"::1"}
+2026-03-31 13:45:15 info: GET /api/subscriptions/user/user_37se5KXYjZRQJb5KLkDskh55zFh/active {"ip":"::1"}
+2026-03-31 13:45:15 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-03-31 13:45:15 info: POST /api/users/create {"ip":"::1"}
+2026-03-31 13:45:15 info: GET /api/users/email/mailme.kapil%40gmail.com/kyc {"ip":"::1"}
+2026-03-31 13:46:27 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-03-31 13:46:27 info: GET /api/esign/active {"ip":"::1"}
+2026-03-31 13:46:27 info: GET /api/subscriptions/user/user_38FIedQidROhaT30VNmLVpP5SDH/active {"ip":"::1"}
+2026-03-31 13:46:27 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-03-31 13:46:27 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-03-31 13:46:28 info: GET /api/users/email/aiman.singh30%40gmail.com {"ip":"::1"}
+2026-03-31 13:46:28 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-03-31 13:47:11 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-03-31 13:47:12 info: GET /api/esign/active {"ip":"::1"}
+2026-03-31 13:47:12 info: GET /api/subscriptions/user/user_38FIedQidROhaT30VNmLVpP5SDH/active {"ip":"::1"}
+2026-03-31 13:47:12 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-03-31 13:47:12 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-03-31 13:47:33 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-03-31 13:47:34 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-03-31 13:47:41 info: GET /api/subscriptions/admin/plans {"ip":"::1"}
+2026-03-31 13:47:41 info: GET /api/strategies {"ip":"::1"}
+2026-03-31 13:47:41 info: GET /api/strategies {"ip":"::1"}
+2026-03-31 13:47:41 info: GET /api/subscriptions/admin/plans {"ip":"::1"}
+2026-03-31 13:47:48 info: GET /api/admin/kyc {"ip":"::1"}
+2026-03-31 13:47:48 info: GET /api/admin/kyc {"ip":"::1"}
+2026-03-31 13:52:22 info: GET /api/admin/users {"ip":"::1"}
+2026-03-31 13:52:22 info: GET /api/admin/users {"ip":"::1"}
+2026-03-31 13:55:27 info: GET /api/users/clerk/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb {"ip":"::1"}
+2026-03-31 13:55:28 info: GET /api/users/email/jindal.divya1993%40gmail.com {"ip":"::1"}
+2026-03-31 13:55:28 info: GET /api/users/email/jindal.divya1993%40gmail.com {"ip":"::1"}
+2026-03-31 13:55:28 info: POST /api/users/create {"ip":"::1"}
+2026-03-31 13:55:28 info: GET /api/users/email/jindal.divya1993%40gmail.com {"ip":"::1"}
+2026-03-31 13:55:28 info: POST /api/users/create {"ip":"::1"}
+2026-03-31 13:55:30 info: GET /api/esign/active {"ip":"::1"}
+2026-03-31 13:55:30 info: GET /api/users/clerk/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/kyc {"ip":"::1"}
+2026-03-31 13:55:30 info: GET /api/subscriptions/user/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/active {"ip":"::1"}
+2026-03-31 13:55:30 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-03-31 13:55:30 info: GET /api/users/email/jindal.divya1993%40gmail.com/kyc {"ip":"::1"}
+2026-03-31 13:59:40 info: GET /api/kyc/check-pan/AVHPJ4194N {"ip":"::1"}
+2026-03-31 13:59:45 info: POST /api/kyc/verify {"ip":"::1"}
+2026-03-31 13:59:45 info: KYC request started {"requestId":"KYC_1774945785642_2ryu408zs"}
+2026-03-31 13:59:45 info: Calling KYC API (AWS EC2) {"pan":"AVHP****","attempt":1}
+2026-03-31 13:59:47 info: KYC API response received {"status":200,"pan":"AVHP****"}
+2026-03-31 13:59:47 info: KYC proxy response {"pan":"AVHP****","statusCode":"07","success":true}
+2026-03-31 13:59:47 info: PAN KYC data fetched successfully {"pan":"AVHP****","statusCode":"07"}
+2026-03-31 13:59:47 info: KYC proxy response received {"requestId":"KYC_1774945785642_2ryu408zs","pan":"AVHP****","statusCode":"07","kycStatus":"VERIFIED"}
+2026-03-31 13:59:47 info: KYC data extracted {"requestId":"KYC_1774945785642_2ryu408zs","pan":"AVHP****","kycStatus":"VERIFIED"}
+2026-03-31 13:59:47 info: KYC verification record saved {"requestId":"KYC_1774945785642_2ryu408zs","recordId":"69cb85fb860d4b330654aca0"}
+2026-03-31 13:59:47 info: User KYC status updated {"requestId":"KYC_1774945785642_2ryu408zs","userId":"69cb84f8860d4b330654ac89"}
+2026-03-31 13:59:47 info: KYC request completed successfully {"requestId":"KYC_1774945785642_2ryu408zs","recordId":"69cb85fb860d4b330654aca0","durationMs":1653}
+2026-03-31 14:02:44 info: GET /api/subscriptions/plans {"ip":"::1"}
+2026-03-31 14:02:44 info: GET /api/subscriptions/user/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/active {"ip":"::1"}
+2026-03-31 14:03:15 info: POST /api/payment-requests/submit {"ip":"::1"}
+2026-03-31 14:03:23 info: Email sent: <284a6bbd-7529-01d3-f9f8-2922973c4834@gmail.com>
+2026-03-31 14:03:32 info: GET /api/esign/active {"ip":"::1"}
+2026-03-31 14:03:32 info: GET /api/users/clerk/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/kyc {"ip":"::1"}
+2026-03-31 14:03:32 info: GET /api/subscriptions/user/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/active {"ip":"::1"}
+2026-03-31 14:03:32 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-03-31 14:08:15 info: GET /api/esign/active {"ip":"::1"}
+2026-03-31 14:08:15 info: GET /api/users/clerk/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/kyc {"ip":"::1"}
+2026-03-31 14:08:15 info: GET /api/subscriptions/user/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/active {"ip":"::1"}
+2026-03-31 14:08:15 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-03-31 14:08:21 info: GET /api/esign/active {"ip":"::1"}
+2026-03-31 14:08:21 info: GET /api/users/clerk/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/kyc {"ip":"::1"}
+2026-03-31 14:08:21 info: GET /api/subscriptions/user/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/active {"ip":"::1"}
+2026-03-31 14:08:21 info: GET /api/payment-requests/my-requests {"ip":"::1"}

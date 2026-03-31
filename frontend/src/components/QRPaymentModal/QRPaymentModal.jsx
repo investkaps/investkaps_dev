@@ -3,7 +3,7 @@ import { FaTimes as FaClose } from 'react-icons/fa';
 import { isValidName, isValidTransactionId, isValidFileSize, isValidImageType, sanitizeInput } from '../../utils/validators';
 import './QRPaymentModal.css';
 
-const QRPaymentModal = ({ plan, duration, price, onClose, currentUser }) => {
+const QRPaymentModal = ({ plan, duration, price, onClose, currentUser, onSuccess }) => {
   const [formData, setFormData] = useState({
     senderName: '',
     transactionId: '',
@@ -88,7 +88,12 @@ const QRPaymentModal = ({ plan, duration, price, onClose, currentUser }) => {
 
       setSuccess(true);
       setTimeout(() => {
-        onClose();
+        // Call onSuccess callback if provided, otherwise call onClose
+        if (onSuccess) {
+          onSuccess(data);
+        } else {
+          onClose();
+        }
       }, 3000);
     } catch (err) {
       console.error('Error submitting payment request:', err);
