@@ -159,7 +159,7 @@
 
 .final-note p {
   margin: 15px 0;
-  color: white;
+  color: #ffffff !important;
   font-size: 1.05rem;
   line-height: 1.8;
 }
