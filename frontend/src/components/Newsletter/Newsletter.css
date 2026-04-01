@@ -93,7 +93,7 @@
   font-size: 1rem;
   font-weight: 600;
   background: white;
-  color: #003d82;
+  color: #003d82 !important;
   border: none;
   border-radius: 50px;
   cursor: pointer;

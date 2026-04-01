@@ -127,11 +127,24 @@ function App() {
           button.setAttribute('tabindex', '0');
         }
       });
+
+      const nestedFocusableInDarkBtn = document.querySelectorAll(
+        '#dark-btn input, #dark-btn select, #dark-btn textarea, #dark-btn button, #dark-btn a, #dark-btn [tabindex]'
+      );
+
+      nestedFocusableInDarkBtn.forEach((node) => {
+        if (node.getAttribute('tabindex') !== '-1') {
+          node.setAttribute('tabindex', '-1');
+        }
+        if (node.getAttribute('aria-hidden') !== 'true') {
+          node.setAttribute('aria-hidden', 'true');
+        }
+      });
     };
 
     normalizeWidgetTabIndex();
     const observer = new MutationObserver(normalizeWidgetTabIndex);
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+    observer.observe(document.body, { childList: true, subtree: true });
 
     return () => observer.disconnect();
   }, []);
