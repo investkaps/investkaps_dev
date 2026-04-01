@@ -59,7 +59,7 @@
 
 .about-main-subtitle {
   font-size: 1.25rem;
-  color: #64748b;
+  color: #334155;
   text-align: center;
   margin-bottom: 3rem;
 }
@@ -112,7 +112,7 @@
 
 .founder-title {
   font-size: 1.3rem;
-  color: #667eea;
+  color: #1e3a8a;
   margin: 0;
   font-weight: 600;
 }
@@ -126,7 +126,7 @@
 .founder-description p {
   font-size: 1.1rem;
   line-height: 1.8;
-  color: #4a5568;
+  color: #334155;
   margin: 0;
   text-align: justify;
 }

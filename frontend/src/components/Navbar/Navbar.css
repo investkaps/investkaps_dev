@@ -372,20 +372,20 @@ body.is-register .navbar.scrolled .logo-text {
 }
 
 .btn-primary {
-  background: linear-gradient(45deg, #3498db, #2c3e50);
+  background: linear-gradient(45deg, #1d4ed8, #1e3a8a);
   color: white;
   border: none;
 }
 
 .btn-primary:hover {
   transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+  box-shadow: 0 5px 15px rgba(30, 64, 175, 0.35);
 }
 
 .btn-secondary {
-  background: transparent;
-  color: #333;
-  border: 1px solid #ddd;
+  background: #f8fafc;
+  color: #0f172a;
+  border: 1px solid #94a3b8;
 }
 
 .btn-secondary:hover {
@@ -484,6 +484,12 @@ body.is-register .navbar.scrolled .menu-icon span {
   display: none !important;
 }
 
+/* Mobile auth item wrapper - reset nav-item margins */
+.mobile-auth-item {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 /* Responsive styles */
 @media screen and (max-width: 960px) {
   /* Show mobile auth buttons on mobile */
@@ -548,6 +554,12 @@ body.is-register .navbar.scrolled .menu-icon span {
   }
 
   /* Close button - only visible on mobile */
+  .menu-close-item {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
   .menu-close-btn {
     position: absolute;
     top: 20px;

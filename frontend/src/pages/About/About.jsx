@@ -19,7 +19,7 @@ const About = () => {
             </div>
             
             <div className="founder-bio">
-              <h3 className="founder-name">Kapil Aggarwal</h3>
+              <h2 className="founder-name">Kapil Aggarwal</h2>
               <p className="founder-title">SEBI Registered Research Analyst & Founder</p>
               
               <div className="founder-description">

@@ -115,6 +115,27 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [scrolled]);
 
+  useEffect(() => {
+    const normalizeWidgetTabIndex = () => {
+      const widgetButtons = document.querySelectorAll(
+        'button.uwaw-close, button.uwaw-features__item__i, button#reset-all.btn-reset-all, button#uw-widget-custom-trigger'
+      );
+
+      widgetButtons.forEach((button) => {
+        const tabindex = Number(button.getAttribute('tabindex'));
+        if (!Number.isNaN(tabindex) && tabindex > 0) {
+          button.setAttribute('tabindex', '0');
+        }
+      });
+    };
+
+    normalizeWidgetTabIndex();
+    const observer = new MutationObserver(normalizeWidgetTabIndex);
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+
+    return () => observer.disconnect();
+  }, []);
+
   if (!clerkPubKey) {
     return <div>Missing Clerk Publishable Key</div>;
   }

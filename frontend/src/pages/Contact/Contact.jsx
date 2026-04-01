@@ -31,7 +31,7 @@ const Contact = () => {
                 <i className="fab fa-whatsapp"></i>
               </div>
               <h3 className="contact-info-title">Message on WhatsApp</h3>
-              <a href="https://wa.me/918076283540" target="_blank" rel="noopener noreferrer" className="whatsapp-link">
+              <a href="https://wa.me/918076283540" target="_blank" rel="noopener noreferrer" className="whatsapp-link" aria-label="Chat on WhatsApp at +91-8076283540">
                 +91-8076283540
               </a>
             </div>
@@ -53,7 +53,7 @@ const Contact = () => {
               </div>
               <h3 className="contact-info-title">Call Us</h3>
               <p className="contact-info-text">
-                <a href="tel:+918076283540">+91-8076283540</a>
+                <a href="tel:+918076283540" aria-label="Call +91-8076283540">+91-8076283540</a>
               </p>
             </div>
             

@@ -17,7 +17,7 @@
 
 .contact-main-subtitle {
   font-size: 1.25rem;
-  color: #64748b;
+  color: #334155;
   margin-bottom: 2rem;
 }
 
@@ -131,7 +131,8 @@
 .registration-info p {
   font-size: 1rem;
   margin: 0;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.96);
+  color: #0f172a;
   padding: 0.75rem 1.5rem;
   border-radius: 25px;
 }
@@ -139,7 +140,7 @@
 .contact-tagline {
   font-size: 1rem;
   margin-top: 1.5rem;
-  opacity: 0.95;
+  color: #f8fafc;
 }
 
 .contact-info-grid {
@@ -198,24 +199,24 @@
 }
 
 .contact-info-text {
-  color: #555;
+  color: #334155;
   line-height: 1.6;
 }
 
 .contact-info-text a {
-  color: #667eea;
+  color: #1e3a8a;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.3s ease;
 }
 
 .contact-info-text a:hover {
-  color: #764ba2;
+  color: #1e40af;
 }
 
 .whatsapp-link {
   display: inline-block;
-  color: #25D366;
+  color: #0f8a42;
   text-decoration: none;
   font-weight: 600;
   font-size: 1.125rem;
@@ -465,7 +466,7 @@
 }
 
 .time {
-  color: #3498db;
+  color: #1e40af;
   font-weight: 600;
 }
 
@@ -474,7 +475,7 @@
 }
 
 .appointment-info p {
-  color: #555;
+  color: #334155;
   margin-bottom: 1.5rem;
 }
 
