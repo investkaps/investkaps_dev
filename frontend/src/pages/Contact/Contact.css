@@ -122,19 +122,26 @@
 
 .registration-info {
   display: flex;
-  justify-content: center;
-  gap: 3rem;
+  flex-direction: column;
+  align-items: center;
   margin: 1.5rem 0;
-  flex-wrap: wrap;
 }
 
 .registration-info p {
   font-size: 1rem;
-  margin: 0;
+  margin: 0.5rem 0;
   background: rgba(255, 255, 255, 0.96);
   color: #0f172a;
   padding: 0.75rem 1.5rem;
   border-radius: 25px;
+}
+
+.registration-label {
+  font-weight: 800;
+  font-size: 1.1rem;
+  background: none !important;
+  padding: 1rem 0 0.5rem 0 !important;
+  text-align: center;
 }
 
 .contact-tagline {

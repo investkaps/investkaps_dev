@@ -14,7 +14,7 @@ const Home = () => {
         name: "Hitesh Raghav",
         handle: "Senior Banker"
       },
-      text: "I have been a regular subscriber of investkaps and it has been most satisfying and prudent financial decision to have been made by me. Consistent good returns even during bad market phase, high level of accuracy (almost 70-75% of the recommendations have come good) and no unnecessary deluge of messages. Highly recommended."
+      text: "I have been a regular subscriber of Investkaps and it has been the most prudent and satisfactory decision for me so far. Consistent delivery of good returns even during the bad market phase is the highlight of the team Investkaps which reflects their research capability and understanding of the market. The accuracy of as high as 70 - 75% of the recommendations coming good without unnecessary deluge of messages, has built required confidence in this financial relation. Highly recommended."
     },
     {
       author: {

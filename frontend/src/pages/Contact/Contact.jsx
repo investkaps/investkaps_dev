@@ -17,8 +17,10 @@ const Contact = () => {
               <strong>Primary Contact/Grievances/Principal Officer/Nodal Officer:</strong> Kapil Aggarwal
             </p>
             <div className="registration-info">
-              <p><strong>SEBI Registration:</strong> INH000016834</p>
-              <p><strong>BSE Enlistment:</strong> 6226</p>
+              <p className="registration-label">RESEARCH ANALYST</p>
+              <p><strong>SEBI Registration:</strong> INH000016834 &nbsp; &nbsp; <strong>BSE Enlistment:</strong> 6226</p>
+              <p className="registration-label">INVESTMENT ADVISER</p>
+              <p><strong>SEBI Registration:</strong> INA000022190 &nbsp; &nbsp; <strong>BSE Enlistment:</strong> </p>
             </div>
             <p className="contact-tagline">
               Reach out at below details with any queries about the services, feedback or any complaints.
@@ -61,9 +63,19 @@ const Contact = () => {
               <div className="contact-info-icon">
                 <i className="contact-icon-email"></i>
               </div>
-              <h3 className="contact-info-title">Email Us</h3>
+              <h3 className="contact-info-title">For RA Services</h3>
               <p className="contact-info-text">
                 <a href="mailto:investkaps@gmail.com">investkaps@gmail.com</a>
+              </p>
+            </div>
+            
+            <div className="contact-info-card">
+              <div className="contact-info-icon">
+                <i className="contact-icon-email"></i>
+              </div>
+              <h3 className="contact-info-title">For IA Services</h3>
+              <p className="contact-info-text">
+                <a href="mailto:investkaps_ia@zohomail.in">investkaps_ia@zohomail.in</a>
               </p>
             </div>
           </div>

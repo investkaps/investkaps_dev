@@ -46,7 +46,7 @@ const Hero = () => {
         </motion.h1>
 
         <motion.p className="hero-description" variants={itemVariants}>
-          We are a SEBI-registered Research Analyst firm (Reg. No.: INH000016834) with extensive experience of navigating the Indian stock markets and focus on systematic, research-driven approach for trading and investment.
+          We are a SEBI-registered Research Analyst firm (Reg. No.: INH000016834) and Investment Adviser (Reg. No.: INA000022190) with extensive experience of navigating the Indian stock markets and focus on systematic, research-driven approach for trading and investment and overall financial planning.
         </motion.p>
 
         <motion.div className="hero-actions" variants={itemVariants}>
