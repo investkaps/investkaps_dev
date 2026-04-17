@@ -12,7 +12,7 @@ const Home = () => {
     {
       author: {
         name: "Hitesh Raghav",
-        handle: "ICICI Bank"
+        handle: "Senior Banker"
       },
       text: "I have been a regular subscriber of investkaps and it has been most satisfying and prudent financial decision to have been made by me. Consistent good returns even during bad market phase, high level of accuracy (almost 70-75% of the recommendations have come good) and no unnecessary deluge of messages. Highly recommended."
     },
@@ -26,7 +26,7 @@ const Home = () => {
     {
       author: {
         name: "Upasna Kapur",
-        handle: "Snapdeal"
+        handle: "Retail  Industry Professional"
       },
       text: "I do not have much idea of intricacies of financial world and stock markets. Availing services of investkaps has been of immense value addition to returns generated from my investments."
     },
