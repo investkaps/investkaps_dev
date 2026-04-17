@@ -1,6 +1,6 @@
 .newsletter-section {
   padding: 80px 20px;
-  background: url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=2070') center/cover no-repeat;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   position: relative;
   overflow: hidden;
 }

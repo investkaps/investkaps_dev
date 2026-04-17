@@ -20,8 +20,8 @@ const MomentumRider = () => {
             <h2 className="section-title">A. Subscription tenor & pricing</h2>
             <p className="section-text">Options available:</p>
             <ul className="plan-list">
-              <li>3 months - Rs. 2,999/-</li>
-              <li>6 months - Rs. 5,199/-</li>
+              <li>3 months - Rs. 4,999/-</li>
+              <li>6 months - Rs. 8,999/-</li>
             </ul>
           </div>
 

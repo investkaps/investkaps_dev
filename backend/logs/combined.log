@@ -390,3 +390,16 @@
 2026-03-31 14:08:21 info: GET /api/users/clerk/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/kyc {"ip":"::1"}
 2026-03-31 14:08:21 info: GET /api/subscriptions/user/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/active {"ip":"::1"}
 2026-03-31 14:08:21 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-03-31 14:11:56 info: GET /api/users/clerk/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb {"ip":"::1"}
+2026-03-31 14:11:56 info: GET /api/esign/active {"ip":"::1"}
+2026-03-31 14:11:56 info: GET /api/users/clerk/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/kyc {"ip":"::1"}
+2026-03-31 14:11:56 info: GET /api/subscriptions/user/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/active {"ip":"::1"}
+2026-03-31 14:11:56 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-03-31 14:12:02 info: GET /api/subscriptions/plans {"ip":"::1"}
+2026-03-31 14:12:02 info: GET /api/subscriptions/user/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/active {"ip":"::1"}
+2026-03-31 14:12:25 info: POST /api/payment-requests/submit {"ip":"::1"}
+2026-03-31 14:12:32 info: GET /api/esign/active {"ip":"::1"}
+2026-03-31 14:12:32 info: GET /api/users/clerk/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/kyc {"ip":"::1"}
+2026-03-31 14:12:32 info: GET /api/subscriptions/user/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/active {"ip":"::1"}
+2026-03-31 14:12:32 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-03-31 14:12:33 info: Email sent: <d7409abb-40a2-2ce1-cc28-77bd3b4af4f3@gmail.com>

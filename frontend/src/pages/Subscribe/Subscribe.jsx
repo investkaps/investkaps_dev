@@ -23,8 +23,8 @@ const Subscribe = () => {
               </div>
               <h3 className="plan-name">Momentum Rider Plan</h3>
               <div className="plan-price">
-                <span className="price">Rs. 5,199/-</span>
-                <span className="price-note">*pricing for half-yearly plan</span>
+                <span className="price">Rs. 4,999/-</span>
+                <span className="price-note">*pricing for quarterly plan</span>
               </div>
               <Link to="/plans/momentum-rider" className="plan-button">
                 click to know more and subscribe
@@ -38,8 +38,8 @@ const Subscribe = () => {
               </div>
               <h3 className="plan-name">Strategic Alpha Plan</h3>
               <div className="plan-price">
-                <span className="price">Rs. 9,999/-</span>
-                <span className="price-note">*pricing for half-yearly plan</span>
+                <span className="price">Rs. 5,499/-</span>
+                <span className="price-note">*pricing for quarterly plan</span>
               </div>
               <Link to="/plans/strategic-alpha" className="plan-button">
                 click to know more and subscribe

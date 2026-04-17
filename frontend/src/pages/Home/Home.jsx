@@ -9,6 +9,34 @@ import { TestimonialsMarquee } from '../../components/TestimonialsMarquee/Testim
 
 const Home = () => {
   const testimonials = [
+    {
+      author: {
+        name: "Hitesh Raghav",
+        handle: "ICICI Bank"
+      },
+      text: "I have been a regular subscriber of investkaps and it has been most satisfying and prudent financial decision to have been made by me. Consistent good returns even during bad market phase, high level of accuracy (almost 70-75% of the recommendations have come good) and no unnecessary deluge of messages. Highly recommended."
+    },
+    {
+      author: {
+        name: "",
+        handle: ""
+      },
+      text: ""
+    },
+    {
+      author: {
+        name: "Upasna Kapur",
+        handle: "Snapdeal"
+      },
+      text: "I do not have much idea of intricacies of financial world and stock markets. Availing services of investkaps has been of immense value addition to returns generated from my investments."
+    },
+    {
+      author: {
+        name: "",
+        handle: ""
+      },
+      text: ""
+    }
     // {
     //   author: {
     //     name: "Rajesh Kumar",
@@ -271,7 +299,7 @@ const Home = () => {
 
       <TestimonialsMarquee 
         title="Testimonials"
-        description="What our client say about us"
+        description="What our clients say about us"
         testimonials={testimonials}
       />
 

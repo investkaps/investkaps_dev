@@ -36,7 +36,7 @@ const StrategicAlpha = () => {
             <h2 className="section-title">C. Subscription tenor</h2>
             <p className="section-text">Monthly/ Quarterly/ Half-yearly subscription plans available.</p>
             <ul className="plan-list">
-              <li>1 month - Rs. 1,999/-</li>
+              <li>1 month - Rs. 2,499/-</li>
               <li>3 months - Rs. 5,499/-</li>
               <li>6 months - Rs. 9,999/-</li>
             </ul>
