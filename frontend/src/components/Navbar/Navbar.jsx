@@ -59,7 +59,7 @@ const Navbar = ({ scrolled }) => {
       <div className="navbar-container">
         <div className="navbar-logo">
           <Link to="/">
-            <img src="/logo.png" alt="investkaps" className="logo-image" />
+            <img src="/logo.png" alt="" aria-hidden="true" className="logo-image" width="88" height="88" />
             <span className="logo-text">investkaps</span>
           </Link>
         </div>
@@ -75,9 +75,11 @@ const Navbar = ({ scrolled }) => {
 
         <ul className={`nav-menu ${menuOpen ? 'active' : ''}`}>
           {/* Close button */}
-          <button className="menu-close-btn" onClick={() => setMenuOpen(false)}>
-            <span>✕</span>
-          </button>
+          <li className="menu-close-item">
+            <button className="menu-close-btn" onClick={() => setMenuOpen(false)} aria-label="Close navigation menu">
+              <span>✕</span>
+            </button>
+          </li>
           
           <li className="nav-item">
             <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`} onClick={() => setMenuOpen(false)}>Home</Link>
@@ -98,43 +100,45 @@ const Navbar = ({ scrolled }) => {
           <li className="nav-item">
             <Link to="/contact" className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`} onClick={() => setMenuOpen(false)}>Contact</Link>
           </li>
-          {/* Mobile auth buttons */}
-          <div className="mobile-auth-buttons">
-            {isAuthenticated ? (
-              <>
-                <Link to="/profile" className="mobile-profile-btn" onClick={() => setMenuOpen(false)}>Profile</Link>
-                <button 
-                  className="mobile-logout-btn"
-                  onClick={() => {
-                    logout();
-                    setMenuOpen(false);
-                    navigate('/');
-                  }}
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <a
-                  href="https://trade.investkaps.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mobile-login-btn"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Login
-                </a>
-                <a
-                  href="https://trade.investkaps.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mobile-register-btn"
-                  onClick={() => setMenuOpen(false)}
-                >Get Started</a>
-              </>
-            )}
-          </div>
+          <li className="nav-item mobile-auth-item">
+            {/* Mobile auth buttons - Wrapped in <li> for semantic HTML accessibility */}
+            <div className="mobile-auth-buttons">
+              {isAuthenticated ? (
+                <>
+                  <Link to="/profile" className="mobile-profile-btn" onClick={() => setMenuOpen(false)}>Profile</Link>
+                  <button 
+                    className="mobile-logout-btn"
+                    onClick={() => {
+                      logout();
+                      setMenuOpen(false);
+                      navigate('/');
+                    }}
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <a
+                    href="https://trade.investkaps.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mobile-login-btn"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Login
+                  </a>
+                  <a
+                    href="https://trade.investkaps.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mobile-register-btn"
+                    onClick={() => setMenuOpen(false)}
+                  >Get Started</a>
+                </>
+              )}
+            </div>
+          </li>
         </ul>
 
         <div className="nav-cta">

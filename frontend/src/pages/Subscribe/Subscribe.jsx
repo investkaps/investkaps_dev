@@ -27,7 +27,7 @@ const Subscribe = () => {
                 <span className="price-note">*pricing for quarterly plan</span>
               </div>
               <Link to="/plans/momentum-rider" className="plan-button">
-                click to know more and subscribe
+                Know more about Momentum Rider and subscribe
               </Link>
             </div>
 
@@ -42,7 +42,7 @@ const Subscribe = () => {
                 <span className="price-note">*pricing for quarterly plan</span>
               </div>
               <Link to="/plans/strategic-alpha" className="plan-button">
-                click to know more and subscribe
+                Know more about Strategic Alpha and subscribe
               </Link>
             </div>
 
@@ -74,7 +74,7 @@ const Subscribe = () => {
                 <span className="price-note">*pricing for monthly plan</span>
               </div>
               <Link to="/plans/levered-risk-fno" className="plan-button">
-                click to know more and subscribe
+                Know more about Levered Risk FnO and subscribe
               </Link>
             </div>
           </div>
@@ -95,7 +95,7 @@ const Subscribe = () => {
                 <span className="price-note">*pricing for half-yearly plan</span>
               </div>
               <Link to="/plans/ik15-momentum" className="plan-button">
-                click to know more and subscribe
+                Know more about IK15 Momentum Buys and subscribe
               </Link>
             </div>
 

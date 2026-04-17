@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /esign
+Disallow: /profile
+Disallow: /setup
+
+# Allow Googlebot and other search engines to crawl most pages
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+Sitemap: https://investkaps.com/sitemap.xml
+
+# Crawl delay (optional, in seconds)
+Crawl-delay: 1

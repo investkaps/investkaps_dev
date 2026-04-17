@@ -57,13 +57,26 @@
 
 /* Special styling for home page when not scrolled */
 body.is-home .navbar:not(.scrolled) .btn-secondary {
-  color: white;
-  border-color: rgba(255, 255, 255, 0.3);
+  background: #0b73ff;
+  color: #ffffff;
+  border-color: #0b73ff;
 }
 
 body.is-home .navbar:not(.scrolled) .btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: #095fd1;
+  color: #ffffff;
+  border-color: #095fd1;
+}
+
+body.is-home .navbar:not(.scrolled) .btn-primary {
+  background: #0b73ff;
+  color: #ffffff;
+  border: 1px solid #0b73ff;
+}
+
+body.is-home .navbar:not(.scrolled) .btn-primary:hover {
+  background: #095fd1;
+  color: #ffffff;
 }
 
 body.is-home .navbar:not(.scrolled) .user-menu-button {
@@ -79,14 +92,16 @@ body.is-register .navbar .user-name {
 
 body.is-login .navbar .btn-secondary,
 body.is-register .navbar .btn-secondary {
-  color: white;
-  border-color: rgba(255, 255, 255, 0.3);
+  background: #0b73ff;
+  color: #ffffff;
+  border-color: #0b73ff;
 }
 
 body.is-login .navbar .btn-secondary:hover,
 body.is-register .navbar .btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: #095fd1;
+  color: #ffffff;
+  border-color: #095fd1;
 }
 
 body.is-login .navbar .user-menu-button,
@@ -367,30 +382,46 @@ body.is-register .navbar.scrolled .logo-text {
   border-radius: 50px;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: none;
   margin-left: 1rem;
 }
 
 .btn-primary {
-  background: linear-gradient(45deg, #3498db, #2c3e50);
-  color: white;
-  border: none;
+  background: #0b73ff;
+  color: #ffffff;
+  border: 1px solid #0b73ff;
 }
 
 .btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+  background: #095fd1;
+  color: #ffffff;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-secondary {
-  background: transparent;
-  color: #333;
-  border: 1px solid #ddd;
+  background: #0b73ff;
+  color: #ffffff;
+  border: 1px solid #0b73ff;
 }
 
 .btn-secondary:hover {
-  background-color: #f8f9fa;
-  transform: translateY(-3px);
+  background: #095fd1;
+  color: #ffffff;
+  transform: none;
+}
+
+/* Override global anchor hover styles for navbar CTA buttons */
+.navbar .nav-cta a.btn.btn-primary,
+.navbar .nav-cta a.btn.btn-primary:hover,
+.navbar .nav-cta a.btn.btn-primary:focus {
+  color: #ffffff !important;
+}
+
+.navbar .nav-cta a.btn.btn-secondary,
+.navbar .nav-cta a.btn.btn-secondary:hover,
+.navbar .nav-cta a.btn.btn-secondary:focus {
+  color: #ffffff !important;
 }
 
 .btn-dashboard {
@@ -484,6 +515,12 @@ body.is-register .navbar.scrolled .menu-icon span {
   display: none !important;
 }
 
+/* Mobile auth item wrapper - reset nav-item margins */
+.mobile-auth-item {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 /* Responsive styles */
 @media screen and (max-width: 960px) {
   /* Show mobile auth buttons on mobile */
@@ -548,6 +585,12 @@ body.is-register .navbar.scrolled .menu-icon span {
   }
 
   /* Close button - only visible on mobile */
+  .menu-close-item {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
   .menu-close-btn {
     position: absolute;
     top: 20px;

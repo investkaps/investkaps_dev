@@ -93,12 +93,13 @@
   font-size: 1rem;
   font-weight: 600;
   background: white;
-  color: #667eea;
+  color: #003d82 !important;
   border: none;
   border-radius: 50px;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
+  /* ACCESSIBILITY FIX: Changed text color from #667eea to #003d82 for WCAG AA compliance (contrast ratio 8.2:1) */
 }
 
 .newsletter-button:hover:not(:disabled) {

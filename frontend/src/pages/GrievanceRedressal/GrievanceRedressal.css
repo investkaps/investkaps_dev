@@ -178,7 +178,9 @@
 .contact-cta p {
   font-size: 1.1rem;
   margin-bottom: 25px;
-  opacity: 0.95;
+  opacity: 1;
+  color: #ffffff;
+  text-align: center;
 }
 
 .cta-button {

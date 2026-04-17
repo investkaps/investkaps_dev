@@ -121,8 +121,8 @@
 .contact-support p {
   font-size: 1.1rem;
   margin-bottom: 25px;
-  opacity: 0.95;
-  color: white;
+  opacity: 1;
+  color: #ffffff;
 }
 
 .support-button {
