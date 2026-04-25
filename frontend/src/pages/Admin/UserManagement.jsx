@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../../services/api';
+import subscriptionAPI from '../../services/subscriptionAPI';
 import './AdminDashboard.css';
 
 const UserManagement = () => {
@@ -14,12 +15,18 @@ const UserManagement = () => {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  const normalizeApiPayload = (payload) => {
+    if (!payload) return null;
+    return payload.data ?? payload;
+  };
   
   const fetchUsers = async () => {
     try {
       setLoading(true);
       const response = await adminAPI.getAllUsers();
-      setUsers(response.data);
+      const payload = normalizeApiPayload(response);
+      setUsers(Array.isArray(payload) ? payload : []);
       setError(null);
     } catch (err) {
       console.error('Error fetching users:', err);
@@ -33,7 +40,22 @@ const UserManagement = () => {
     try {
       setLoading(true);
       const response = await adminAPI.getUserById(userId);
-      setSelectedUser(response.data);
+      const payload = normalizeApiPayload(response);
+      const userDetails = payload || {};
+
+      // Fallback fetch for subscription history when admin payload lacks relations
+      if ((!userDetails.userSubscriptions || userDetails.userSubscriptions.length === 0) && userDetails.clerkId) {
+        try {
+          const subsResponse = await subscriptionAPI.getUserSubscriptions(userDetails.clerkId);
+          const subsPayload = normalizeApiPayload(subsResponse);
+          userDetails.userSubscriptions = Array.isArray(subsPayload) ? subsPayload : [];
+        } catch (subErr) {
+          console.error('Fallback subscription fetch failed:', subErr);
+          userDetails.userSubscriptions = userDetails.userSubscriptions || [];
+        }
+      }
+
+      setSelectedUser(userDetails);
       setError(null);
     } catch (err) {
       console.error('Error fetching user details:', err);
@@ -471,7 +493,7 @@ const UserManagement = () => {
               
               <div className="admin-details-section">
                 <h4>Subscription Information</h4>
-                {selectedUser.userSubscriptions && selectedUser.userSubscriptions.length > 0 ? (
+                {(selectedUser.userSubscriptions || selectedUser.subscriptions) && (selectedUser.userSubscriptions || selectedUser.subscriptions).length > 0 ? (
                   <div className="admin-table-container">
                     <table className="admin-table">
                       <thead>
@@ -485,7 +507,7 @@ const UserManagement = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedUser.userSubscriptions.map((subscription) => (
+                        {(selectedUser.userSubscriptions || selectedUser.subscriptions).map((subscription) => (
                           <tr key={subscription._id}>
                             <td>
                               <strong>{subscription.subscription?.name || 'N/A'}</strong>
@@ -497,7 +519,7 @@ const UserManagement = () => {
                             </td>
                             <td>
                               <span style={{ textTransform: 'capitalize' }}>
-                                {subscription.duration === 'sixMonth' ? '6 Months' : subscription.duration}
+                                {subscription.duration === 'sixMonth' ? '6 Months' : (subscription.duration || 'N/A')}
                               </span>
                             </td>
                             <td>
@@ -507,14 +529,14 @@ const UserManagement = () => {
                             </td>
                             <td>{new Date(subscription.startDate).toLocaleDateString()}</td>
                             <td>{new Date(subscription.endDate).toLocaleDateString()}</td>
-                            <td>₹{subscription.price.toLocaleString()}</td>
+                            <td>₹{(subscription.price ?? subscription.amount ?? 0).toLocaleString()}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                     
                     {/* Show active subscription details */}
-                    {selectedUser.userSubscriptions.some(sub => sub.status === 'active') && (
+                    {(selectedUser.userSubscriptions || selectedUser.subscriptions).some(sub => sub.status === 'active') && (
                       <div style={{ 
                         marginTop: '1rem', 
                         padding: '1rem', 
@@ -523,7 +545,7 @@ const UserManagement = () => {
                         border: '1px solid #badbcc'
                       }}>
                         <strong style={{ color: '#0f5132' }}>Active Subscription:</strong>
-                        {selectedUser.userSubscriptions
+                        {(selectedUser.userSubscriptions || selectedUser.subscriptions)
                           .filter(sub => sub.status === 'active')
                           .map(sub => (
                             <div key={sub._id} style={{ marginTop: '0.5rem', color: '#0f5132' }}>

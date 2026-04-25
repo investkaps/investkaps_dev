@@ -98,7 +98,7 @@ const Navbar = ({ scrolled }) => {
             </>
           )}
           <li className="nav-item">
-            <Link to="/contact" className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`} onClick={() => setMenuOpen(false)}>Contact</Link>
+            <Link to="/legal#contact-us" className={`nav-link ${location.pathname === '/legal' && location.hash === '#contact-us' ? 'active' : ''}`} onClick={() => setMenuOpen(false)}>Contact</Link>
           </li>
           <li className="nav-item mobile-auth-item">
             {/* Mobile auth buttons - Wrapped in <li> for semantic HTML accessibility */}

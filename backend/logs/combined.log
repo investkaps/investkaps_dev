@@ -390,3 +390,154 @@
 2026-03-31 14:08:21 info: GET /api/users/clerk/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/kyc {"ip":"::1"}
 2026-03-31 14:08:21 info: GET /api/subscriptions/user/user_3Bhe36P8TsDdDyabxrwVvdYz1Qb/active {"ip":"::1"}
 2026-03-31 14:08:21 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-04-01 21:33:39 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-04-01 21:33:40 info: GET /api/users/email/aiman.singh30%40gmail.com {"ip":"::1"}
+2026-04-01 21:33:40 info: GET /api/subscriptions/user/user_38FIedQidROhaT30VNmLVpP5SDH/active {"ip":"::1"}
+2026-04-01 21:33:40 info: GET /api/esign/active {"ip":"::1"}
+2026-04-01 21:33:40 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH/kyc {"ip":"::1"}
+2026-04-01 21:33:40 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-04-01 21:33:40 info: GET /api/users/email/aiman.singh30%40gmail.com/kyc {"ip":"::1"}
+2026-04-01 21:33:40 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-04-01 21:34:48 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-04-01 21:34:49 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-04-01 21:34:52 info: GET /api/admin/users {"ip":"::1"}
+2026-04-01 21:34:53 info: GET /api/admin/users {"ip":"::1"}
+2026-04-01 21:35:01 info: GET /api/admin/users/69b217f4bcbc22bb852fa309 {"ip":"::1"}
+2026-04-01 21:43:05 info: GET /api/admin/kyc {"ip":"::1"}
+2026-04-01 21:43:06 info: GET /api/admin/kyc {"ip":"::1"}
+2026-04-01 21:43:08 info: GET /api/subscriptions/admin/plans {"ip":"::1"}
+2026-04-01 21:43:08 info: GET /api/strategies {"ip":"::1"}
+2026-04-01 21:43:08 info: GET /api/strategies {"ip":"::1"}
+2026-04-01 21:43:08 info: GET /api/subscriptions/admin/plans {"ip":"::1"}
+2026-04-01 21:43:20 info: GET /api/admin/users {"ip":"::1"}
+2026-04-01 21:43:20 info: GET /api/admin/users {"ip":"::1"}
+2026-04-01 21:45:14 info: GET /api/admin/users/69b217f4bcbc22bb852fa309 {"ip":"::1"}
+2026-04-01 21:56:41 info: GET /api/admin/users {"ip":"::1"}
+2026-04-01 21:57:25 info: GET /api/admin/users {"ip":"::1"}
+2026-04-01 21:57:35 info: GET /api/admin/users/69b217f4bcbc22bb852fa309 {"ip":"::1"}
+2026-04-01 21:57:36 info: GET /api/subscriptions/user/user_39U4B9ABcBBPayzv2mDPpnReTJ1 {"ip":"::1"}
+2026-04-01 21:57:43 info: GET /api/admin/users/69abb63c8edc25122953014d {"ip":"::1"}
+2026-04-01 22:01:17 info: GET /api/admin/users {"ip":"::1"}
+2026-04-01 22:13:47 info: GET /api/admin/users/69c0052005dae01c4a7385e7 {"ip":"::1"}
+2026-04-01 22:13:50 info: GET /api/admin/users/69c0052005dae01c4a7385e7 {"ip":"::1"}
+2026-04-01 22:15:10 info: GET /api/admin/kyc {"ip":"::1"}
+2026-04-01 22:15:10 info: GET /api/admin/kyc {"ip":"::1"}
+2026-04-01 22:15:13 info: GET /api/admin/users {"ip":"::1"}
+2026-04-01 22:15:14 info: GET /api/admin/users {"ip":"::1"}
+2026-04-01 22:15:14 info: GET /api/subscriptions/admin/plans {"ip":"::1"}
+2026-04-01 22:15:14 info: GET /api/strategies {"ip":"::1"}
+2026-04-01 22:15:14 info: GET /api/strategies {"ip":"::1"}
+2026-04-01 22:15:14 info: GET /api/subscriptions/admin/plans {"ip":"::1"}
+2026-04-01 22:15:16 info: GET /api/strategies {"ip":"::1"}
+2026-04-01 22:15:16 info: GET /api/recommendations {"ip":"::1"}
+2026-04-01 22:15:16 info: GET /api/strategies {"ip":"::1"}
+2026-04-01 22:15:16 info: GET /api/recommendations {"ip":"::1"}
+2026-04-01 22:15:16 info: POST /api/ltp/batch {"ip":"::1"}
+2026-04-01 22:15:16 info: Fetching batch LTP for 1 symbols from NSE
+2026-04-01 22:15:27 error: Error fetching batch LTP: timeout of 10000ms exceeded
+2026-04-01 22:15:27 error: Error in getBatchPrices: Failed to fetch batch prices: timeout of 10000ms exceeded
+2026-04-01 22:15:27 info: GET /api/recommendations {"ip":"::1"}
+2026-04-01 22:15:32 info: GET /api/symbols/search?query=G&limit=50 {"ip":"::1"}
+2026-04-01 22:15:32 info: Loaded 21576 symbols from symbols.json
+2026-04-01 22:15:33 info: GET /api/symbols/search?query=GPIL&limit=50 {"ip":"::1"}
+2026-04-01 22:15:35 info: GET /api/ltp/single?exchange=BSE&symbol=GPIL {"ip":"::1"}
+2026-04-01 22:15:35 info: Fetching LTP for BSE:GPIL
+2026-04-01 22:15:45 error: Error fetching single LTP for BSE:GPIL: timeout of 10000ms exceeded
+2026-04-01 22:15:45 error: Error in getSinglePrice: Failed to fetch price for GPIL: timeout of 10000ms exceeded
+2026-04-01 22:18:25 info: GET /api/recommendations {"ip":"::1"}
+2026-04-01 22:18:30 info: GET /api/symbols/search?query=G&limit=50 {"ip":"::1"}
+2026-04-01 22:18:31 info: GET /api/symbols/search?query=GO&limit=50 {"ip":"::1"}
+2026-04-01 22:18:31 info: GET /api/symbols/search?query=G&limit=50 {"ip":"::1"}
+2026-04-01 22:18:33 info: GET /api/symbols/search?query=GPI&limit=50 {"ip":"::1"}
+2026-04-01 22:18:34 info: GET /api/ltp/single?exchange=BSE&symbol=GPIL {"ip":"::1"}
+2026-04-01 22:18:35 info: Fetching LTP for BSE:GPIL
+2026-04-01 22:18:36 error: Error fetching single LTP for BSE:GPIL: Request failed with status code 404
+2026-04-01 22:18:36 error: Error in getSinglePrice: Failed to fetch price for GPIL: Request failed with status code 404
+2026-04-01 22:18:45 info: GET /api/symbols/search?query=TCS&limit=50 {"ip":"::1"}
+2026-04-01 22:18:47 info: GET /api/ltp/single?exchange=BSE&symbol=TCS {"ip":"::1"}
+2026-04-01 22:18:47 info: Fetching LTP for BSE:TCS
+2026-04-01 22:18:48 error: Error fetching single LTP for BSE:TCS: Request failed with status code 404
+2026-04-01 22:18:48 error: Error in getSinglePrice: Failed to fetch price for TCS: Request failed with status code 404
+2026-04-01 22:20:17 info: POST /api/ltp/batch {"ip":"::1"}
+2026-04-01 22:20:17 info: Fetching batch LTP for 1 symbols from NSE
+2026-04-01 22:20:19 error: Error fetching batch LTP: Request failed with status code 502
+2026-04-01 22:20:19 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-04-01 22:20:19 info: GET /api/recommendations {"ip":"::1"}
+2026-04-01 22:20:54 info: GET /api/symbols/search?query=TCS&limit=50 {"ip":"::1"}
+2026-04-01 22:20:54 info: Loaded 21576 symbols from symbols.json
+2026-04-01 22:20:57 info: GET /api/ltp/single?exchange=NSE&symbol=TCS {"ip":"::1"}
+2026-04-01 22:20:57 info: Fetching LTP for NSE:TCS
+2026-04-01 22:20:58 error: Error fetching single LTP for NSE:TCS: Request failed with status code 404
+2026-04-01 22:20:58 error: Error in getSinglePrice: Failed to fetch price for TCS: Request failed with status code 404
+2026-04-01 22:21:03 info: GET /api/ltp/single?exchange=NSE&symbol=TCS {"ip":"::1"}
+2026-04-01 22:21:03 info: Fetching LTP for NSE:TCS
+2026-04-01 22:21:04 error: Error fetching single LTP for NSE:TCS: Request failed with status code 404
+2026-04-01 22:21:04 error: Error in getSinglePrice: Failed to fetch price for TCS: Request failed with status code 404
+2026-04-01 22:25:17 info: POST /api/ltp/batch {"ip":"::1"}
+2026-04-01 22:25:17 info: Fetching batch LTP for 1 symbols from NSE
+2026-04-01 22:25:19 error: Error fetching batch LTP: Request failed with status code 502
+2026-04-01 22:25:19 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-04-01 22:25:19 info: GET /api/recommendations {"ip":"::1"}
+2026-04-01 22:30:17 info: POST /api/ltp/batch {"ip":"::1"}
+2026-04-01 22:30:17 info: Fetching batch LTP for 1 symbols from NSE
+2026-04-01 22:30:19 error: Error fetching batch LTP: Request failed with status code 502
+2026-04-01 22:30:19 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-04-01 22:30:19 info: GET /api/recommendations {"ip":"::1"}
+2026-04-01 22:35:17 info: POST /api/ltp/batch {"ip":"::1"}
+2026-04-01 22:35:17 info: Fetching batch LTP for 1 symbols from NSE
+2026-04-01 22:35:19 error: Error fetching batch LTP: Request failed with status code 502
+2026-04-01 22:35:19 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-04-01 22:35:19 info: GET /api/recommendations {"ip":"::1"}
+2026-04-01 22:40:17 info: POST /api/ltp/batch {"ip":"::1"}
+2026-04-01 22:40:18 info: Fetching batch LTP for 1 symbols from NSE
+2026-04-01 22:40:20 error: Error fetching batch LTP: Request failed with status code 502
+2026-04-01 22:40:20 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-04-01 22:40:20 info: GET /api/recommendations {"ip":"::1"}
+2026-04-01 22:45:17 info: POST /api/ltp/batch {"ip":"::1"}
+2026-04-01 22:45:17 info: Fetching batch LTP for 1 symbols from NSE
+2026-04-01 22:45:19 error: Error fetching batch LTP: Request failed with status code 502
+2026-04-01 22:45:19 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-04-01 22:45:19 info: GET /api/recommendations {"ip":"::1"}
+2026-04-01 22:50:38 info: POST /api/ltp/batch {"ip":"::1"}
+2026-04-01 22:50:39 info: Fetching batch LTP for 1 symbols from NSE
+2026-04-01 22:50:41 error: Error fetching batch LTP: Request failed with status code 502
+2026-04-01 22:50:41 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-04-01 22:50:41 info: GET /api/recommendations {"ip":"::1"}
+2026-04-01 22:55:38 info: POST /api/ltp/batch {"ip":"::1"}
+2026-04-01 22:55:38 info: Fetching batch LTP for 1 symbols from NSE
+2026-04-01 22:55:39 error: Error fetching batch LTP: Request failed with status code 502
+2026-04-01 22:55:39 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-04-01 22:55:40 info: GET /api/recommendations {"ip":"::1"}
+2026-04-01 23:00:38 info: POST /api/ltp/batch {"ip":"::1"}
+2026-04-01 23:00:38 info: Fetching batch LTP for 1 symbols from NSE
+2026-04-01 23:00:40 error: Error fetching batch LTP: Request failed with status code 502
+2026-04-01 23:00:40 error: Error in getBatchPrices: Failed to fetch batch prices: Request failed with status code 502
+2026-04-01 23:00:40 info: GET /api/recommendations {"ip":"::1"}
+2026-04-21 15:53:23 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-04-21 15:53:23 info: GET /api/users/email/aiman.singh30%40gmail.com {"ip":"::1"}
+2026-04-21 15:53:24 info: GET /api/esign/active {"ip":"::1"}
+2026-04-21 15:53:24 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH/kyc {"ip":"::1"}
+2026-04-21 15:53:24 info: GET /api/subscriptions/user/user_38FIedQidROhaT30VNmLVpP5SDH/active {"ip":"::1"}
+2026-04-21 15:53:25 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-04-21 15:53:25 info: GET /api/users/email/aiman.singh30%40gmail.com/kyc {"ip":"::1"}
+2026-04-21 15:53:25 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-04-21 15:53:34 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-04-21 15:53:35 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-04-21 15:53:37 info: GET /api/admin/kyc {"ip":"::1"}
+2026-04-21 15:53:37 info: GET /api/admin/kyc {"ip":"::1"}
+2026-04-21 15:53:38 info: GET /api/recommendations {"ip":"::1"}
+2026-04-21 15:53:38 info: GET /api/strategies {"ip":"::1"}
+2026-04-21 15:53:39 info: GET /api/strategies {"ip":"::1"}
+2026-04-21 15:53:39 info: GET /api/recommendations {"ip":"::1"}
+2026-04-21 15:53:39 info: POST /api/ltp/batch {"ip":"::1"}
+2026-04-21 15:53:39 info: Fetching batch LTP for 1 symbols from NSE
+2026-04-21 15:53:39 info: Batch LTP fetched successfully: 1 symbols from NSE
+2026-04-21 15:53:39 info: GET /api/recommendations {"ip":"::1"}
+2026-04-21 15:53:48 info: GET /api/symbols/search?query=TCS&limit=50 {"ip":"::1"}
+2026-04-21 15:53:48 info: Loaded 21576 symbols from symbols.json
+2026-04-21 15:53:51 info: GET /api/ltp/single?exchange=BSE&symbol=TCS {"ip":"::1"}
+2026-04-21 15:53:51 info: Fetching LTP for BSE:TCS
+2026-04-21 15:53:51 info: LTP fetched successfully: BSE:TCS = 2610.55
+2026-04-22 01:00:00 info: Running scheduled task: Check expired subscriptions
+2026-04-22 01:00:01 info: Found 0 expired subscriptions to update
+2026-04-22 01:00:01 info: Updated 0 expired subscriptions

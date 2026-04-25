@@ -33,6 +33,15 @@ const userSubscriptionSchema = new mongoose.Schema({
   orderId: {
     type: String
   },
+  paymentMethod: {
+    type: String,
+    enum: ['razorpay', 'qr_code', 'manual'],
+    default: 'razorpay'
+  },
+  paymentRequestId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'PaymentRequest'
+  },
   transactionDetails: {
     type: Object
   },

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import './App.css';
 import { AuthProvider } from './context/AuthContext';
@@ -15,8 +15,6 @@ import WhatsAppButton from './components/WhatsAppButton/WhatsAppButton';
 // Pages
 import Home from './pages/Home/Home';
 import About from './pages/About/About';
-import ServicesPage from './pages/Services/Services';
-import Contact from './pages/Contact/Contact';
 import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
 import Dashboard from './pages/Dashboard/Dashboard';
@@ -25,26 +23,11 @@ import Pricing from './pages/Pricing/Pricing';
 import UserRecommendations from './pages/Dashboard/UserRecommendations';
 import PaymentSuccess from './pages/Payment/PaymentSuccess';
 import AdminDashboard from './pages/Admin/AdminDashboard';
-import AdminSetup from './pages/Setup/AdminSetup';
-import AdminCheck from './pages/AdminCheck';
 import Profile from './pages/Profile/Profile';
-import PrivacyPolicy from './pages/PrivacyPolicy/PrivacyPolicy';
-import CodeOfConduct from './pages/CodeOfConduct/CodeOfConduct';
-import GrievanceRedressal from './pages/GrievanceRedressal/GrievanceRedressal';
-import CancellationsRefunds from './pages/CancellationsRefunds/CancellationsRefunds';
-import InvestorCharter from './pages/InvestorCharter/InvestorCharter';
-import TermsConditions from './pages/TermsConditions/TermsConditions';
-import ValidUPI from './pages/ValidUPI/ValidUPI';
-import Disclaimer from './pages/Disclaimer/Disclaimer';
-import ComplaintsData from './pages/ComplaintsData/ComplaintsData';
-import FAQ from './pages/FAQ/FAQ';
+import LegalCenter from './pages/LegalCenter/LegalCenter';
 import AuditReport from './pages/AuditReport/AuditReport';
 import AuditReport2 from './pages/AuditReport2/AuditReport2';
 import Subscribe from './pages/Subscribe/Subscribe';
-import MomentumRider from './pages/Plans/MomentumRider';
-import StrategicAlpha from './pages/Plans/StrategicAlpha';
-import LeveredRiskFnO from './pages/Plans/LeveredRiskFnO';
-import IK15MomentumMP from './pages/Plans/IK15MomentumMP';  // Add this line
 
 // Scroll to top on every route change
 const ScrollToTop = () => {
@@ -179,31 +162,30 @@ function App() {
                     {/* Public routes */}
                     <Route path="/" element={<Home />} />
                     <Route path="/about" element={<About />} />
-                    <Route path="/services" element={<ServicesPage />} />
-                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/contact" element={<Navigate to="/legal#contact-us" replace />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
-                    <Route path="/setup/admin" element={<AdminSetup />} />
                     
-                    {/* Policy and Legal Pages */}
-                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                    <Route path="/disclaimers" element={<Disclaimer />} />
-                    <Route path="/code-of-conduct" element={<CodeOfConduct />} />
-                    <Route path="/grievance-redressal" element={<GrievanceRedressal />} />
-                    <Route path="/cancellations-and-refunds" element={<CancellationsRefunds />} />
-                    <Route path="/terms-and-conditions" element={<TermsConditions />} />
-                    <Route path="/investor-charter" element={<InvestorCharter />} />
-                    <Route path="/complaints-and-audit" element={<ComplaintsData />} />
-                    <Route path="/valid-upi" element={<ValidUPI />} />
-                    <Route path="/complaints-data" element={<ComplaintsData />} />
-                    <Route path="/faqs" element={<FAQ />} />
+                    {/* Consolidated Policy and Legal Page */}
+                    <Route path="legal" element={<LegalCenter />} />
+                    <Route path="legal/*" element={<LegalCenter />} />
+
+                    {/* Legacy links redirected to section anchors in the consolidated page */}
+                    <Route path="privacy-policy" element={<Navigate to="/legal#privacy-policy" replace />} />
+                    <Route path="disclaimers" element={<Navigate to="/legal#disclaimers" replace />} />
+                    <Route path="terms-and-conditions" element={<Navigate to="/legal#terms-and-conditions" replace />} />
+                    <Route path="investor-charter" element={<Navigate to="/legal#investor-charter" replace />} />
+                    <Route path="valid-upi" element={<Navigate to="/legal#valid-upi" replace />} />
+                    <Route path="faqs" element={<Navigate to="/legal#faqs" replace />} />
+                    <Route path="complaints-and-audit" element={<Navigate to="/legal#complaints-and-audit" replace />} />
+                    <Route path="complaints-data" element={<Navigate to="/legal#complaints-and-audit" replace />} />
+                    <Route path="cancellations-and-refunds" element={<Navigate to="/legal#cancellations-and-refunds" replace />} />
+                    <Route path="grievance-redressal" element={<Navigate to="/legal#grievance-redressal" replace />} />
+                    <Route path="code-of-conduct" element={<Navigate to="/legal#code-of-conduct" replace />} />
+
                     <Route path="/audit-report" element={<AuditReport />} />
                     <Route path="/audit-report-2" element={<AuditReport2 />} />
                     <Route path="/subscribe" element={<Subscribe />} />
-                    <Route path="/plans/momentum-rider" element={<MomentumRider />} />
-                    <Route path="/plans/strategic-alpha" element={<StrategicAlpha />} />
-                    <Route path="/plans/levered-risk-fno" element={<LeveredRiskFnO />} />
-                    <Route path="/plans/ik15-momentum" element={<IK15MomentumMP />} />
 
                     {/* Protected routes */}
                     <Route
@@ -235,14 +217,6 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <UserRecommendations />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/admin-check"
-                      element={
-                        <ProtectedRoute>
-                          <AdminCheck />
                         </ProtectedRoute>
                       }
                     />

@@ -15,9 +15,11 @@ export function TestimonialCard({
       className={`testimonial-card ${className}`}
     >
       <div className="testimonial-card-header">
-        <div className="testimonial-avatar">
-          <img src={author.avatar} alt={author.name} />
-        </div>
+        {author.avatar && (
+          <div className="testimonial-avatar">
+            <img src={author.avatar} alt={author.name} />
+          </div>
+        )}
         <div className="testimonial-author-info">
           <h3 className="testimonial-author-name">
             {author.name}
