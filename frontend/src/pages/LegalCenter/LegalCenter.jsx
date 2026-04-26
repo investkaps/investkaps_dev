@@ -709,7 +709,7 @@ const LegalCenter = () => {
               <strong>investkaps</strong> maintains highest level of internal governance, 
               code of ethics and regulatory compliances and will continue to do so.
             </p>
-            <h3>Data for the Month Ending December 2025</h3>
+            <h3>Data for the Month Ending March 2026</h3>
             <div className="legal-table-shell">
               <div className="legal-table-wrap">
                 <table className="legal-table">
@@ -784,9 +784,10 @@ const LegalCenter = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr><td>1</td><td>Q3 FY2025-26</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-                    <tr><td>2</td><td>Q2 FY2025-26</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-                    <tr><td>3</td><td>Q1 FY2025-26</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                    <tr><td>1</td><td>Q4 FY2025-26</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                    <tr><td>2</td><td>Q3 FY2025-26</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                    <tr><td>3</td><td>Q2 FY2025-26</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                    <tr><td>4</td><td>Q1 FY2025-26</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -806,7 +807,8 @@ const LegalCenter = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr><td>1</td><td>2024-25</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                    <tr><td>1</td><td>2025-26</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                    <tr><td>2</td><td>2024-25</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
                   </tbody>
                 </table>
               </div>
