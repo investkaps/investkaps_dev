@@ -60,8 +60,14 @@ const LegalCenter = () => {
                 <strong>Primary Contact/Grievances/Principal Officer/Nodal Officer:</strong> Kapil Aggarwal
               </p>
               <div className="registration-info">
+                <h4 className="registration-heading">Research Analyst</h4>
                 <p><strong>SEBI Registration:</strong> INH000016834</p>
                 <p><strong>BSE Enlistment:</strong> 6226</p>
+              </div>
+              <div className="registration-info">
+                <h4 className="registration-heading">Investment Advisor</h4>
+                <p><strong>SEBI Registration:</strong> INA000022190</p>
+                <p><strong>BSE Enlistment:</strong> -</p>
               </div>
               <p className="contact-tagline">
                 Reach out at below details with any queries about the services, feedback or any complaints.
@@ -104,9 +110,19 @@ const LegalCenter = () => {
                 <div className="contact-info-icon">
                   <i className="contact-icon-email"></i>
                 </div>
-                <h3 className="contact-info-title">Email Us</h3>
+                <h3 className="contact-info-title">For RA Services</h3>
                 <p className="contact-info-text">
                   <a href="mailto:investkaps@gmail.com">investkaps@gmail.com</a>
+                </p>
+              </div>
+
+              <div className="contact-info-card">
+                <div className="contact-info-icon">
+                  <i className="contact-icon-email"></i>
+                </div>
+                <h3 className="contact-info-title">For IA Services</h3>
+                <p className="contact-info-text">
+                  <a href="mailto:investkaps_ia@gmail.com">investkaps_ia@gmail.com</a>
                 </p>
               </div>
             </div>

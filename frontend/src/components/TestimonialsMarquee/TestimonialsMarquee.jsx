@@ -20,13 +20,26 @@ export function TestimonialsMarquee({
           </p>
         </div>
 
-        <div className="testimonials-static-grid">
-          {testimonials.map((testimonial, i) => (
-            <TestimonialCard 
-              key={i}
-              {...testimonial}
-            />
-          ))}
+        <div className="testimonials-marquee-wrapper">
+          <div className="testimonials-marquee-track">
+            <div className="testimonials-marquee-content">
+              {[...Array(4)].map((_, setIndex) => (
+                testimonials.map((testimonial, i) => (
+                  testimonial.empty ? (
+                    <div key={`${setIndex}-${i}`} className="testimonial-card testimonial-card-empty" />
+                  ) : (
+                    <TestimonialCard 
+                      key={`${setIndex}-${i}`}
+                      {...testimonial}
+                    />
+                  )
+                ))
+              ))}
+            </div>
+          </div>
+
+          <div className="testimonials-marquee-gradient testimonials-marquee-gradient-left" />
+          <div className="testimonials-marquee-gradient testimonials-marquee-gradient-right" />
         </div>
       </div>
     </section>

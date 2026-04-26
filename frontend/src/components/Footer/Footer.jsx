@@ -106,6 +106,7 @@ const Footer = () => {
           <div className="footer-credentials">
             <p className="credential-item">SEBI Research Analyst No.: INH000016834</p>
             <p className="credential-item">BSE Enlistment No.: 6226</p>
+            <p className="credential-item">SEBI Investment Advisor No.: INA000022190</p>
           </div>
           <div className="copyright">
             <p>&copy; {new Date().getFullYear()} InvestKaps. All Rights Reserved.</p>
