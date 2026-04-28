@@ -9,7 +9,7 @@ import Loading from '../Loading/Loading'; // adjust path if needed
  * Usage:
  * <ProtectedRoute><Dashboard /></ProtectedRoute>
  */
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, redirectTo = '/login' }) => {
   const { currentUser, loading } = useAuth();
   const location = useLocation();
 
@@ -18,9 +18,9 @@ const ProtectedRoute = ({ children }) => {
     return <Loading message="Checking authentication..." />;
   }
 
-  // If user is not authenticated, redirect to login
+  // If user is not authenticated, redirect to the configured destination
   if (!currentUser) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
   // If authenticated, render the child component
