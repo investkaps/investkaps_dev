@@ -75,7 +75,7 @@ const LegalCenter = () => {
               <div className="registration-info">
                 <h3 className="registration-heading">Investment Advisor</h3>
                 <p><strong>SEBI Registration:</strong> INA000022190</p>
-                <p><strong>BSE Enlistment:</strong> -</p>
+                <p><strong>BSE Enlistment:</strong> 2484</p>
               </div>
               <p className="contact-tagline">
                 Reach out at below details with any queries about the services, feedback or any complaints.
@@ -130,7 +130,7 @@ const LegalCenter = () => {
                 </div>
                 <h3 className="contact-info-title">For IA Services</h3>
                 <p className="contact-info-text">
-                  <a href="mailto:investkaps_ia@gmail.com">investkaps_ia@gmail.com</a>
+                  <a href="mailto:investkaps_ia@zohomail.in">investkaps_ia@zohomail.in</a>
                 </p>
               </div>
             </div>
@@ -850,7 +850,7 @@ const LegalCenter = () => {
               Therefore, I request you to read through all the information including frequently asked 
               questions (FAQs) about the scope of the service before subscribing. Thereafter, if you 
               have any queries, then please feel free to write to me at{' '}
-              <a href="mailto:support@investkaps.com">support@investkaps.com</a>{' '}
+              <a href="mailto:investkaps@gmail.com">investkaps@gmail.com</a>{' '}
               before you make any purchase.
             </p>
             <div className="legal-agreement-box">
@@ -865,7 +865,7 @@ const LegalCenter = () => {
                 Please contact us before making any purchase decision. We're here to help clarify 
                 any doubts you may have about our services.
               </p>
-              <a href="mailto:support@investkaps.com">Contact Support</a>
+              <a href="mailto:investkaps@gmail.com">Contact Support</a>
             </div>
           </section>
 

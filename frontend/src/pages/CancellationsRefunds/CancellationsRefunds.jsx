@@ -27,8 +27,8 @@ const CancellationsRefunds = () => {
             Therefore, I request you to read through all the information including frequently asked 
             questions (FAQs) about the scope of the service before subscribing. Thereafter, if you 
             have any queries, then please feel free to write to me at{' '}
-            <a href="mailto:support@investkaps.com" className="email-link">
-              support@investkaps.com
+            <a href="mailto:investkaps@gmail.com" className="email-link">
+              investkaps@gmail.com
             </a>{' '}
             before you make any purchase.
           </p>
@@ -50,7 +50,7 @@ const CancellationsRefunds = () => {
               Please contact us before making any purchase decision. We're here to help clarify 
               any doubts you may have about our services.
             </p>
-            <a href="mailto:support@investkaps.com" className="support-button">
+            <a href="mailto:investkaps@gmail.com" className="support-button">
               Contact Support
             </a>
           </div>
