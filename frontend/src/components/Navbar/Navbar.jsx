@@ -140,6 +140,32 @@ const Navbar = ({ scrolled }) => {
           <li className="nav-item">
             <Link to="/legal#contact-us" className={`nav-link ${location.pathname === '/legal' && location.hash === '#contact-us' ? 'active' : ''}`} onClick={() => setMenuOpen(false)}>Contact</Link>
           </li>
+
+          {/* Mobile language and contrast controls */}
+          <li className="nav-item mobile-controls-item">
+            <div className="mobile-controls">
+              <select
+                id="mobile-language-switcher"
+                className="mobile-lang-switcher"
+                aria-label="Select language"
+                value={language}
+                onChange={(e) => switchLanguage(e.target.value)}
+              >
+                <option value="en">English</option>
+                <option value="hi">हिंदी</option>
+              </select>
+              <button
+                className="mobile-contrast-toggle"
+                onClick={toggleContrast}
+                aria-label={highContrast ? "Disable high contrast mode" : "Enable high contrast mode"}
+                aria-pressed={highContrast}
+                title="Toggle High Contrast"
+              >
+                <i className="fas fa-adjust" aria-hidden="true"></i>
+              </button>
+            </div>
+          </li>
+
           <li className="nav-item mobile-auth-item">
             {/* Mobile auth buttons - Wrapped in <li> for semantic HTML accessibility */}
             <div className="mobile-auth-buttons">
