@@ -47,7 +47,7 @@ const Hero = () => {
         </motion.h1>
 
         <motion.p className="hero-description lang-en" lang="en" variants={itemVariants}>
-          We are a SEBI-registered Research Analyst firm (Reg. No.: INH000016834) with extensive experience of navigating the Indian stock markets and focus on systematic, research-driven approach for trading and investment.
+          We are a SEBI-registered Research Analyst firm (Reg. No.: INH000016834) and Investment Adviser (Reg. No.: INA000022190) with extensive experience of navigating the Indian stock markets and focus on systematic, research-driven approach for trading and investment.
         </motion.p>
         <motion.p className="hero-description lang-hi" lang="hi" variants={itemVariants}>
           हम एक सेबी-पंजीकृत रिसर्च एनालिस्ट फर्म (पंजी. सं.: INH000016834) हैं, जिसके पास भारतीय शेयर बाजारों में व्यापक अनुभव है और हम व्यापार और निवेश के लिए व्यवस्थित, अनुसंधान-आधारित दृष्टिकोण पर ध्यान केंद्रित करते हैं।

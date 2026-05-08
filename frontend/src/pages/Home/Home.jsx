@@ -107,7 +107,7 @@ const Home = () => {
               <span className="lang-hi" lang="hi">हमारी सिद्ध प्रक्रिया</span>
             </h2>
             <p className="section-description lang-en" lang="en">
-              We are also a SEBI-registered Investment Adviser (Reg. No.: INA000022190). Discover our proven process from initial consultation through implementation and ongoing management. Explore our collective research and media presence across leading finance outlets, which showcases how we present investment ideas and market insights.
+              Discover our proven process from initial consultation through implementation and ongoing management. Explore our collective research and media presence across leading finance outlets, which showcases how we present investment ideas and market insights.
             </p>
             <p className="section-description lang-hi" lang="hi">
               प्रारंभिक परामर्श से लेकर कार्यान्वयन और निरंतर प्रबंधन तक हमारी सिद्ध प्रक्रिया देखें। प्रमुख वित्तीय मीडिया आउटलेट्स में हमारी कवरेज देखें, जो यह दर्शाती है कि हम निवेश विचारों और बाजार अंतर्दृष्टियों को कैसे प्रस्तुत करते हैं।
