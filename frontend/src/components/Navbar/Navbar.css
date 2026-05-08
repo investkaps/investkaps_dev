@@ -20,9 +20,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
+  width: 100%;
+  padding: 0 0 0 2rem;
 }
 
 /* Nav links are dark by default (for white navbar) */
@@ -57,25 +56,25 @@
 
 /* Special styling for home page when not scrolled */
 body.is-home .navbar:not(.scrolled) .btn-secondary {
-  background: #0b73ff;
+  background: var(--primary-color);
   color: #ffffff;
-  border-color: #0b73ff;
+  border-color: var(--primary-color);
 }
 
 body.is-home .navbar:not(.scrolled) .btn-secondary:hover {
-  background: #095fd1;
+  background: var(--primary-hover);
   color: #ffffff;
-  border-color: #095fd1;
+  border-color: var(--primary-hover);
 }
 
 body.is-home .navbar:not(.scrolled) .btn-primary {
-  background: #0b73ff;
+  background: var(--primary-color);
   color: #ffffff;
-  border: 1px solid #0b73ff;
+  border: 1px solid var(--primary-color);
 }
 
 body.is-home .navbar:not(.scrolled) .btn-primary:hover {
-  background: #095fd1;
+  background: var(--primary-hover);
   color: #ffffff;
 }
 
@@ -92,16 +91,16 @@ body.is-register .navbar .user-name {
 
 body.is-login .navbar .btn-secondary,
 body.is-register .navbar .btn-secondary {
-  background: #0b73ff;
+  background: var(--primary-color);
   color: #ffffff;
-  border-color: #0b73ff;
+  border-color: var(--primary-color);
 }
 
 body.is-login .navbar .btn-secondary:hover,
 body.is-register .navbar .btn-secondary:hover {
-  background: #095fd1;
+  background: var(--primary-hover);
   color: #ffffff;
-  border-color: #095fd1;
+  border-color: var(--primary-hover);
 }
 
 body.is-login .navbar .user-menu-button,
@@ -155,10 +154,11 @@ body.is-register .navbar.scrolled .logo-text {
 
 .nav-menu {
   display: flex;
-  align-items: center;
   list-style: none;
   margin: 0;
   padding: 0;
+  align-items: center;
+  margin-left: 2rem;
 }
 
 .nav-item {
@@ -194,6 +194,13 @@ body.is-register .navbar.scrolled .logo-text {
 .nav-cta {
   display: flex;
   align-items: center;
+  margin-left: 1rem;
+}
+
+.nav-right-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 /* User Menu Styles */
@@ -210,6 +217,7 @@ body.is-register .navbar.scrolled .logo-text {
   background-color: #f8f9fa;
   border: 1px solid #eaeaea;
   transition: all 0.3s ease;
+  font-family: inherit;
 }
 
 .user-menu-button:hover {
@@ -373,7 +381,7 @@ body.is-register .navbar.scrolled .logo-text {
 }
 
 .logout-button {
-  color: #e74c3c !important;
+  color: #e74c3c;
   font-weight: 500;
 }
 
@@ -387,46 +395,55 @@ body.is-register .navbar.scrolled .logo-text {
 }
 
 .btn-primary {
-  background: #0b73ff;
+  background: var(--primary-color);
   color: #ffffff;
-  border: 1px solid #0b73ff;
+  border: 1px solid var(--primary-color);
 }
 
 .btn-primary:hover {
-  background: #095fd1;
+  background: var(--primary-hover);
   color: #ffffff;
   transform: none;
   box-shadow: none;
 }
 
 .btn-secondary {
-  background: #0b73ff;
+  background: var(--primary-color);
   color: #ffffff;
-  border: 1px solid #0b73ff;
+  border: 1px solid var(--primary-color);
 }
 
 .btn-secondary:hover {
-  background: #095fd1;
+  background: var(--primary-hover);
   color: #ffffff;
   transform: none;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  background: #757575;
+  border-color: #757575;
+  color: #ffffff;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Override global anchor hover styles for navbar CTA buttons */
 .navbar .nav-cta a.btn.btn-primary,
 .navbar .nav-cta a.btn.btn-primary:hover,
 .navbar .nav-cta a.btn.btn-primary:focus {
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 .navbar .nav-cta a.btn.btn-secondary,
 .navbar .nav-cta a.btn.btn-secondary:hover,
 .navbar .nav-cta a.btn.btn-secondary:focus {
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 .btn-dashboard {
   background: linear-gradient(45deg, #2c3e50, #3498db);
-  color: white !important;
+  color: white;
   border: none;
   margin-right: 12px;
   display: flex;
@@ -468,6 +485,9 @@ body.is-register .navbar.scrolled .logo-text {
   width: 30px;
   height: 21px;
   cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 
 .menu-icon span {
@@ -477,6 +497,62 @@ body.is-register .navbar.scrolled .logo-text {
   background-color: #333;
   transition: all 0.3s ease;
 }
+
+.lang-switcher {
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: #333;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.5rem;
+  margin-right: 0;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.lang-switcher:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+}
+
+.lang-switcher:hover {
+  border-color: #3498db;
+}
+
+.btn-contrast-toggle {
+  background: transparent;
+  border: none;
+  color: #333;
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-right: 0;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.btn-contrast-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Language switcher and contrast toggle - always black */
+.navbar .lang-switcher,
+.navbar .btn-contrast-toggle {
+  color: #333;
+  border-color: #ddd;
+}
+
 
 /* Dark hamburger menu by default and when scrolled */
 .navbar.scrolled .menu-icon span {
@@ -512,20 +588,20 @@ body.is-register .navbar.scrolled .menu-icon span {
 
 /* Hide mobile auth buttons on desktop */
 .mobile-auth-buttons {
-  display: none !important;
+  display: none;
 }
 
 /* Mobile auth item wrapper - reset nav-item margins */
 .mobile-auth-item {
-  margin: 0 !important;
-  padding: 0 !important;
+  margin: 0;
+  padding: 0;
 }
 
 /* Responsive styles */
 @media screen and (max-width: 960px) {
   /* Show mobile auth buttons on mobile */
   .mobile-auth-buttons {
-    display: flex !important;
+    display: flex;
     flex-direction: column;
     gap: 10px;
     margin-top: 20px;
@@ -626,13 +702,13 @@ body.is-register .navbar.scrolled .menu-icon span {
 
   /* White text for gradient background */
   .nav-menu .nav-link {
-    color: white !important;
+    color: white;
     font-size: 1.1rem;
     padding: 1rem 2rem;
   }
 
   .nav-menu .nav-link:hover {
-    color: rgba(255, 255, 255, 0.8) !important;
+    color: rgba(255, 255, 255, 0.8);
     background: rgba(255, 255, 255, 0.1);
   }
 

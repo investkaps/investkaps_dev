@@ -3,17 +3,17 @@ import { useLocation } from 'react-router-dom';
 import './LegalCenter.css';
 
 const sections = [
-  { id: 'contact-us', title: 'Contact Us' },
-  { id: 'privacy-policy', title: 'Privacy Policy' },
-  { id: 'disclaimers', title: 'Disclaimers' },
-  { id: 'terms-and-conditions', title: 'Terms and Conditions' },
-  { id: 'investor-charter', title: 'Investor Charter' },
-  { id: 'valid-upi', title: 'Valid UPI' },
-  { id: 'faqs', title: 'FAQs' },
-  { id: 'complaints-and-audit', title: 'Complaints and Audit' },
-  { id: 'cancellations-and-refunds', title: 'Cancellations and Refunds' },
-  { id: 'grievance-redressal', title: 'Grievance Redressal' },
-  { id: 'code-of-conduct', title: 'Code of Conduct' }
+  { id: 'contact-us', title: { en: 'Contact Us', hi: 'संपर्क करें' } },
+  { id: 'privacy-policy', title: { en: 'Privacy Policy', hi: 'गोपनीयता नीति' } },
+  { id: 'disclaimers', title: { en: 'Disclaimers', hi: 'अस्वीकरण' } },
+  { id: 'terms-and-conditions', title: { en: 'Terms and Conditions', hi: 'नियम और शर्तें' } },
+  { id: 'investor-charter', title: { en: 'Investor Charter', hi: 'निवेशक चार्टर' } },
+  { id: 'valid-upi', title: { en: 'Valid UPI', hi: 'वैध UPI' } },
+  { id: 'faqs', title: { en: 'FAQs', hi: 'सामान्य प्रश्न' } },
+  { id: 'complaints-and-audit', title: { en: 'Complaints and Audit', hi: 'शिकायत और ऑडिट' } },
+  { id: 'cancellations-and-refunds', title: { en: 'Cancellations and Refunds', hi: 'रद्दीकरण और रिफंड' } },
+  { id: 'grievance-redressal', title: { en: 'Grievance Redressal', hi: 'शिकायत निवारण' } },
+  { id: 'code-of-conduct', title: { en: 'Code of Conduct', hi: 'आचार संहिता' } }
 ];
 
 const LegalCenter = () => {
@@ -36,22 +36,30 @@ const LegalCenter = () => {
     <div className="legal-center-page">
       <div className="legal-center-container">
         <header className="legal-center-header">
-          <h1 className="legal-center-title">Legal and Compliance Center</h1>
+          <h1 className="legal-center-title">
+            <span className="lang-en" lang="en">Legal and Compliance Center</span>
+            <span className="lang-hi" lang="hi">कानूनी और अनुपालन केंद्र</span>
+          </h1>
         </header>
 
         <nav className="legal-center-nav" aria-label="Legal sections navigation">
           {sections.map((section) => (
             <a key={section.id} href={`#${section.id}`} className="legal-nav-link">
-              {section.title}
+              <span className="lang-en" lang="en">{section.title.en}</span>
+              <span className="lang-hi" lang="hi">{section.title.hi}</span>
             </a>
           ))}
         </nav>
 
-        <main className="legal-sections">
+        <div className="legal-sections">
           <section id="contact-us" className="legal-section legal-contact-section">
             <div className="contact-page-header">
-              <h1 className="contact-main-title">Contact Us</h1>
-              <p className="contact-main-subtitle">Get in touch with our team of financial experts</p>
+              <h2 className="contact-main-title">
+                <span className="lang-en" lang="en">Contact Us</span>
+                <span className="lang-hi" lang="hi">संपर्क करें</span>
+              </h2>
+              <p className="contact-main-subtitle lang-en" lang="en">Get in touch with our team of financial experts</p>
+              <p className="contact-main-subtitle lang-hi" lang="hi">हमारी वित्तीय विशेषज्ञों की टीम से संपर्क करें</p>
             </div>
 
             <div className="primary-contact-banner">
@@ -60,12 +68,12 @@ const LegalCenter = () => {
                 <strong>Primary Contact/Grievances/Principal Officer/Nodal Officer:</strong> Kapil Aggarwal
               </p>
               <div className="registration-info">
-                <h4 className="registration-heading">Research Analyst</h4>
+                <h3 className="registration-heading">Research Analyst</h3>
                 <p><strong>SEBI Registration:</strong> INH000016834</p>
                 <p><strong>BSE Enlistment:</strong> 6226</p>
               </div>
               <div className="registration-info">
-                <h4 className="registration-heading">Investment Advisor</h4>
+                <h3 className="registration-heading">Investment Advisor</h3>
                 <p><strong>SEBI Registration:</strong> INA000022190</p>
                 <p><strong>BSE Enlistment:</strong> -</p>
               </div>
@@ -153,7 +161,10 @@ const LegalCenter = () => {
           </section>
 
           <section id="privacy-policy" className="legal-section">
-            <h2>Privacy Policy</h2>
+            <h2>
+              <span className="lang-en" lang="en">Privacy Policy</span>
+              <span className="lang-hi" lang="hi">गोपनीयता नीति</span>
+            </h2>
             <p>
               investkaps offers independent equity research services to retail clients as well as 
               corporate clients on subscription basis.
@@ -228,7 +239,10 @@ const LegalCenter = () => {
           </section>
 
           <section id="disclaimers" className="legal-section">
-            <h2>Disclaimers</h2>
+            <h2>
+              <span className="lang-en" lang="en">Disclaimers</span>
+              <span className="lang-hi" lang="hi">अस्वीकरण</span>
+            </h2>
             <iframe
               src="https://res.cloudinary.com/dh9pmvu5j/image/upload/v1767112859/Disclaimers.pdf"
               title="Disclaimer Document"
@@ -242,7 +256,10 @@ const LegalCenter = () => {
           </section>
 
           <section id="terms-and-conditions" className="legal-section">
-            <h2>Terms and Conditions</h2>
+            <h2>
+              <span className="lang-en" lang="en">Terms and Conditions</span>
+              <span className="lang-hi" lang="hi">नियम और शर्तें</span>
+            </h2>
             <ul className="legal-list">
               <li>I, Kapil Aggarwal, am registered with SEBI as an Individual Research Analyst under the registration number <strong>INH000016834</strong>, effective from <strong>June 25, 2024</strong>.</li>
               <li>I offer paid research services to my clients based on this certification. Opinions expressed otherwise regarding specific securities are not investment advice and shall not be treated as recommendations. Neither I nor my associates/employees shall be liable for any losses incurred based on such opinions.</li>
@@ -422,7 +439,10 @@ const LegalCenter = () => {
           </section>
 
           <section id="investor-charter" className="legal-section">
-            <h2>Investor Charter</h2>
+            <h2>
+              <span className="lang-en" lang="en">Investor Charter</span>
+              <span className="lang-hi" lang="hi">निवेशक चार्टर</span>
+            </h2>
             <div className="vision-mission-grid">
               <div className="vm-card">
                 <div className="vm-icon">🎯</div>
@@ -682,13 +702,13 @@ const LegalCenter = () => {
             <div className="faq-item">
               <h3>I have many basic questions about SEBI RAs in general. Where can I know more about them?</h3>
               <p>
-                <a href="https://res.cloudinary.com/dh9pmvu5j/image/upload/v1767112860/FAQs.pdf" target="_blank" rel="noopener noreferrer">Click here</a>.
+                <a href="https://res.cloudinary.com/dh9pmvu5j/image/upload/v1767112860/FAQs.pdf" target="_blank" rel="noopener noreferrer">Read the SEBI RA basics FAQ PDF</a>.
               </p>
             </div>
             <div className="faq-item">
               <h3>I know about SEBI RAs but I want to know more about investkaps, its offerings and how to subscribe. Where can I know more?</h3>
               <p>
-                <a href="https://res.cloudinary.com/dh9pmvu5j/image/upload/v1767112860/FAQs.pdf" target="_blank" rel="noopener noreferrer">Click here</a>.
+                <a href="https://res.cloudinary.com/dh9pmvu5j/image/upload/v1767112860/FAQs.pdf" target="_blank" rel="noopener noreferrer">Read investkaps offerings and subscription FAQs</a>.
               </p>
             </div>
             <div className="faq-item">
@@ -703,7 +723,7 @@ const LegalCenter = () => {
             <h2>Complaints and Audit</h2>
             <p>
               We are pleased to inform you that in full compliance with SEBI regulations, 
-              our audit for FY25 is duly completed. You may access the Auditor's Report by <a href="/audit.png" target="_blank" rel="noopener noreferrer">clicking here</a>.
+              our audit for FY25 is duly completed. You may access the <a href="/audit.png" target="_blank" rel="noopener noreferrer">Auditor's Report for FY25</a>.
             </p>
             <p>
               <strong>investkaps</strong> maintains highest level of internal governance, 
@@ -909,7 +929,7 @@ const LegalCenter = () => {
               <li>I shall bear primary responsibility of senior management for ensuring the maintenance of appropriate standards of conduct and adherence to proper procedures.</li>
             </ol>
           </section>
-        </main>
+        </div>
       </div>
     </div>
   );

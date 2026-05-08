@@ -12,6 +12,8 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import OTPInput from '../../components/OTPInput/OTPInput';
 import { isValidPhone, sanitizePhone, isValidPAN, formatPAN } from '../../utils/validators';
 import Loading from '../../components/Loading/Loading';
+import OnboardingFlow from '../../components/OnboardingFlow/OnboardingFlow';
+import ServiceSelector from '../../components/OnboardingFlow/ServiceSelector';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -73,7 +75,24 @@ const Dashboard = () => {
     signing: { completed: false, active: false, expanded: false },
     payment: { completed: false, active: false, expanded: false }
   });
-  
+
+  // IA onboarding steps (separate state from RA steps)
+  const [iaSteps, setIaSteps] = useState({
+    kyc: { completed: false, active: true, expanded: true },
+    phone: { completed: false, active: false, expanded: false },
+    signing: { completed: false, active: false, expanded: false },
+    payment: { completed: false, active: false, expanded: false }
+  });
+
+  // Service selection state
+  // 'selecting' | 'onboarding-ra' | 'onboarding-ia' | 'done'
+  const [onboardingPhase, setOnboardingPhase] = useState('selecting');
+  // Which services the user chose
+  const [selectedServices, setSelectedServices] = useState(new Set());
+  const [activeRaSubscription, setActiveRaSubscription] = useState(null);
+  // Which service tab is currently viewed when both are chosen
+  const [activeServiceTab, setActiveServiceTab] = useState('RA');
+
   // Flag to prevent multiple KYC status checks
   const [kycCheckCompleted, setKycCheckCompleted] = useState(false);
   
@@ -101,10 +120,9 @@ const Dashboard = () => {
     existsForOther: false, // PAN already exists for another user
     message: ''
   });
-  
   // eSign state - will fetch from MongoDB
   const [activeDocumentId, setActiveDocumentId] = useState(null);
-  
+  // eSign state - will fetch from MongoDB
   // Subscription and stock recommendations state
   const [activeSubscription, setActiveSubscription] = useState(null);
   const [stockRecommendations, setStockRecommendations] = useState([]);
@@ -126,7 +144,6 @@ const Dashboard = () => {
     initRef.current = true;
 
     // Compute admin status synchronously from currentUser.role
-    // (avoids timing gap with isAdminUser state setter)
     const adminStatus = currentUser.role === 'admin';
 
     const initDashboard = async () => {
@@ -224,6 +241,8 @@ const Dashboard = () => {
             const response = await phoneAPI.checkPhoneStatus();
             if (response.success && response.phoneVerified) {
               setSteps(prev => ({ ...prev, phone: { ...prev.phone, completed: true } }));
+              // Mirror phone into IA steps too (carry-over for RA customers)
+              setIaSteps(prev => ({ ...prev, phone: { ...prev.phone, completed: true } }));
               setPhoneForm({ phone: response.phone || '', otp: '' });
             }
           } catch (err) { /* Phone not verified yet */ }
@@ -238,7 +257,14 @@ const Dashboard = () => {
               if (subscriptions.length > 0) {
                 setActiveSubscription(subscriptions[0]);
                 setSteps(prev => ({ ...prev, payment: { ...prev.payment, completed: true, active: true } }));
+                const raSubscription = subscriptions.find((entry) => {
+                  const serviceType = entry.serviceType || entry.subscription?.serviceType;
+                  return String(serviceType || '').toUpperCase() === 'RA';
+                });
+                setActiveRaSubscription(raSubscription || null);
               }
+            } else {
+              setActiveRaSubscription(null);
             }
           } catch (err) { /* No active subscription */ }
         })(),
@@ -258,6 +284,32 @@ const Dashboard = () => {
         // Fallback so the dashboard never hangs if a check stalls
         new Promise(resolve => setTimeout(resolve, 10_000)),
       ]);
+
+      // ── Determine onboarding phase after all checks ─────────────────────────
+      // We read step state via a snapshot inside the setter to get latest values
+      setSteps(prev => {
+        // Determine phase based on resolved step state
+        const kycDone = prev.kyc.completed;
+        const paymentDone = prev.payment.completed;
+        const signingDone = prev.signing.completed;
+        if (adminStatus || (kycDone && paymentDone && signingDone)) {
+          // Setup complete – go straight to dashboard
+          setOnboardingPhase('done');
+          setSelectedServices(new Set(['RA']));
+        } else {
+          // Has KYC done → returning user, send straight to RA onboarding flow
+          if (kycDone) {
+            setOnboardingPhase('onboarding-ra');
+            setSelectedServices(new Set(['RA']));
+            // Also mirror KYC into IA steps
+            setIaSteps(ia => ({ ...ia, kyc: { ...ia.kyc, completed: true } }));
+          } else {
+            // Brand new user – show service selector
+            setOnboardingPhase('selecting');
+          }
+        }
+        return prev; // no change to steps itself
+      });
 
       setDashboardReady(true);
     };
@@ -289,7 +341,7 @@ const Dashboard = () => {
             }));
             
             // Show success message
-            alert('E-signing completed successfully! ✓');
+            alert('E-signing completed successfully!');
 
             // Clear stored active doc id once completed
             localStorage.removeItem('active_esign_document_id');
@@ -316,6 +368,156 @@ const Dashboard = () => {
     const result = await logout();
     if (result.success) {
       navigate('/');
+    }
+  };
+
+  // ─── Service Selector handlers ────────────────────────────────────────────
+  const handleToggleService = (service) => {
+    setSelectedServices(new Set([service]));
+  };
+
+  const handleConfirmServices = () => {
+    if (selectedServices.size === 0) return;
+    // If RA is selected, go to RA onboarding first
+    if (selectedServices.has('RA')) {
+      setActiveServiceTab('RA');
+      setOnboardingPhase('onboarding-ra');
+    } else {
+      // IA only
+      setActiveServiceTab('IA');
+      setOnboardingPhase('onboarding-ia');
+    }
+  };
+
+  // When RA onboarding is done and user also selected IA, switch to IA tab
+  const handleRaOnboardingComplete = () => {
+    if (selectedServices.has('IA')) {
+      // Mirror KYC + phone into IA steps (carry-over)
+      setIaSteps(prev => ({
+        ...prev,
+        kyc: { ...prev.kyc, completed: steps.kyc.completed },
+        phone: { ...prev.phone, completed: steps.phone.completed },
+      }));
+      setActiveServiceTab('IA');
+      setOnboardingPhase('onboarding-ia');
+    } else {
+      setOnboardingPhase('done');
+    }
+  };
+
+  // ─── Phone skip ───────────────────────────────────────────────────────────
+  const handlePhoneSkip = () => {
+    // No-op for state — just move to next step in sidebar
+    // The OnboardingFlow component's internal navigation handles this
+  };
+
+  // ─── Admin bypass wrappers ────────────────────────────────────────────────
+  const handleKycBypass = async () => {
+    setIsLoading(true);
+    try {
+      const response = await kycAPI.bypassKYC();
+      if (response.success || response.isAlreadyVerified) {
+        const allActive = { completed: true, active: true, expanded: true };
+        setSteps(prev => ({
+          ...prev,
+          kyc: allActive,
+          phone: { ...prev.phone, active: true },
+          signing: { ...prev.signing, active: true },
+          payment: { ...prev.payment, active: true },
+        }));
+        setIaSteps(prev => ({ ...prev, kyc: allActive }));
+        setKycCheckCompleted(true);
+        setKycResult({ success: true, message: response.message || 'KYC bypassed (Admin)', isAlreadyVerified: true });
+      } else {
+        alert('Failed to bypass KYC: ' + (response.error || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Error bypassing KYC: ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePhoneBypass = () => {
+    setSteps(prev => ({ ...prev, phone: { ...prev.phone, completed: true } }));
+    setIaSteps(prev => ({ ...prev, phone: { ...prev.phone, completed: true } }));
+  };
+
+  const handleCheckEsignStatus = async () => {
+    const storedActiveDocId = localStorage.getItem('active_esign_document_id');
+    const docIdToCheck = activeDocumentId || storedActiveDocId;
+    if (!docIdToCheck || docIdToCheck === 'null' || docIdToCheck === 'undefined') {
+      alert('No active e-signing session found. Please proceed to e-signing first.');
+      return { success: false, error: 'No active e-signing session found.' };
+    }
+    setIsLoading(true);
+    try {
+      const response = await esignAPI.checkDocumentStatus(docIdToCheck);
+      if (!response.success) {
+        const message = 'Failed to check status: ' + (response.error || 'Unknown error');
+        alert(message);
+        return { success: false, error: response.error || 'Unknown error' };
+      }
+      const data = response.data;
+      if (data.isCompleted) {
+        setSteps(prev => ({ ...prev, signing: { ...prev.signing, completed: true }, payment: { ...prev.payment, active: true } }));
+        setActiveDocumentId(null);
+        localStorage.removeItem('active_esign_document_id');
+        alert('E-signing completed successfully!');
+        return { success: true, completed: true, status: data.status };
+      } else if (data.status === 'EXPIRED') {
+        alert('E-signing link has expired. Please restart the process.');
+        setActiveDocumentId(null);
+        localStorage.removeItem('active_esign_document_id');
+        return { success: true, completed: false, status: data.status };
+      } else if (data.status === 'REJECTED') {
+        alert('E-signing was rejected. Please restart the process.');
+        setActiveDocumentId(null);
+        localStorage.removeItem('active_esign_document_id');
+        return { success: true, completed: false, status: data.status };
+      } else {
+        const { signed, total } = data.signingDetails || { signed: 0, total: 1 };
+        alert(`E-signing in progress: ${signed}/${total} signed. Please complete the signing process.`);
+        return { success: true, completed: false, status: data.status, signingDetails: { signed, total } };
+      }
+    } catch (err) {
+      alert('Error checking status: ' + err.message);
+      return { success: false, error: err.message };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEsignBypass = async () => {
+    setIsLoading(true);
+    try {
+      const response = await esignAPI.bypassEsign();
+      if (response.success || response.isAlreadySigned) {
+        setSteps(prev => ({ ...prev, signing: { ...prev.signing, completed: true }, payment: { ...prev.payment, active: true } }));
+        if (response.documentId) { localStorage.setItem('activeDocumentId', response.documentId); setActiveDocumentId(response.documentId); }
+        alert(response.message || 'E-signing bypassed successfully');
+      } else {
+        alert('Failed to bypass e-signing: ' + (response.error || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Error bypassing e-signing: ' + err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePaymentBypass = async () => {
+    setBypassLoading(true);
+    try {
+      const response = await userSubscriptionAPI.createTestSubscription();
+      if (response.success) {
+        setSteps(prev => ({ ...prev, payment: { ...prev.payment, completed: true } }));
+        alert(`Test subscription created: ${response.data.planName} (${response.data.duration})`);
+      }
+    } catch (err) {
+      alert('Error creating test subscription: ' + err.message);
+    } finally {
+      setBypassLoading(false);
     }
   };
 
@@ -548,8 +750,13 @@ const Dashboard = () => {
     }
   };
 
-  // Check if all steps are completed
+  // Check if all RA steps are completed
   const isSetupComplete = steps.phone.completed && steps.kyc.completed && steps.signing.completed && steps.payment.completed;
+
+  // An "RA customer" is someone who has KYC + phone already done (existing user)
+  // Their KYC and mobile carry over to IA onboarding automatically
+  const isRaCustomer = steps.kyc.completed && steps.phone.completed;
+  const iaServiceLocked = !isAdminUser && !!activeRaSubscription;
 
   // Active subscription check is handled by the consolidated initDashboard effect above.
   
@@ -608,23 +815,131 @@ const Dashboard = () => {
     return <Loading message="Loading your dashboard…" />;
   }
 
+  // ─── Build common props for OnboardingFlow ─────────────────────────────────
+  const onboardingCommonProps = {
+    currentUser,
+    isAdminUser,
+    isRaCustomer,
+    kycForm, kycResult, kycBlocked, kycAttemptsRemaining,
+    panStatus, error, isLoading,
+    handleKycInputChange, handleKycSubmit, handleKycBypass,
+    phoneForm, otpSent, phoneError, phoneLoading, phoneAlreadyExists,
+    handlePhoneInputChange, handleOtpChange, handleSendOTP, handleVerifyOTP,
+    handlePhoneBypass, handlePhoneSkip,
+    activeDocumentId, handleCheckEsignStatus, handleEsignBypass,
+    bypassLoading, handlePaymentBypass,
+  };
+
+  const hasAdminAccess = isAdminUser || isAdmin();
+
+  // ─── Service Selector phase ────────────────────────────────────────────────
+  if (!hasAdminAccess && onboardingPhase === 'selecting') {
+    return (
+      <ServiceSelector
+        selectedServices={selectedServices}
+        onToggle={handleToggleService}
+        onConfirm={handleConfirmServices}
+        hasActiveRa={!!activeRaSubscription}
+      />
+    );
+  }
+
+  // ─── Onboarding phases (RA / IA / both) ───────────────────────────────────
+  const isOnboarding = !hasAdminAccess && (onboardingPhase === 'onboarding-ra' || onboardingPhase === 'onboarding-ia');
+  const bothSelected = selectedServices.has('RA') && selectedServices.has('IA');
+
+  if (isOnboarding) {
+    const currentServiceType = onboardingPhase === 'onboarding-ia' ? 'IA' : 'RA';
+    const currentSteps = currentServiceType === 'IA' ? iaSteps : steps;
+    const currentSetSteps = currentServiceType === 'IA' ? setIaSteps : setSteps;
+
+    // Determine if current service onboarding is fully complete
+    const raOnboardingDone = steps.kyc.completed && steps.signing.completed && steps.payment.completed;
+    const iaOnboardingDone = iaSteps.kyc.completed && iaSteps.signing.completed && iaSteps.payment.completed;
+    const currentOnboardingDone = currentServiceType === 'RA' ? raOnboardingDone : iaOnboardingDone;
+
+    return (
+      <div className="dashboard-page">
+        {/* Slim top bar */}
+        <div className="ob-topbar">
+          <div className="ob-topbar-left">
+            <img src="/logo.png" alt="InvestKaps" className="ob-topbar-logo" />
+            <span className="ob-topbar-title">Onboarding</span>
+          </div>
+          <div className="ob-topbar-right">
+            <span className="ob-topbar-user">
+              {currentUser?.name || currentUser?.email}
+            </span>
+            <button onClick={handleLogout} className="ob-topbar-logout">Logout</button>
+          </div>
+        </div>
+
+        {/* Service tab switcher (shown if both services were selected) */}
+        {bothSelected && (
+          <div className="ob-service-tabs">
+            <button
+              className={`ob-service-tab ${onboardingPhase === 'onboarding-ra' ? 'active' : ''}`}
+              onClick={() => { setActiveServiceTab('RA'); setOnboardingPhase('onboarding-ra'); }}
+            >
+              Research Analyst
+              {steps.kyc.completed && steps.signing.completed && steps.payment.completed && (
+                <span className="ob-tab-done">Done</span>
+              )}
+            </button>
+            <button
+              className={`ob-service-tab ob-service-tab-ia ${onboardingPhase === 'onboarding-ia' ? 'active' : ''}`}
+              onClick={() => { setActiveServiceTab('IA'); setOnboardingPhase('onboarding-ia'); }}
+            >
+              Investment Advisor
+              {iaSteps.kyc.completed && iaSteps.signing.completed && iaSteps.payment.completed && (
+                <span className="ob-tab-done">Done</span>
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* Main onboarding shell */}
+        <div className="ob-page-wrap">
+          <OnboardingFlow
+            {...onboardingCommonProps}
+            serviceType={currentServiceType}
+            steps={currentSteps}
+          />
+
+          {/* CTA when current service is done */}
+          {currentOnboardingDone && (
+            <div className="ob-done-banner">
+              <span>Complete</span>
+              <div>
+                <strong>{currentServiceType} onboarding complete!</strong>
+                {bothSelected && currentServiceType === 'RA' && !iaOnboardingDone
+                  ? <> <button className="ob-btn-link" onClick={handleRaOnboardingComplete}>Continue to IA onboarding →</button></>
+                  : <> <button className="ob-btn-link" onClick={() => setOnboardingPhase('done')}>Go to dashboard →</button></>
+                }
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Done phase: full dashboard ────────────────────────────────────────────
   return (
     <div className="dashboard-page">
       <div className="dashboard-container">
         <div className="dashboard-header">
           <div className="welcome-section">
-            <h1>{isSetupComplete ? 'Your Dashboard' : 'Complete Your Setup'}</h1>
+            <h1>Your Dashboard</h1>
             <p>Hello, {currentUser?.name || currentUser?.email}!</p>
           </div>
-          <button onClick={handleLogout} className="logout-btn">
-            Logout
-          </button>
+          <button onClick={handleLogout} className="logout-btn">Logout</button>
         </div>
 
-        {/* Payment success banner – shown when redirected from Razorpay checkout */}
+        {/* Payment success banner */}
         {paymentSuccessBanner && (
           <div className="payment-success-banner">
-            ✅ Payment successful! Your subscription has been activated.
+            Payment successful. Your subscription has been activated.
             <button className="dismiss-banner" onClick={() => setPaymentSuccessBanner(false)}>&#x2715;</button>
           </div>
         )}
@@ -632,36 +947,55 @@ const Dashboard = () => {
         {/* QR Payment submitted banner */}
         {qrPaymentSubmittedBanner && (
           <div className="payment-success-banner" style={{ backgroundColor: '#e0f2fe', borderColor: '#0284c7', color: '#075985' }}>
-            ✓ Payment request submitted! Check the status below. Admin will verify and activate your subscription within 24 hours.
+            Payment request submitted. We will verify it within 24 hours.
             <button className="dismiss-banner" onClick={() => setQrPaymentSubmittedBanner(false)}>&#x2715;</button>
           </div>
         )}
 
-        {/* Persistent banner: subscription is active but setup steps not all done */}
-        {activeSubscription && !isSetupComplete && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '14px 20px',
-            marginBottom: '16px',
-            borderRadius: '10px',
-            backgroundColor: '#fffbeb',
-            border: '1px solid #fcd34d',
-            color: '#92400e',
-            fontWeight: 500,
-            fontSize: '0.95rem',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.07)'
-          }}>
-            <span style={{ fontSize: '1.3rem' }}>🎉</span>
-            <span>
-              <strong>Payment received — your subscription is active!</strong>
-              &nbsp;Please complete the remaining steps below to fully activate your account and access all features.
-            </span>
+        {/* ─── IA Upgrade Prompt ── shown to RA customers without active IA sub ── */}
+        {isRaCustomer && !isAdminUser && (
+          <div className={`ia-upgrade-prompt ${iaServiceLocked ? 'ia-upgrade-locked' : ''}`}>
+            <div className="ia-upgrade-body">
+              <span className="section-eyebrow">Investment Advisor Access</span>
+              <strong>{iaServiceLocked ? 'IA is locked while your RA plan is active' : 'Unlock Investment Advisor Services'}</strong>
+              <p>
+                {iaServiceLocked
+                  ? `You can switch to IA after your current RA subscription ends${activeRaSubscription?.endDate ? ` on ${new Date(activeRaSubscription.endDate).toLocaleDateString()}` : ''}.`
+                  : 'Get personalised advisory, portfolio management, and goal-based planning from our SEBI-registered advisors.'}
+              </p>
+              {iaServiceLocked && activeRaSubscription?.subscription?.name && (
+                <div className="locked-plan-pill">
+                  Current RA plan: {activeRaSubscription.subscription.name}
+                </div>
+              )}
+            </div>
+            {!iaServiceLocked && (
+              <button
+                className="ia-upgrade-btn"
+                onClick={() => {
+                  // Mirror existing KYC + phone into IA steps
+                  setIaSteps(prev => ({
+                    ...prev,
+                    kyc:   { ...prev.kyc,   completed: steps.kyc.completed },
+                    phone: { ...prev.phone, completed: steps.phone.completed },
+                  }));
+                  setSelectedServices(new Set(['RA', 'IA']));
+                  setOnboardingPhase('onboarding-ia');
+                }}
+              >
+                Sign Up for IA
+              </button>
+            )}
           </div>
         )}
 
-        {/* ── QR / Manual Payment Request Status ─── visible regardless of setup state */}
+        {/* QR / Manual Payment Request Status */}
+        {qrPaymentSubmittedBanner && (
+          <div className="payment-request-confirmation">
+            We received your payment request. We will verify it within 24 hours.
+          </div>
+        )}
+
         {pendingPaymentRequests.length > 0 && (
           <div className="payment-requests-section" ref={paymentRequestsRef}>
             <h2>QR / Manual Payment Status</h2>
@@ -674,10 +1008,10 @@ const Dashboard = () => {
                     <span className="pr-date">{new Date(req.createdAt).toLocaleDateString()}</span>
                   </div>
                   <span className={`pr-status-badge pr-status-${req.status}`}>
-                    {req.status === 'pending' ? '⏳ Pending Review' : req.status === 'approved' ? '✅ Approved' : '❌ Rejected'}
+                    {req.status === 'pending' ? 'Pending Review' : req.status === 'approved' ? 'Approved' : 'Rejected'}
                   </span>
                   {req.status === 'pending' && (
-                    <p className="pr-note">Your payment has been submitted. An admin will review and activate your subscription shortly.</p>
+                    <p className="pr-note">Your payment has been submitted. An admin will review shortly.</p>
                   )}
                   {req.status === 'rejected' && req.rejectionReason && (
                     <p className="pr-note pr-rejected-note">Reason: {req.rejectionReason}</p>
@@ -688,722 +1022,143 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* ── Subscription active but onboarding not complete ── */}
-        {activeSubscription && !isSetupComplete && !isAdminUser && (
-          <div className="subscription-pending-notice">
-            <span className="notice-icon">ℹ️</span>
-            <div className="notice-body">
-              <strong>Subscription purchased!</strong> You have an active <em>{activeSubscription.subscription?.name || 'plan'}</em> subscription.
-              Complete the onboarding steps below to start receiving recommendations.
-            </div>
-          </div>
-        )}
-
-        {/* Show simplified status box for completed setup or admin users */}
-        {(isSetupComplete || isAdminUser) && (
-          <>
-            <div className="setup-status-box">
-              <div className="status-icon completed">✓</div>
-              <div className="status-message">
-                {isAdminUser ? (
-                  <>
-                    <h3>Admin Privileges</h3>
-                    <p>You have admin privileges. <Link to="/admin" className="admin-link">Visit the Admin Dashboard</Link> for management features.</p>
-                  </>
-                ) : (
-                  <>
-                    <h3>Setup Complete</h3>
-                    <p>Your account is fully set up and ready to use all features.</p>
-                  </>
-                )}
-              </div>
-            </div>
-            
-            {/* Current Subscription Plan Section */}
-            {activeSubscription && (
-              <div className="current-subscription-section">
-                <h2>Your Current Plan</h2>
-                <div className="subscription-card">
-                  <div className="subscription-header">
-                    <div className="plan-info">
-                      <h3>{activeSubscription.subscription?.name || 'N/A'}</h3>
-                      <span className="plan-badge">{activeSubscription.subscription?.packageCode || 'PLAN'}</span>
-                    </div>
-                    <div className="plan-status">
-                      <span className={`status-badge ${activeSubscription.status}`}>
-                        {activeSubscription.status === 'active' ? 'Active' : activeSubscription.status}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="subscription-details">
-                    <div className="detail-item">
-                      <span className="detail-label">Duration:</span>
-                      <span className="detail-value">
-                        {activeSubscription.duration === 'monthly' ? 'Monthly' : 
-                         activeSubscription.duration === 'sixMonth' ? '6 Months' : 
-                         activeSubscription.duration === 'yearly' ? 'Yearly' : activeSubscription.duration}
-                      </span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Start Date:</span>
-                      <span className="detail-value">
-                        {new Date(activeSubscription.startDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">End Date:</span>
-                      <span className="detail-value">
-                        {new Date(activeSubscription.endDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Days Remaining:</span>
-                      <span className="detail-value highlight">
-                        {Math.max(0, Math.ceil((new Date(activeSubscription.endDate) - new Date()) / (1000 * 60 * 60 * 24)))} days
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* Multi-Plan Benefits - Compact Version */}
-                  <div className="subscription-tip">
-                    <span className="tip-icon">💡</span>
-                    <div className="tip-content">
-                      <strong>Maximize Your Potential!</strong> Purchase multiple plans to access more strategies.
-                      <Link to="/pricing" className="tip-link">Explore Plans →</Link>
-                    </div>
-                  </div>
-                  
-                  <div className="subscription-actions">
-                    <Link to="/pricing" className="view-plans-btn">
-                      View All Plans
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {/* No Subscription Message */}
-            {!activeSubscription && !isAdminUser && (
-              <div className="no-subscription-section">
-                <div className="no-subscription-card">
-                  <h3>No Active Subscription</h3>
-                  <p>You don't have an active subscription plan yet. Choose a plan to get started with our investment recommendations.</p>
-                  <Link to="/pricing" className="get-started-btn">
-                    View Pricing Plans
-                  </Link>
-                </div>
-              </div>
-            )}
-            
-            {/* Stock Recommendations Section - Show for admins or users with subscription */}
-            {(isAdminUser || activeSubscription) && (
-              <div className="stock-recommendations-section">
-                <h2>{isAdminUser ? 'All Active Stock Recommendations' : 'Stock Recommendations'}</h2>
-                {isAdminUser && (
-                  <p style={{ color: '#64748b', marginBottom: '1rem' }}>
-                    Viewing all active recommendations as admin
-                  </p>
-                )}
-                {loadingRecommendations ? (
-                  <div className="loading-message">Loading recommendations...</div>
-                ) : stockRecommendations.length > 0 ? (
-                  <div className="recommendations-table-container">
-                    <table className="recommendations-table">
-                      <thead>
-                        <tr>
-                          <th>Stock</th>
-                          <th>Type</th>
-                          <th>Current</th>
-                          <th>Target 1</th>
-                          <th>Target 2</th>
-                          <th>Target 3</th>
-                          <th>Stop Loss</th>
-                          <th>Timeframe</th>
-                          <th>Report</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {stockRecommendations.map((rec) => (
-                          <tr key={rec._id} className="rec-row">
-                            <td className="stock-cell">
-                              <span className="stock-symbol">{rec.stockSymbol}</span>
-                              <span className="stock-name">{rec.stockName}</span>
-                            </td>
-                            <td>
-                              <span className={`rec-badge ${rec.recommendationType}`}>
-                                {rec.recommendationType.toUpperCase()}
-                              </span>
-                            </td>
-                            <td className="price-cell">₹{rec.currentPrice}</td>
-                            <td className="price-cell target">₹{rec.targetPrice}</td>
-                            <td className="price-cell target">{rec.targetPrice2 ? `₹${rec.targetPrice2}` : '-'}</td>
-                            <td className="price-cell target">{rec.targetPrice3 ? `₹${rec.targetPrice3}` : '-'}</td>
-                            <td className="price-cell stoploss">{rec.stopLoss ? `₹${rec.stopLoss}` : '-'}</td>
-                            <td className="timeframe-cell">
-                              {rec.timeFrame === 'short_term' ? 'Short' : rec.timeFrame === 'medium_term' ? 'Medium' : 'Long'}
-                            </td>
-                            <td>
-                              {rec.pdfReport && rec.pdfReport.url ? (
-                                <a 
-                                  href={rec.pdfReport.url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="pdf-btn"
-                                >
-                                  📄 View
-                                </a>
-                              ) : '-'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="no-recommendations">
-                    <p>No stock recommendations available at the moment.</p>
-                    <p>Check back later for new opportunities!</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Only show the checklist if setup is not complete and user is not admin */}
-        {!isSetupComplete && !isAdminUser && (
-          <div className="dashboard-content">
-          {/* Progress indicator */}
-          <div className="progress-indicator">
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{
-                  width: `${(Object.values(steps).filter(step => step.completed).length / 4) * 100}%`
-                }}
-              ></div>
-            </div>
-            <div className="progress-text">
-              {Object.values(steps).filter(step => step.completed).length} of 4 steps completed
-            </div>
-          </div>
-          
-          {/* Checklist */}
-          <div className="checklist-container">
-            <h2>Setup Checklist</h2>
-            <div className="checklist">
-              {/* KYC Verification Step - Now Step 1 */}
-              <div className={`checklist-item ${steps.kyc.completed ? 'completed' : ''} expanded`}>
-                <div className="checklist-header">
-                  <div className="checklist-status">
-                    {steps.kyc.completed ? (
-                      <span className="status-icon completed">✓</span>
-                    ) : (
-                      <span className="status-icon pending">1</span>
-                    )}
-                  </div>
-                  <div className="checklist-title">
-                    <h3>KYC Verification</h3>
-                    <p>Complete your Know Your Customer verification</p>
-                  </div>
-                </div>
-                
-                <div className="checklist-content">
-                    {!steps.kyc.completed ? (
-                      <div className="step-form">
-                        {/* Attempts remaining info */}
-                        {kycAttemptsRemaining !== null && (
-                          <div className="info-message" style={{ marginBottom: '12px' }}>
-                            ⚠️ {kycAttemptsRemaining} attempt{kycAttemptsRemaining !== 1 ? 's' : ''} remaining before your account is blocked.
-                          </div>
-                        )}
-
-                        {/* Any backend-provided message or generic error */}
-                        {error && (
-                          <div className="error-message" style={{ marginBottom: '12px' }}>
-                            <p>{error}</p>
-                          </div>
-                        )}
-
-                        {/* If account is actually blocked (backend returned KYC_BLOCKED), show a concise inline notice and disable the form */}
-                        {kycBlocked && (
-                          <div className="error-message" style={{ marginBottom: '12px' }}>
-                            <p>Your KYC option is currently blocked. Please contact support to unblock your account.</p>
-                          </div>
-                        )}
-
-                        <form onSubmit={handleKycSubmit} className="kyc-form">
-                          <div className="form-group">
-                            <label htmlFor="pan">PAN Card Number</label>
-                            <div className="input-with-status">
-                              <input
-                                type="text"
-                                id="pan"
-                                name="pan"
-                                value={kycForm.pan}
-                                onChange={handleKycInputChange}
-                                placeholder="Enter your PAN number"
-                                required
-                                pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
-                                title="Valid PAN format: ABCDE1234F"
-                                className={panStatus.verified ? 'verified' : ''}
-                              />
-                              {panStatus.checking && (
-                                <div className="input-status checking">
-                                  <span className="status-spinner"></span>
-                                  {panStatus.message}
-                                </div>
-                              )}
-                              {!panStatus.checking && panStatus.verified && (
-                                <div className="input-status verified">
-                                  <span className="status-icon">✓</span>
-                                  {panStatus.message}
-                                </div>
-                              )}
-                              {!panStatus.checking && panStatus.existsForOther && (
-                                <div className="input-status error">
-                                  <span className="status-icon">✕</span>
-                                  {panStatus.message}
-                                </div>
-                              )}
-                              {!panStatus.checking && panStatus.validated && !panStatus.verified && (
-                                <div className="input-status success">
-                                  <span className="status-icon">✓</span>
-                                  {panStatus.message}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          
-                          {/* Only show DOB field after PAN is validated */}
-                          {panStatus.validated && !panStatus.verified && (
-                            <div className="form-group">
-                              <label htmlFor="dob">Date of Birth</label>
-                              <input
-                                type="text"
-                                id="dob"
-                                name="dob"
-                                value={kycForm.dob}
-                                onChange={handleKycInputChange}
-                                placeholder="DD-MM-YYYY"
-                                required
-                                pattern="\d{2}-\d{2}-\d{4}"
-                                title="Format: DD-MM-YYYY"
-                              />
-                            </div>
-                          )}
-                          
-                          <div className="button-group">
-                            <button 
-                              type="submit" 
-                              className="primary-btn" 
-                              disabled={isLoading || panStatus.existsForOther || (!panStatus.validated && !panStatus.verified)}
-                            >
-                              {isLoading ? 'Verifying...' : 'Verify KYC'}
-                            </button>
-                            
-                            {isAdminUser && (
-                              <button
-                                type="button"
-                                className="secondary-btn bypass-btn"
-                                onClick={async () => {
-                                  setIsLoading(true);
-                                  try {
-                                    // Call the dedicated bypass endpoint
-                                    const response = await kycAPI.bypassKYC();
-                                    
-                                    if (response.success || response.isAlreadyVerified) {
-                                      // KYC done - unlock all other steps
-                                      setSteps(prevSteps => ({
-                                        ...prevSteps,
-                                        kyc: { ...prevSteps.kyc, completed: true, active: true },
-                                        phone: { ...prevSteps.phone, active: true },
-                                        signing: { ...prevSteps.signing, active: true },
-                                        payment: { ...prevSteps.payment, active: true }
-                                      }));
-                                      setKycCheckCompleted(true);
-                                      setKycResult({
-                                        success: true,
-                                        message: response.message || 'KYC verification bypassed (Admin)',
-                                        data: response.data,
-                                        isAlreadyVerified: true
-                                      });
-                                    } else {
-                                      alert('Failed to bypass KYC: ' + (response.error || 'Unknown error'));
-                                    }
-                                  } catch (err) {
-                                    console.error('Error bypassing KYC:', err);
-                                    alert('Error bypassing KYC: ' + err.message);
-                                  } finally {
-                                    setIsLoading(false);
-                                  }
-                                }}
-                                disabled={isLoading}
-                              >
-                                {isLoading ? 'Processing...' : 'Bypass KYC (Admin)'}
-                              </button>
-                            )}
-                          </div>
-                        </form>
-                      </div>
-                    ) : (
-                      <div className="step-result">
-                        <div className="success-message">
-                          <h4>
-                            {kycResult?.isAdminBypass ? 'Admin Verification Bypass' : 
-                              kycResult?.isAlreadyVerified ? 'KYC Already Verified' : 
-                              'KYC Verification Successful'}
-                          </h4>
-                          {kycResult?.message && <p>{kycResult.message}</p>}
-                          {kycResult?.isAdminBypass && (
-                            <p className="admin-note">
-                              As an admin, you can skip the verification process. You can still complete it if needed.
-                            </p>
-                          )}
-                        </div>
-                        
-                        {/* KYC Details section removed */}
-                      </div>
-                    )}
-                </div>
-              </div>
-              
-              {/* Phone Verification Step - Now Step 2 */}
-              <div className={`checklist-item ${steps.phone.completed ? 'completed' : ''} expanded ${!steps.kyc.completed ? 'disabled' : ''}`}>
-                <div className="checklist-header">
-                  <div className="checklist-status">
-                    {steps.phone.completed ? (
-                      <span className="status-icon completed">✓</span>
-                    ) : (
-                      <span className="status-icon pending">2</span>
-                    )}
-                  </div>
-                  <div className="checklist-title">
-                    <h3>Mobile Number Verification</h3>
-                    <p>Verify your mobile number with OTP</p>
-                  </div>
-                </div>
-                
-                <div className="checklist-content">
-                  {!steps.phone.completed ? (
-                    <div className="step-form">
-                      {phoneError && <div className="error-message">{phoneError}</div>}
-                      
-                      {!otpSent ? (
-                        <form onSubmit={handleSendOTP} className="phone-form">
-                          <div className="form-group">
-                            <label htmlFor="phone">Mobile Number</label>
-                            <input
-                              type="text"
-                              id="phone"
-                              name="phone"
-                              value={phoneForm.phone}
-                              onChange={handlePhoneInputChange}
-                              placeholder="Enter 10-digit mobile number"
-                              required
-                              pattern="\d{10}"
-                              title="Please enter a valid 10-digit mobile number"
-                              maxLength="10"
-                            />
-                          </div>
-                          
-                          <div className="button-group">
-                            <button 
-                              type="submit" 
-                              className="primary-btn" 
-                              disabled={phoneLoading}
-                            >
-                              {phoneLoading ? 'Sending OTP...' : 'Send OTP'}
-                            </button>
-                            
-                            {isAdminUser && (
-                              <button 
-                                type="button" 
-                                className="secondary-btn bypass-btn" 
-                                onClick={() => {
-                                  setSteps(prevSteps => ({
-                                    ...prevSteps,
-                                    phone: { ...prevSteps.phone, completed: true }
-                                  }));
-                                }}
-                                disabled={phoneLoading}
-                              >
-                                Bypass Phone (Admin)
-                              </button>
-                            )}
-                          </div>
-                        </form>
-                      ) : (
-                        <form onSubmit={handleVerifyOTP} className="otp-form">
-                          <div className="form-group">
-                            <label htmlFor="otp">Enter OTP</label>
-                            <OTPInput
-                              length={4}
-                              value={phoneForm.otp}
-                              onChange={handleOtpChange}
-                              disabled={phoneLoading}
-                              error={!!phoneError}
-                            />
-                            <p className="otp-info">4-digit OTP sent to {phoneForm.phone}</p>
-                          </div>
-                          
-                          <div className="button-group">
-                            <button 
-                              type="submit" 
-                              className="primary-btn" 
-                              disabled={phoneLoading}
-                            >
-                              {phoneLoading ? 'Verifying...' : 'Verify OTP'}
-                            </button>
-                            <button 
-                              type="button" 
-                              className="secondary-btn" 
-                              onClick={() => {
-                                setOtpSent(false);
-                                setPhoneForm({ ...phoneForm, otp: '' });
-                              }}
-                              disabled={phoneLoading}
-                            >
-                              Change Number
-                            </button>
-                          </div>
-                        </form>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="step-result">
-                      <div className="success-message">
-                        <h4>Mobile Number Verified</h4>
-                        <p>Your mobile number {phoneForm.phone} has been verified successfully.</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* E-Signing Step - Now Step 3 */}
-              <div className={`checklist-item ${steps.signing.completed ? 'completed' : ''} expanded ${!steps.kyc.completed ? 'disabled' : ''}`}>
-                <div className="checklist-header">
-                  <div className="checklist-status">
-                    {steps.signing.completed ? (
-                      <span className="status-icon completed">✓</span>
-                    ) : (
-                      <span className="status-icon pending">3</span>
-                    )}
-                  </div>
-                  <div className="checklist-title">
-                    <h3>E-Signing</h3>
-                    <p>Sign your investment documents electronically</p>
-                  </div>
-                </div>
-                
-                <div className="checklist-content">
-                    <div className="step-form">
-                      <p>Review and sign all required documents to finalize your investment.</p>
-                      
-                      {!steps.signing.completed ? (
-                        <div className="button-group">
-                          <Link 
-                            to="/esign" 
-                            className="primary-btn"
-                          >
-                            Proceed to E-Signing
-                          </Link>
-                          
-                          <button 
-                            type="button" 
-                            className="secondary-btn" 
-                            onClick={async () => {
-                              const storedActiveDocId = localStorage.getItem('active_esign_document_id');
-                              const docIdToCheck = activeDocumentId || storedActiveDocId;
-
-                              // Validate activeDocumentId
-                              if (!docIdToCheck || docIdToCheck === 'null' || docIdToCheck === 'undefined') {
-                                alert('No active e-signing session found. Please proceed to e-signing first.');
-                                return;
-                              }
-                              
-                              setIsLoading(true);
-                              try {
-                                // Use backend endpoint - it handles Leegality API call and file downloads
-                                const response = await esignAPI.checkDocumentStatus(docIdToCheck);
-                                
-                                if (!response.success) {
-                                  alert('Failed to check status: ' + (response.error || 'Unknown error'));
-                                  setIsLoading(false);
-                                  return;
-                                }
-                                
-                                const data = response.data;
-                                
-                                // Check completion status
-                                if (data.isCompleted) {
-                                  // Update UI
-                                  setSteps(prevSteps => ({
-                                    ...prevSteps,
-                                    signing: { ...prevSteps.signing, completed: true },
-                                    payment: { ...prevSteps.payment, active: true }
-                                  }));
-                                  
-                                  // Clear active document
-                                  setActiveDocumentId(null);
-                                  localStorage.removeItem('active_esign_document_id');
-                                  
-                                  alert('✓ E-signing completed successfully!');
-                                } else if (data.status === 'EXPIRED') {
-                                  alert('E-signing link has expired. Please restart the process.');
-                                  setActiveDocumentId(null);
-                                } else if (data.status === 'REJECTED') {
-                                  alert('E-signing was rejected. Please restart the process.');
-                                  setActiveDocumentId(null);
-                                } else {
-                                  // Show progress
-                                  const { signed, total } = data.signingDetails;
-                                  alert(`E-signing in progress: ${signed}/${total} have signed. Please complete the signing process.`);
-                                }
-                              } catch (err) {
-                                console.error('Error checking e-sign status:', err);
-                                alert('Error checking status: ' + err.message);
-                              } finally {
-                                setIsLoading(false);
-                              }
-                            }}
-                            disabled={isLoading}
-                          >
-                            {isLoading ? 'Checking...' : 'Check Status'}
-                          </button>
-                          
-                          {isAdminUser && (
-                            <button 
-                              type="button" 
-                              className="secondary-btn bypass-btn" 
-                              onClick={async () => {
-                                setIsLoading(true);
-                                try {
-                                  const response = await esignAPI.bypassEsign();
-                                  
-                                  if (response.success || response.isAlreadySigned) {
-                                    setSteps(prevSteps => ({
-                                      ...prevSteps,
-                                      signing: { ...prevSteps.signing, completed: true },
-                                      payment: { ...prevSteps.payment, active: true }
-                                    }));
-                                    
-                                    // Store the document ID for reference
-                                    if (response.documentId) {
-                                      localStorage.setItem('activeDocumentId', response.documentId);
-                                      setActiveDocumentId(response.documentId);
-                                    }
-                                    
-                                    alert(response.message || 'E-signing bypassed successfully');
-                                  } else {
-                                    alert('Failed to bypass e-signing: ' + (response.error || 'Unknown error'));
-                                  }
-                                } catch (err) {
-                                  console.error('Error bypassing e-signing:', err);
-                                  alert('Error bypassing e-signing: ' + err.message);
-                                } finally {
-                                  setIsLoading(false);
-                                }
-                              }}
-                              disabled={isLoading}
-                            >
-                              {isLoading ? 'Processing...' : 'Bypass E-Signing (Admin)'}
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="success-message">
-                          <h4>E-Signing Completed</h4>
-                          <p>All documents have been successfully signed.</p>
-                        </div>
-                      )}
-                    </div>
-                </div>
-              </div>
-              
-              {/* Payment Step - Now Step 4 */}
-              <div className={`checklist-item ${steps.payment.completed ? 'completed' : ''} expanded ${!steps.kyc.completed ? 'disabled' : ''}`}>
-                <div className="checklist-header">
-                  <div className="checklist-status">
-                    {steps.payment.completed ? (
-                      <span className="status-icon completed">✓</span>
-                    ) : (
-                      <span className="status-icon pending">4</span>
-                    )}
-                  </div>
-                  <div className="checklist-title">
-                    <h3>Payment</h3>
-                    <p>Make your investment payment to secure your position</p>
-                  </div>
-                </div>
-                
-                <div className="checklist-content">
-                  <div className="step-form">
-                    <p>Choose your investment plan and complete your payment securely using Razorpay.</p>
-                    
-                    {!steps.payment.completed ? (
-                      <div className="button-group">
-                        <button 
-                          className="primary-btn" 
-                          onClick={() => navigate('/pricing')}
-                        >
-                          Choose Plan & Pay
-                        </button>
-                        
-                        {isAdminUser && (
-                          <button 
-                            type="button" 
-                            className="secondary-btn bypass-btn" 
-                            onClick={async () => {
-                              setBypassLoading(true);
-                              try {
-                                const response = await userSubscriptionAPI.createTestSubscription();
-                                if (response.success) {
-                                  setSteps(prevSteps => ({
-                                    ...prevSteps,
-                                    payment: { ...prevSteps.payment, completed: true }
-                                  }));
-                                  alert(`Test subscription created: ${response.data.planName} (${response.data.duration})`);
-                                }
-                              } catch (err) {
-                                alert('Error creating test subscription: ' + err.message);
-                              } finally {
-                                setBypassLoading(false);
-                              }
-                            }}
-                            disabled={bypassLoading}
-                          >
-                            {bypassLoading ? 'Creating...' : 'Bypass Payment (Admin)'}
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="success-message">
-                        <h4>Payment Completed</h4>
-                        <p>Your investment payment has been processed successfully.</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Complete Button */}
-            {steps.phone.completed && steps.kyc.completed && steps.payment.completed && steps.signing.completed && (
-              <div className="complete-container">
-                <button className="complete-btn">
-                  Complete Setup Process
-                </button>
-              </div>
+        {/* Setup complete / Admin status box */}
+        <div className="setup-status-box">
+          <div className="status-icon completed">Ready</div>
+          <div className="status-message">
+            {isAdminUser ? (
+              <>
+                <h3>Admin Privileges</h3>
+                <p>You have admin privileges. <Link to="/admin" className="admin-link">Visit the Admin Dashboard</Link></p>
+              </>
+            ) : (
+              <>
+                <h3>Setup Complete</h3>
+                <p>Your account is fully set up and ready to use all features.</p>
+              </>
             )}
           </div>
         </div>
+
+        {/* Current Subscription Plan */}
+        {activeSubscription && (
+          <div className="current-subscription-section">
+            <h2>Your Current Plan</h2>
+            <div className="subscription-card">
+              <div className="subscription-header">
+                <div className="plan-info">
+                  <h3>{activeSubscription.subscription?.name || 'N/A'}</h3>
+                  <span className="plan-badge">{activeSubscription.subscription?.packageCode || 'PLAN'}</span>
+                </div>
+                <div className="plan-status">
+                  <span className={`status-badge ${activeSubscription.status}`}>
+                    {activeSubscription.status === 'active' ? 'Active' : activeSubscription.status}
+                  </span>
+                </div>
+              </div>
+              <div className="subscription-details">
+                <div className="detail-item">
+                  <span className="detail-label">Duration:</span>
+                  <span className="detail-value">
+                    {activeSubscription.duration === 'monthly' ? 'Monthly' :
+                     activeSubscription.duration === 'sixMonth' ? '6 Months' :
+                     activeSubscription.duration === 'yearly' ? 'Yearly' : activeSubscription.duration}
+                  </span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Start Date:</span>
+                  <span className="detail-value">{new Date(activeSubscription.startDate).toLocaleDateString()}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">End Date:</span>
+                  <span className="detail-value">{new Date(activeSubscription.endDate).toLocaleDateString()}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Days Remaining:</span>
+                  <span className="detail-value highlight">
+                    {Math.max(0, Math.ceil((new Date(activeSubscription.endDate) - new Date()) / (1000 * 60 * 60 * 24)))} days
+                  </span>
+                </div>
+              </div>
+              <div className="subscription-tip">
+                <div className="tip-content">
+                  <strong>Maximize your access.</strong> Purchase multiple plans to access more strategies.
+                  <Link to="/pricing" className="tip-link">Explore Plans →</Link>
+                </div>
+              </div>
+              <div className="subscription-actions">
+                <Link to="/pricing" className="view-plans-btn">View All Plans</Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* No Subscription */}
+        {!activeSubscription && !isAdminUser && (
+          <div className="no-subscription-section">
+            <div className="no-subscription-card">
+              <h3>No Active Subscription</h3>
+              <p>You don't have an active subscription plan yet. Choose a plan to get started.</p>
+              <Link to="/pricing" className="get-started-btn">View Pricing Plans</Link>
+            </div>
+          </div>
+        )}
+
+        {/* Stock Recommendations */}
+        {(isAdminUser || activeSubscription) && (
+          <div className="stock-recommendations-section">
+            <h2>{isAdminUser ? 'All Active Stock Recommendations' : 'Stock Recommendations'}</h2>
+            {isAdminUser && <p style={{ color: '#64748b', marginBottom: '1rem' }}>Viewing all active recommendations as admin</p>}
+            {loadingRecommendations ? (
+              <div className="loading-message">Loading recommendations...</div>
+            ) : stockRecommendations.length > 0 ? (
+              <div className="recommendations-table-container">
+                <table className="recommendations-table">
+                  <thead>
+                    <tr>
+                      <th>Stock</th><th>Type</th><th>Current</th>
+                      <th>Target 1</th><th>Target 2</th><th>Target 3</th>
+                      <th>Stop Loss</th><th>Timeframe</th><th>Report</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stockRecommendations.map((rec) => (
+                      <tr key={rec._id} className="rec-row">
+                        <td className="stock-cell">
+                          <span className="stock-symbol">{rec.stockSymbol}</span>
+                          <span className="stock-name">{rec.stockName}</span>
+                        </td>
+                        <td><span className={`rec-badge ${rec.recommendationType}`}>{rec.recommendationType.toUpperCase()}</span></td>
+                        <td className="price-cell">₹{rec.currentPrice}</td>
+                        <td className="price-cell target">₹{rec.targetPrice}</td>
+                        <td className="price-cell target">{rec.targetPrice2 ? `₹${rec.targetPrice2}` : '-'}</td>
+                        <td className="price-cell target">{rec.targetPrice3 ? `₹${rec.targetPrice3}` : '-'}</td>
+                        <td className="price-cell stoploss">{rec.stopLoss ? `₹${rec.stopLoss}` : '-'}</td>
+                        <td className="timeframe-cell">
+                          {rec.timeFrame === 'short_term' ? 'Short' : rec.timeFrame === 'medium_term' ? 'Medium' : 'Long'}
+                        </td>
+                        <td>
+                          {rec.pdfReport?.url
+                            ? <a href={rec.pdfReport.url} target="_blank" rel="noopener noreferrer" className="pdf-btn">View PDF</a>
+                            : '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="no-recommendations">
+                <p>No stock recommendations available at the moment.</p>
+                <p>Check back later for new opportunities!</p>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>
   );
+
 };
 
 export default Dashboard;

@@ -209,14 +209,14 @@
   height: 45px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
-  color: #fff !important;
+  color: #fff;
   font-size: 1.3rem;
   transition: all 0.3s ease;
   text-decoration: none;
 }
 
 .social-links a i {
-  color: #fff !important;
+  color: #fff;
   font-size: 1.3rem;
 }
 
@@ -226,7 +226,7 @@
 }
 
 .social-links a:hover i {
-  color: #fff !important;
+  color: #fff;
 }
 
 .social-links a:nth-child(1):hover {

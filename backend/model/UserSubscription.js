@@ -11,6 +11,11 @@ const userSubscriptionSchema = new mongoose.Schema({
     ref: 'Subscription',
     required: true
   },
+  serviceType: {
+    type: String,
+    enum: ['RA', 'IA'],
+    default: 'RA'
+  },
   status: {
     type: String,
     enum: ['active', 'expired', 'cancelled', 'pending'],

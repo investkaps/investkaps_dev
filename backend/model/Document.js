@@ -16,6 +16,11 @@ const DocumentSchema = new mongoose.Schema({
     required: true,
     enum: ['agreement', 'kyc', 'receipt', 'other']
   },
+  serviceType: {
+    type: String,
+    enum: ['RA', 'IA'],
+    default: 'RA'
+  },
   fileName: {
     type: String,
     required: true

@@ -42,11 +42,15 @@ const Hero = () => {
       >
         <motion.h1 className="hero-title" variants={itemVariants}>
           <span className="title-highlight">investkaps</span>
-          <span className="hero-tagline">...driven by research, guided by expertise</span>
+          <span className="hero-tagline lang-en" lang="en">...driven by research, guided by expertise</span>
+          <span className="hero-tagline lang-hi" lang="hi">...अनुसंधान द्वारा संचालित, विशेषज्ञता द्वारा निर्देशित</span>
         </motion.h1>
 
-        <motion.p className="hero-description" variants={itemVariants}>
+        <motion.p className="hero-description lang-en" lang="en" variants={itemVariants}>
           We are a SEBI-registered Research Analyst firm (Reg. No.: INH000016834) with extensive experience of navigating the Indian stock markets and focus on systematic, research-driven approach for trading and investment.
+        </motion.p>
+        <motion.p className="hero-description lang-hi" lang="hi" variants={itemVariants}>
+          हम एक सेबी-पंजीकृत रिसर्च एनालिस्ट फर्म (पंजी. सं.: INH000016834) हैं, जिसके पास भारतीय शेयर बाजारों में व्यापक अनुभव है और हम व्यापार और निवेश के लिए व्यवस्थित, अनुसंधान-आधारित दृष्टिकोण पर ध्यान केंद्रित करते हैं।
         </motion.p>
 
         <motion.div className="hero-actions" variants={itemVariants}>
@@ -63,10 +67,12 @@ const Hero = () => {
             >
               <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/>
             </svg>
-            Schedule a Meeting
+            <span className="lang-en" lang="en">Schedule a Meeting</span>
+            <span className="lang-hi" lang="hi">मीटिंग शेड्यूल करें</span>
           </a>
           <a href="https://investkaps.com/about" className="hero-cta-button hero-cta-secondary">
-            Meet Our Founder
+            <span className="lang-en" lang="en">Meet Our Founder</span>
+            <span className="lang-hi" lang="hi">हमारे संस्थापक से मिलें</span>
           </a>
         </motion.div>
 

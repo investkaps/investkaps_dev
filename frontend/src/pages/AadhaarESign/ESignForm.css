@@ -242,7 +242,7 @@
 .loading {
   position: relative;
   pointer-events: none;
-  color: transparent !important; /* hide button text, spinner takes over */
+  color: transparent; /* hide button text, spinner takes over */
 }
 
 .loading::before {

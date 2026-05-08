@@ -130,13 +130,13 @@
 
 /* Total Row Styling */
 .total-row td {
-  background: #fef3c7 !important;
+  background: #fef3c7;
   font-weight: 600;
   color: #1a202c;
 }
 
 .total-row:hover td {
-  background: #fde68a !important;
+  background: #fde68a;
 }
 
 /* Responsive Design */

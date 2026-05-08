@@ -62,13 +62,15 @@ const Newsletter = () => {
           
           <form onSubmit={handleSubmit} className="newsletter-form">
             <div className="newsletter-input-group">
+              <label htmlFor="newsletter-email" className="newsletter-visually-hidden">Email address</label>
               <input
                 type="email"
+                id="newsletter-email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email address"
                 className="newsletter-input"
                 disabled={isLoading}
+                aria-describedby={status.message ? 'newsletter-status-message' : undefined}
               />
               <button 
                 type="submit" 
@@ -81,7 +83,7 @@ const Newsletter = () => {
           </form>
 
           {status.message && (
-            <div className={`newsletter-status ${status.type}`}>
+            <div id="newsletter-status-message" className={`newsletter-status ${status.type}`}>
               {status.message}
             </div>
           )}

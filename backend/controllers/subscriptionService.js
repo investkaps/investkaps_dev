@@ -47,13 +47,49 @@ const calculateEndDate = (startDate, duration) => {
   }
 };
 
+const SERVICE_TYPES = ['RA', 'IA'];
+
+const normalizeServiceType = (serviceType) => {
+  const normalized = String(serviceType || 'RA').toUpperCase();
+  return SERVICE_TYPES.includes(normalized) ? normalized : 'RA';
+};
+
+const getUserActiveSubscriptions = async (userId, serviceType = null) => {
+  const query = {
+    user: userId,
+    status: 'active'
+  };
+
+  if (serviceType) {
+    query.serviceType = normalizeServiceType(serviceType);
+  }
+
+  return UserSubscription.find(query).populate('subscription').sort({ createdAt: -1 });
+};
+
+const hasActiveSubscriptionForService = async (userId, serviceType) => {
+  const normalizedServiceType = normalizeServiceType(serviceType);
+  const subscriptions = await getUserActiveSubscriptions(userId, normalizedServiceType);
+
+  return subscriptions.some((entry) => {
+    const planServiceType = normalizeServiceType(entry.serviceType || entry.subscription?.serviceType);
+    return planServiceType === normalizedServiceType;
+  });
+};
+
 // ===== SUBSCRIPTION PLANS MANAGEMENT (ADMIN) =====
 
 // Get all subscription plans (public)
 export const getAllSubscriptions = async (req, res) => {
   try {
     // For public access, only return active subscriptions
-    const subscriptions = await Subscription.find({ isActive: true })
+    const filter = { isActive: true };
+
+    if (req.query.serviceType) {
+      filter.serviceType = normalizeServiceType(req.query.serviceType);
+    }
+
+    const subscriptions = await Subscription.find(filter)
       .sort({ displayOrder: 1, price: 1 });
     
     res.status(200).json({
@@ -73,7 +109,13 @@ export const getAllSubscriptions = async (req, res) => {
 // Get all subscription plans (admin only - includes inactive)
 export const getAllSubscriptionsAdmin = async (req, res) => {
   try {
-    const subscriptions = await Subscription.find()
+    const filter = {};
+
+    if (req.query.serviceType) {
+      filter.serviceType = normalizeServiceType(req.query.serviceType);
+    }
+
+    const subscriptions = await Subscription.find(filter)
       .populate('strategies')
       .sort({ displayOrder: 1, price: 1 });
     
@@ -121,6 +163,7 @@ export const getSubscriptionById = async (req, res) => {
 export const createSubscription = async (req, res) => {
   try {
     const {
+      serviceType,
       packageCode,
       name,
       description,
@@ -142,8 +185,11 @@ export const createSubscription = async (req, res) => {
       });
     }
 
+    const normalizedServiceType = normalizeServiceType(serviceType);
+
     // Create subscription
     const subscription = await Subscription.create({
+      serviceType: normalizedServiceType,
       packageCode,
       name,
       description,
@@ -175,6 +221,7 @@ export const createSubscription = async (req, res) => {
 export const updateSubscription = async (req, res) => {
   try {
     const {
+      serviceType,
       packageCode,
       name,
       description,
@@ -199,8 +246,11 @@ export const updateSubscription = async (req, res) => {
       });
     }
 
+    const normalizedServiceType = serviceType ? normalizeServiceType(serviceType) : normalizeServiceType(subscription.serviceType);
+
     // Update fields
     const updateData = {
+      serviceType: normalizedServiceType,
       packageCode: packageCode || subscription.packageCode,
       name: name || subscription.name,
       description: description || subscription.description,
@@ -398,7 +448,12 @@ export const getUserSubscriptions = async (req, res) => {
       });
     }
     
-    const subscriptions = await UserSubscription.find({ user: user._id })
+    const query = { user: user._id };
+    if (req.query.serviceType) {
+      query.serviceType = normalizeServiceType(req.query.serviceType);
+    }
+
+    const subscriptions = await UserSubscription.find(query)
       .populate('subscription')
       .sort({ createdAt: -1 });
     
@@ -420,6 +475,7 @@ export const getUserSubscriptions = async (req, res) => {
 export const getActiveSubscription = async (req, res) => {
   try {
     const clerkUserId = req.params.userId;
+    const requestedServiceType = req.query.serviceType ? normalizeServiceType(req.query.serviceType) : null;
         
     // First, find the User document by Clerk ID
     const user = await User.findOne({ clerkId: clerkUserId });
@@ -431,12 +487,25 @@ export const getActiveSubscription = async (req, res) => {
     }
     
     // Find ALL active subscriptions using the MongoDB User ObjectId
-    const subscriptions = await UserSubscription.find({
+    const query = {
       user: user._id,
       status: 'active'
-    })
+    };
+
+    if (requestedServiceType) {
+      query.serviceType = requestedServiceType;
+    }
+
+    const subscriptions = await UserSubscription.find(query)
     .populate('subscription')
     .sort({ createdAt: -1 }); // Most recent first
+
+    if (requestedServiceType && subscriptions.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Subscription not found'
+      });
+    }
     
     // Return array of subscriptions (can be empty)
     res.status(200).json({
@@ -526,6 +595,15 @@ export const createOrder = async (req, res) => {
         error: 'Subscription not found'
       });
     }
+
+    const subscriptionServiceType = normalizeServiceType(subscription.serviceType);
+
+    if (subscriptionServiceType === 'IA' && await hasActiveSubscriptionForService(userId, 'RA')) {
+      return res.status(409).json({
+        success: false,
+        error: 'IA onboarding is not available while you have an active RA subscription.'
+      });
+    }
     
     // Verify the amount matches the subscription price for the selected duration
     const expectedAmount = subscription.pricing[duration];
@@ -548,7 +626,8 @@ export const createOrder = async (req, res) => {
       notes: {
         userId,
         subscriptionId,
-        duration
+        duration,
+        serviceType: subscriptionServiceType
       }
     };
     
@@ -621,6 +700,15 @@ export const verifyPayment = async (req, res) => {
         error: 'Subscription not found'
       });
     }
+
+    const subscriptionServiceType = normalizeServiceType(subscription.serviceType);
+
+    if (subscriptionServiceType === 'IA' && await hasActiveSubscriptionForService(userId, 'RA')) {
+      return res.status(409).json({
+        success: false,
+        error: 'IA onboarding is not available while you have an active RA subscription.'
+      });
+    }
     
     // Get user details
     const user = await User.findById(userId);
@@ -661,6 +749,7 @@ export const verifyPayment = async (req, res) => {
     const newUserSubscription = new UserSubscription({
       user: userId,
       subscription: planId,
+      serviceType: subscriptionServiceType,
       startDate,
       endDate,
       duration,
@@ -745,8 +834,22 @@ export const createTestSubscription = async (req, res) => {
       });
     }
     
+    const activeRaExists = await hasActiveSubscriptionForService(userId, 'RA');
+
+    const eligibleSubscriptions = activeRaExists
+      ? subscriptions.filter((plan) => normalizeServiceType(plan.serviceType) !== 'IA')
+      : subscriptions;
+
+    if (eligibleSubscriptions.length === 0) {
+      return res.status(409).json({
+        success: false,
+        error: 'No eligible subscription plans are available for this account.'
+      });
+    }
+
     // Pick a random subscription (or use the first one)
-    const subscription = subscriptions[Math.floor(Math.random() * subscriptions.length)];
+    const subscription = eligibleSubscriptions[Math.floor(Math.random() * eligibleSubscriptions.length)];
+    const subscriptionServiceType = normalizeServiceType(subscription.serviceType);
     
     // Random duration
     const durations = ['monthly', 'sixMonth', 'yearly'];
@@ -779,6 +882,7 @@ export const createTestSubscription = async (req, res) => {
     const newUserSubscription = new UserSubscription({
       user: userId,
       subscription: subscription._id,
+      serviceType: subscriptionServiceType,
       startDate,
       endDate,
       duration,

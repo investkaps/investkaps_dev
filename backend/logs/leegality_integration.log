@@ -34,3 +34,5 @@
 {"timestamp":"2026-02-14T05:43:36.649Z","level":"INFO","message":"Sending request to Leegality API","details":{"url":"https://app1.leegality.com/api/v3.0/sign/request","profileId":"TNbM5NR","fileName":"Terms and Conditions","pdfSize":333364}}
 {"timestamp":"2026-02-14T05:43:37.377Z","level":"ERROR","message":"Error creating signature request","details":{"message":"Request failed with status code 403","status":403,"response":{"data":{},"messages":[{"code":null,"message":"Access Denied"}],"status":0},"payloadSize":333364}}
 {"timestamp":"2026-02-14T08:26:40.987Z","level":"INFO","message":"Document details retrieved","details":{"documentId":"01KHDKZ3BYTP84JM8M38F6EH54","status":200,"apiStatus":1}}
+{"timestamp":"2026-05-05T08:28:07.577Z","level":"INFO","message":"Document details retrieved","details":{"documentId":"01KQVM066D6ME4PSJ93XFDT19M","status":200,"apiStatus":1}}
+{"timestamp":"2026-05-05T08:29:04.071Z","level":"INFO","message":"Document details retrieved","details":{"documentId":"01KQVM066D6ME4PSJ93XFDT19M","status":200,"apiStatus":1}}

@@ -133,7 +133,7 @@ const Subscribe = () => {
                 className="plan-read-more"
                 onClick={() => setExpandedPlan(isExpanded ? null : plan.id)}
               >
-                {isExpanded ? 'Show less' : 'Read more'}
+                {isExpanded ? 'Show less' : 'Read plan details'}
               </button>
               <a href="https://trade.investkaps.com/checkout" className="plan-button">
                 Subscribe
@@ -158,13 +158,20 @@ const Subscribe = () => {
       <div className="subscribe-container">
         {/* Header */}
         <div className="page-header">
-          <h1 className="page-title">Subscription Plans</h1>
-          <p className="page-subtitle">You may choose the offering best suited to your requirements</p>
+          <h1 className="page-title">
+            <span className="lang-en" lang="en">Subscription Plans</span>
+            <span className="lang-hi" lang="hi">सदस्यता योजनाएं</span>
+          </h1>
+          <p className="page-subtitle lang-en" lang="en">You may choose the offering best suited to your requirements</p>
+          <p className="page-subtitle lang-hi" lang="hi">आप अपनी आवश्यकताओं के अनुसार सबसे उपयुक्त प्रस्ताव चुन सकते हैं</p>
         </div>
 
         {/* Stock Recommendation Plans */}
         <div className="plan-category">
-          <h2 className="category-title">Stock Recommendation Plans</h2>
+          <h2 className="category-title">
+            <span className="lang-en" lang="en">Stock Recommendation Plans</span>
+            <span className="lang-hi" lang="hi">स्टॉक अनुशंसा योजनाएं</span>
+          </h2>
           <div className="plans-grid">
             {planCards.filter((plan) => plan.category === 'Stock Recommendation Plans').map(renderPlanCard)}
           </div>
@@ -172,7 +179,10 @@ const Subscribe = () => {
 
         {/* Stock & Index Derivatives Plans */}
         <div className="plan-category">
-          <h2 className="category-title">Stock & Index Derivatives Plans</h2>
+          <h2 className="category-title">
+            <span className="lang-en" lang="en">Stock & Index Derivatives Plans</span>
+            <span className="lang-hi" lang="hi">स्टॉक और इंडेक्स डेरिवेटिव योजनाएं</span>
+          </h2>
           <div className="plans-grid">
             {planCards.filter((plan) => plan.category === 'Stock & Index Derivatives Plans').map(renderPlanCard)}
           </div>
@@ -180,15 +190,22 @@ const Subscribe = () => {
 
         {/* Model Portfolios */}
         <div className="plan-category">
-          <h2 className="category-title">Model Portfolios</h2>
+          <h2 className="category-title">
+            <span className="lang-en" lang="en">Model Portfolios</span>
+            <span className="lang-hi" lang="hi">मॉडल पोर्टफोलियो</span>
+          </h2>
           <div className="plans-grid">
             <div className="plan-card coming-soon">
               <div className="plan-image">
                 <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=250&fit=crop" alt="Portfolio Management" />
               </div>
-              <h3 className="plan-name">Core Alpha Model Portfolio</h3>
+              <h3 className="plan-name">
+                <span className="lang-en" lang="en">Core Alpha Model Portfolio</span>
+                <span className="lang-hi" lang="hi">कोर अल्फा मॉडल पोर्टफोलियो</span>
+              </h3>
               <div className="plan-status">
-                <span className="status-text">...to be launched soon</span>
+                <span className="status-text lang-en" lang="en">...to be launched soon</span>
+                <span className="status-text lang-hi" lang="hi">...जल्द लॉन्च किया जाएगा</span>
               </div>
             </div>
             {planCards.filter((plan) => plan.category === 'Model Portfolios').map(renderPlanCard)}
@@ -198,13 +215,21 @@ const Subscribe = () => {
         {/* Free Subscription Section */}
         <div className="free-subscription-section">
           <div className="free-subscription-card">
-            <h2 className="free-title">Free Subscription</h2>
-            <p className="free-description">
+            <h2 className="free-title">
+              <span className="lang-en" lang="en">Free Subscription</span>
+              <span className="lang-hi" lang="hi">मुफ्त सदस्यता</span>
+            </h2>
+            <p className="free-description lang-en" lang="en">
               We have free subscription for you with regular market updates, sector analysis, 
               analysis of financial results, free stock ideas and recommendations and more.
             </p>
+            <p className="free-description lang-hi" lang="hi">
+              हमारे पास आपके लिए मुफ्त सदस्यता है जिसमें नियमित बाजार अपडेट, क्षेत्र विश्लेषण, 
+              वित्तीय परिणामों का विश्लेषण, मुफ्त स्टॉक विचार और अनुशंसाएं और बहुत कुछ शामिल हैं।
+            </p>
             <a href="https://trade.investkaps.com/checkout" className="free-button">
-              Subscribe For Free
+              <span className="lang-en" lang="en">Subscribe For Free</span>
+              <span className="lang-hi" lang="hi">मुफ्त सदस्यता लें</span>
             </a>
           </div>
         </div>

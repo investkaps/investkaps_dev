@@ -13,8 +13,16 @@ function base64Preview(b64) {
 // POST /api/esign
 router.post('/esign', verifyToken, async (req, res) => {
   try {
-    const { name, profileId, file, irn, invitees, fileName } = req.body;
+    const { name, profileId, file, irn, invitees, fileName, serviceType } = req.body;
     const userId = req.user?.id; // Get user ID from auth token
+    const normalizedServiceType = String(serviceType || 'RA').toUpperCase();
+
+    if (!['RA', 'IA'].includes(normalizedServiceType)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid serviceType. Expected RA or IA.'
+      });
+    }
     
     // ✅ FIXED: Proper extraction from invitees array
     const invitee = Array.isArray(invitees) && invitees.length ? invitees[0] : undefined;
@@ -40,6 +48,7 @@ router.post('/esign', verifyToken, async (req, res) => {
 
     console.log('📤 BACKEND REQUEST:');
     console.log('   Method: POST /api/esign');
+    console.log('   Service Type:', normalizedServiceType);
     console.log('   Profile ID:', profileId);
     console.log('   Invitee:', { name: inviteeName || name || '', email });
     console.log('   File Name:', file?.name || fileName || 'Terms and Conditions');
@@ -73,9 +82,10 @@ router.post('/esign', verifyToken, async (req, res) => {
         try {
           const document = new Document({
             user: userId,
-            name: fileName || 'Terms and Conditions',
+            name: fileName || (normalizedServiceType === 'IA' ? 'IA Service Agreement' : 'RA Client Agreement'),
             type: 'agreement',
-            fileName: fileName || 'Terms and Conditions',
+            serviceType: normalizedServiceType,
+            fileName: fileName || (normalizedServiceType === 'IA' ? 'IA Service Agreement' : 'RA Client Agreement'),
             filePath: '/esign/documents',
             fileSize: 0,
             mimeType: 'application/pdf',
@@ -119,6 +129,7 @@ router.post('/esign', verifyToken, async (req, res) => {
           console.log('💾 DOCUMENT SAVED TO MONGODB:');
           console.log('   MongoDB ID:', document._id);
           console.log('   Leegality ID:', document.esign.documentId);
+          console.log('   Service Type:', normalizedServiceType);
           console.log('   Status:', document.esign.status);
           
           // Add MongoDB document ID to response for frontend to store
@@ -159,15 +170,22 @@ router.post('/esign', verifyToken, async (req, res) => {
 router.get('/esign/active', verifyToken, async (req, res) => {
   try {
     const userId = req.user?.id;
+    const requestedServiceType = req.query.serviceType ? String(req.query.serviceType).toUpperCase() : null;
     
     console.log('📤 GET ACTIVE DOCUMENT REQUEST:');
     console.log('   User ID:', userId);
     
     // Find most recent esign document for this user (including completed)
-    const document = await Document.findOne({
+    const filter = {
       user: userId,
       'esign.status': { $in: ['pending', 'SENT', 'SIGNED', 'COMPLETED', 'completed'] }
-    }).sort({ createdAt: -1 });
+    };
+
+    if (requestedServiceType && ['RA', 'IA'].includes(requestedServiceType)) {
+      filter.serviceType = requestedServiceType;
+    }
+
+    const document = await Document.findOne(filter).sort({ createdAt: -1 });
     
     if (!document) {
       console.log('📤 NO ACTIVE DOCUMENT FOUND');

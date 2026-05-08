@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import './OTPInput.css';
 
-const OTPInput = ({ length = 6, value, onChange, disabled = false, error = false }) => {
+const OTPInput = ({ length = 6, value, onChange, disabled = false, error = false, ariaDescribedBy }) => {
   const [otp, setOtp] = useState(Array(length).fill(''));
   const inputRefs = useRef([]);
 
@@ -114,6 +114,9 @@ const OTPInput = ({ length = 6, value, onChange, disabled = false, error = false
           disabled={disabled}
           className={`otp-input ${error ? 'otp-input-error' : ''} ${digit ? 'otp-input-filled' : ''}`}
           autoComplete="off"
+          aria-label={`Enter OTP digit ${index + 1} of ${length}`}
+          aria-invalid={error ? 'true' : 'false'}
+          aria-describedby={error && ariaDescribedBy ? ariaDescribedBy : undefined}
         />
       ))}
     </div>

@@ -165,37 +165,42 @@ const QRPaymentModal = ({ plan, duration, price, onClose, currentUser, onSuccess
           <form onSubmit={handleSubmit} className="qr-payment-form">
             <h4>Upload Transaction Proof</h4>
             
-            {error && <div className="error-message">{error}</div>}
+            {error && <div id="qr-payment-error" className="error-message">{error}</div>}
 
             <div className="form-group">
-              <label>Sender Name *</label>
+              <label htmlFor="senderName">Sender Name *</label>
               <input
+                id="senderName"
                 type="text"
                 value={formData.senderName}
                 onChange={(e) => setFormData({ ...formData, senderName: e.target.value })}
                 placeholder="Enter name as per transaction"
                 required
+                aria-describedby={error ? 'qr-payment-error' : undefined}
               />
             </div>
 
             <div className="form-group">
-              <label>Transaction ID / UTR Number *</label>
+              <label htmlFor="transactionId">Transaction ID / UTR Number *</label>
               <input
+                id="transactionId"
                 type="text"
                 value={formData.transactionId}
                 onChange={(e) => setFormData({ ...formData, transactionId: e.target.value })}
-                placeholder="Enter transaction ID"
                 required
+                aria-describedby={error ? 'qr-payment-error' : undefined}
               />
             </div>
 
             <div className="form-group">
-              <label>Transaction Screenshot *</label>
+              <label htmlFor="transactionScreenshot">Transaction Screenshot *</label>
               <input
+                id="transactionScreenshot"
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
                 required
+                aria-describedby={error ? 'qr-payment-error' : undefined}
               />
               {imagePreview && (
                 <div className="image-preview">

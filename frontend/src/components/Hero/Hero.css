@@ -206,36 +206,36 @@
 }
 
 .hero-cta-primary {
-  background: linear-gradient(135deg, #2980b9, #3498db) !important;
-  border: none !important;
-  padding: 1rem 2.5rem !important;
-  font-size: 1.1rem !important;
-  font-weight: 600 !important;
-  border-radius: 50px !important;
-  box-shadow: 0 10px 30px rgba(41, 128, 185, 0.3) !important;
-  transition: all 0.3s ease !important;
+  background: linear-gradient(135deg, #2980b9, #3498db);
+  border: none;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  box-shadow: 0 10px 30px rgba(41, 128, 185, 0.3);
+  transition: all 0.3s ease;
 }
 
 .hero-cta-primary:hover {
   transform: translateY(-3px);
-  box-shadow: 0 15px 40px rgba(41, 128, 185, 0.4) !important;
+  box-shadow: 0 15px 40px rgba(41, 128, 185, 0.4);
 }
 
 .hero-cta-secondary {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 2px solid rgba(255, 255, 255, 0.3) !important;
-  color: white !important;
-  padding: 1rem 2.5rem !important;
-  font-size: 1.1rem !important;
-  font-weight: 600 !important;
-  border-radius: 50px !important;
-  backdrop-filter: blur(10px) !important;
-  transition: all 0.3s ease !important;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
 }
 
 .hero-cta-secondary:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
-  border-color: rgba(255, 255, 255, 0.5) !important;
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
   transform: translateY(-3px);
 }
 
@@ -449,8 +449,8 @@
   .hero-cta-button,
   .hero-cta-primary,
   .hero-cta-secondary {
-    padding: 0.8rem 2rem !important;
-    font-size: 1rem !important;
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
   }
 
   .hero-badge {

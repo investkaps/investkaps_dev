@@ -227,9 +227,9 @@ const Register = () => {
                         value={formData.email}
                         onChange={handleChange}
                         className={errors.email ? 'error' : ''}
-                        placeholder="Enter your email"
+                        aria-describedby={errors.email ? 'register-email-error' : undefined}
                       />
-                      {errors.email && <span className="error-message">{errors.email}</span>}
+                      {errors.email && <span id="register-email-error" className="error-message">{errors.email}</span>}
                     </div>
                     
                     <div className="form-checkbox">
@@ -240,11 +240,12 @@ const Register = () => {
                         checked={formData.agreeTerms}
                         onChange={handleChange}
                         className={errors.agreeTerms ? 'error' : ''}
+                        aria-describedby={errors.agreeTerms ? 'register-terms-error' : undefined}
                       />
                       <label htmlFor="agreeTerms">
                         I agree to the <Link to="/terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms and Conditions</Link>
                       </label>
-                      {errors.agreeTerms && <span className="error-message">{errors.agreeTerms}</span>}
+                      {errors.agreeTerms && <span id="register-terms-error" className="error-message">{errors.agreeTerms}</span>}
                     </div>
                     
                     <button 
@@ -271,8 +272,9 @@ const Register = () => {
                         onChange={handleOtpChange}
                         disabled={loading}
                         error={!!errors.otp}
+                        ariaDescribedBy="register-otp-error"
                       />
-                      {errors.otp && <span className="error-message">{errors.otp}</span>}
+                      {errors.otp && <span id="register-otp-error" className="error-message">{errors.otp}</span>}
                     </div>
                     
                     <button 

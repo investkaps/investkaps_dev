@@ -44,19 +44,33 @@ const CTA = () => {
               <path d="M2 17l10 5 10-5"></path>
               <path d="M2 12l10 5 10-5"></path>
             </svg>
-            <span>Start Investing Today</span>
+            <span className="lang-en" lang="en">Start Investing Today</span>
+            <span className="lang-hi" lang="hi">आज ही निवेश शुरू करें</span>
           </motion.div>
-          <motion.h2 className="cta-title" variants={itemVariants}>Ready to Grow Your Wealth?</motion.h2>
-          <motion.p className="cta-description" variants={itemVariants}>
+          <motion.h2 className="cta-title" variants={itemVariants}>
+            <span className="lang-en" lang="en">Ready to Grow Your Wealth?</span>
+            <span className="lang-hi" lang="hi">अपनी संपत्ति बढ़ाने के लिए तैयार हैं?</span>
+          </motion.h2>
+          <motion.p className="cta-description lang-en" lang="en" variants={itemVariants}>
             Join thousands of successful investors who trust InvestKaps for expert investment advisory.
             Get personalized stock recommendations and market insights tailored to your goals.
           </motion.p>
+          <motion.p className="cta-description lang-hi" lang="hi" variants={itemVariants}>
+            उन हजारों सफल निवेशकों से जुड़ें जो विशेषज्ञ निवेश सलाह के लिए InvestKaps पर भरोसा करते हैं।
+            अपने लक्ष्यों के अनुरूप व्यक्तिगत स्टॉक अनुशंसाएं और बाजार अंतर्दृष्टि प्राप्त करें।
+          </motion.p>
           <motion.div className="cta-buttons" variants={itemVariants}>
             <Link to="/dashboard">
-              <Button type="primary" size="large">Get Started Today</Button>
+              <Button type="primary" size="large">
+                <span className="lang-en" lang="en">Get Started Today</span>
+                <span className="lang-hi" lang="hi">आज ही शुरू करें</span>
+              </Button>
             </Link>
             <Link to="/dashboard">
-              <Button type="outline" size="large">View Dashboard</Button>
+              <Button type="outline" size="large">
+                <span className="lang-en" lang="en">View Dashboard</span>
+                <span className="lang-hi" lang="hi">डैशबोर्ड देखें</span>
+              </Button>
             </Link>
           </motion.div>
         </motion.div>

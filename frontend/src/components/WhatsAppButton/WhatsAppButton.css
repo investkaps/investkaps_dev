@@ -1,8 +1,11 @@
-.whatsapp-float {
+.whatsapp-float-wrapper {
   position: fixed;
   bottom: 24px;
   left: 24px;
   z-index: 1000;
+}
+
+.whatsapp-float {
   display: flex;
   align-items: center;
   text-decoration: none;
@@ -11,7 +14,7 @@
 .whatsapp-icon {
   width: 60px;
   height: 60px;
-  background: #25D366;
+  background: #0d6b38;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -73,7 +76,7 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: #25D366;
+  background: #0d6b38;
   animation: whatsapp-pulse 2s infinite;
   z-index: -1;
 }
@@ -91,7 +94,7 @@
 
 /* Mobile responsive */
 @media screen and (max-width: 768px) {
-  .whatsapp-float {
+  .whatsapp-float-wrapper {
     bottom: 20px;
     left: 16px;
   }
@@ -117,7 +120,7 @@
 }
 
 @media screen and (max-width: 480px) {
-  .whatsapp-float {
+  .whatsapp-float-wrapper {
     bottom: 16px;
     left: 12px;
   }

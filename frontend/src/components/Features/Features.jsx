@@ -141,10 +141,19 @@ const Features = () => {
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
         >
-          <motion.span className="section-label" variants={labelVariants}>Why Choose Us</motion.span>
-          <motion.h2 className="section-title" variants={headerVariants}>Investment Excellence</motion.h2>
-          <motion.p className="section-description" variants={headerVariants}>
+          <motion.span className="section-label" variants={labelVariants}>
+            <span className="lang-en" lang="en">Why Choose Us</span>
+            <span className="lang-hi" lang="hi">हमें क्यों चुनें</span>
+          </motion.span>
+          <motion.h2 className="section-title" variants={headerVariants}>
+            <span className="lang-en" lang="en">Investment Excellence</span>
+            <span className="lang-hi" lang="hi">निवेश उत्कृष्टता</span>
+          </motion.h2>
+          <motion.p className="section-description lang-en" lang="en" variants={headerVariants}>
             Empowering investors with professional advisory services and cutting-edge technology
+          </motion.p>
+          <motion.p className="section-description lang-hi" lang="hi" variants={headerVariants}>
+            पेशेवर सलाहकार सेवाओं और अत्याधुनिक तकनीक के साथ निवेशकों को सशक्त बनाना
           </motion.p>
         </motion.div>
 

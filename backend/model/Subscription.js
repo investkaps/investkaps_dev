@@ -70,6 +70,11 @@ const subscriptionSchema = new mongoose.Schema({
     trim: true,
     unique: true
   },
+  serviceType: {
+    type: String,
+    enum: ['RA', 'IA'],
+    default: 'RA'
+  },
   name: {
     type: String,
     required: true,

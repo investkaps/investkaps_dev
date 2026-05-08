@@ -168,10 +168,10 @@ const Login = () => {
                   value={email}
                   onChange={handleEmailChange}
                   className={errors.email ? 'error' : ''}
-                  placeholder="Enter your email"
                   disabled={loading}
+                  aria-describedby={errors.email ? 'login-email-error' : undefined}
                 />
-                {errors.email && <span className="error-message">{errors.email}</span>}
+                {errors.email && <span id="login-email-error" className="error-message">{errors.email}</span>}
               </div>
               
               <button 
@@ -200,8 +200,9 @@ const Login = () => {
                   onChange={handleOtpChange}
                   disabled={loading}
                   error={!!errors.otp}
+                  ariaDescribedBy="login-otp-error"
                 />
-                {errors.otp && <span className="error-message">{errors.otp}</span>}
+                {errors.otp && <span id="login-otp-error" className="error-message">{errors.otp}</span>}
               </div>
 
               <button 

@@ -541,3 +541,142 @@
 2026-04-22 01:00:00 info: Running scheduled task: Check expired subscriptions
 2026-04-22 01:00:01 info: Found 0 expired subscriptions to update
 2026-04-22 01:00:01 info: Updated 0 expired subscriptions
+2026-05-05 13:28:37 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 13:28:37 info: GET /api/users/email/aiman.singh%40kalvium.community {"ip":"::1"}
+2026-05-05 13:28:38 info: GET /api/users/email/aiman.singh%40kalvium.community {"ip":"::1"}
+2026-05-05 13:28:38 info: POST /api/users/create {"ip":"::1"}
+2026-05-05 13:28:38 info: GET /api/users/email/aiman.singh%40kalvium.community {"ip":"::1"}
+2026-05-05 13:28:38 info: POST /api/users/create {"ip":"::1"}
+2026-05-05 13:28:40 info: GET /api/esign/active {"ip":"::1"}
+2026-05-05 13:28:40 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g/kyc {"ip":"::1"}
+2026-05-05 13:28:40 info: GET /api/subscriptions/user/user_3DIS6q5Lh59NymscfBeRehDo24g/active {"ip":"::1"}
+2026-05-05 13:28:40 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-05 13:28:40 info: GET /api/users/email/aiman.singh%40kalvium.community/kyc {"ip":"::1"}
+2026-05-05 13:33:36 info: GET /api/kyc/check-pan/RARPS6224N {"ip":"::1"}
+2026-05-05 13:35:02 info: GET /api/kyc/check-pan/RARPS6224N {"ip":"::1"}
+2026-05-05 13:35:08 info: POST /api/kyc/verify {"ip":"::1"}
+2026-05-05 13:35:08 info: KYC request started {"requestId":"KYC_1777968308589_7c31jyzsu"}
+2026-05-05 13:35:08 info: Calling KYC API (AWS EC2) {"pan":"RARP****","attempt":1}
+2026-05-05 13:35:10 info: KYC API response received {"status":200,"pan":"RARP****"}
+2026-05-05 13:35:10 info: KYC proxy response {"pan":"RARP****","statusCode":"07","success":true}
+2026-05-05 13:35:10 info: PAN KYC data fetched successfully {"pan":"RARP****","statusCode":"07"}
+2026-05-05 13:35:10 info: KYC proxy response received {"requestId":"KYC_1777968308589_7c31jyzsu","pan":"RARP****","statusCode":"07","kycStatus":"VERIFIED"}
+2026-05-05 13:35:10 info: KYC data extracted {"requestId":"KYC_1777968308589_7c31jyzsu","pan":"RARP****","kycStatus":"VERIFIED"}
+2026-05-05 13:35:10 info: KYC verification record saved {"requestId":"KYC_1777968308589_7c31jyzsu","recordId":"69f9a4b6009a974c2c2b8d15"}
+2026-05-05 13:35:10 info: User KYC status updated {"requestId":"KYC_1777968308589_7c31jyzsu","userId":"69f9a32e009a974c2c2b8cf8"}
+2026-05-05 13:35:10 info: KYC request completed successfully {"requestId":"KYC_1777968308589_7c31jyzsu","recordId":"69f9a4b6009a974c2c2b8d15","durationMs":2126}
+2026-05-05 13:35:16 info: GET /api/phone/check/8178218011 {"ip":"::1"}
+2026-05-05 13:36:25 info: GET /api/esign/active {"ip":"::1"}
+2026-05-05 13:36:25 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g/kyc {"ip":"::1"}
+2026-05-05 13:36:25 info: GET /api/subscriptions/user/user_3DIS6q5Lh59NymscfBeRehDo24g/active {"ip":"::1"}
+2026-05-05 13:36:25 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-05 13:56:08 info: POST /api/esign {"ip":"::1"}
+2026-05-05 13:57:44 info: POST /api/esign {"ip":"::1"}
+2026-05-05 13:57:56 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 13:58:00 info: GET /api/esign/active {"ip":"::1"}
+2026-05-05 13:58:00 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g/kyc {"ip":"::1"}
+2026-05-05 13:58:00 info: GET /api/subscriptions/user/user_3DIS6q5Lh59NymscfBeRehDo24g/active {"ip":"::1"}
+2026-05-05 13:58:00 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-05 13:58:07 info: GET /api/esign/document/69f9aa01009a974c2c2b8d27 {"ip":"::1"}
+2026-05-05 13:59:03 info: GET /api/esign/document/69f9aa01009a974c2c2b8d27 {"ip":"::1"}
+2026-05-05 13:59:13 info: GET /api/subscriptions/plans {"ip":"::1"}
+2026-05-05 13:59:13 info: GET /api/subscriptions/user/user_3DIS6q5Lh59NymscfBeRehDo24g/active {"ip":"::1"}
+2026-05-05 13:59:23 info: POST /api/subscriptions/payment/order {"ip":"::1"}
+2026-05-05 14:00:01 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:00:01 info: GET /api/subscriptions/plans {"ip":"::1"}
+2026-05-05 14:00:01 info: GET /api/subscriptions/user/user_3DIS6q5Lh59NymscfBeRehDo24g/active {"ip":"::1"}
+2026-05-05 14:00:11 info: POST /api/subscriptions/payment/order {"ip":"::1"}
+2026-05-05 14:00:35 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:00:35 info: GET /api/subscriptions/plans {"ip":"::1"}
+2026-05-05 14:00:35 info: GET /api/subscriptions/user/user_3DIS6q5Lh59NymscfBeRehDo24g/active {"ip":"::1"}
+2026-05-05 14:01:43 info: POST /api/payment-requests/submit {"ip":"::1"}
+2026-05-05 14:01:50 info: GET /api/esign/active {"ip":"::1"}
+2026-05-05 14:01:50 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g/kyc {"ip":"::1"}
+2026-05-05 14:01:50 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-05 14:01:50 info: GET /api/subscriptions/user/user_3DIS6q5Lh59NymscfBeRehDo24g/active {"ip":"::1"}
+2026-05-05 14:01:51 info: Email sent: <6376e7d3-f1aa-0aa3-74b0-52e84389805f@gmail.com>
+2026-05-05 14:01:54 info: GET /api/phone/check/8178218011 {"ip":"::1"}
+2026-05-05 14:01:58 info: POST /api/phone/send-otp {"ip":"::1"}
+2026-05-05 14:01:58 info: Sending OTP to: 918178218011
+2026-05-05 14:01:58 info: API URL: https://2factor.in/API/V1/4efcf700-b497-11f0-bdde-0200cd936042/SMS/918178218011/AUTOGEN3/OTP1
+2026-05-05 14:01:58 info: 2Factor API Response: {"Status":"Success","Details":"e249bb11-485c-11f1-9800-0200cd936042"}
+2026-05-05 14:02:09 info: POST /api/phone/verify-otp {"ip":"::1"}
+2026-05-05 14:02:09 info: Verifying OTP (phone-based): 918178218011
+2026-05-05 14:02:09 info: Verify URL: https://2factor.in/API/V1/4efcf700-b497-11f0-bdde-0200cd936042/SMS/VERIFY3/918178218011/5421
+2026-05-05 14:02:09 info: 2Factor Verify Response: {"Status":"Success","Details":"OTP Matched"}
+2026-05-05 14:02:09 info: Response Status: Success, Details: OTP Matched
+2026-05-05 14:02:09 info: ✅ OTP verification successful for 918178218011
+2026-05-05 14:02:10 info: User phone updated in DB: 8178218011
+2026-05-05 14:02:16 info: GET /api/subscriptions/plans {"ip":"::1"}
+2026-05-05 14:02:16 info: GET /api/subscriptions/user/user_3DIS6q5Lh59NymscfBeRehDo24g/active {"ip":"::1"}
+2026-05-05 14:05:02 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-05-05 14:05:02 info: GET /api/users/email/aiman.singh30%40gmail.com {"ip":"::1"}
+2026-05-05 14:05:02 info: GET /api/esign/active {"ip":"::1"}
+2026-05-05 14:05:02 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH/kyc {"ip":"::1"}
+2026-05-05 14:05:02 info: GET /api/subscriptions/user/user_38FIedQidROhaT30VNmLVpP5SDH/active {"ip":"::1"}
+2026-05-05 14:05:02 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-05 14:05:02 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-05-05 14:05:02 info: GET /api/users/email/aiman.singh30%40gmail.com/kyc {"ip":"::1"}
+2026-05-05 14:06:18 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-05-05 14:10:20 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-05-05 14:10:54 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:10:58 info: GET /api/esign/active {"ip":"::1"}
+2026-05-05 14:10:58 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g/kyc {"ip":"::1"}
+2026-05-05 14:10:58 info: GET /api/subscriptions/user/user_3DIS6q5Lh59NymscfBeRehDo24g/active {"ip":"::1"}
+2026-05-05 14:10:58 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-05 14:11:06 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-05-05 14:11:06 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-05-05 14:11:08 info: GET /api/payment-requests/all?status=pending {"ip":"::1"}
+2026-05-05 14:11:09 info: GET /api/payment-requests/all?status=pending {"ip":"::1"}
+2026-05-05 14:11:22 info: POST /api/payment-requests/approve/69f9aaf3009a974c2c2b8d99 {"ip":"::1"}
+2026-05-05 14:11:23 info: GET /api/payment-requests/all?status=pending {"ip":"::1"}
+2026-05-05 14:11:26 info: Email sent: <ddc30fa5-8323-2db6-6155-c606b95093ab@gmail.com>
+2026-05-05 14:11:38 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:11:39 info: GET /api/esign/active {"ip":"::1"}
+2026-05-05 14:11:39 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g/kyc {"ip":"::1"}
+2026-05-05 14:11:39 info: GET /api/subscriptions/user/user_3DIS6q5Lh59NymscfBeRehDo24g/active {"ip":"::1"}
+2026-05-05 14:11:39 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-05 14:11:39 info: GET /api/recommendations/user?page=1&limit=10 {"ip":"::1"}
+2026-05-05 14:14:22 info: GET /api/esign/active {"ip":"::1"}
+2026-05-05 14:14:22 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g/kyc {"ip":"::1"}
+2026-05-05 14:14:22 info: GET /api/subscriptions/user/user_3DIS6q5Lh59NymscfBeRehDo24g/active {"ip":"::1"}
+2026-05-05 14:14:22 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-05 14:14:22 info: GET /api/recommendations/user?page=1&limit=10 {"ip":"::1"}
+2026-05-05 14:21:37 info: GET /api/recommendations/user?page=1&limit=10 {"ip":"::1"}
+2026-05-05 14:29:12 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:29:28 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-05-05 14:29:29 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-05-05 14:29:29 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:29:29 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-05-05 14:29:30 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:29:31 info: GET /api/subscriptions/plans {"ip":"::1"}
+2026-05-05 14:29:31 info: GET /api/subscriptions/user/user_3DIS6q5Lh59NymscfBeRehDo24g/active {"ip":"::1"}
+2026-05-05 14:29:41 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:29:48 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:33:47 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:35:59 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:36:08 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:37:11 info: GET /api/users/email/aiman.singh%40kalvium.community {"ip":"::1"}
+2026-05-05 14:37:11 info: GET /api/users/email/aiman.singh%40kalvium.community {"ip":"::ffff:127.0.0.1"}
+2026-05-05 14:37:11 info: GET /api/users/email/aiman.singh30%40gmail.com {"ip":"::ffff:127.0.0.1"}
+2026-05-05 14:37:14 info: GET /api/subscriptions/plans {"ip":"::ffff:127.0.0.1"}
+2026-05-05 14:37:14 info: GET /api/subscriptions/user/user_3DIS6q5Lh59NymscfBeRehDo24g/active {"ip":"::1"}
+2026-05-05 14:38:18 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-05-05 14:38:18 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:39:00 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:39:01 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:39:35 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-05-05 14:39:51 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:41:06 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g {"ip":"::1"}
+2026-05-05 14:41:07 info: GET /api/esign/active {"ip":"::1"}
+2026-05-05 14:41:07 info: GET /api/users/clerk/user_3DIS6q5Lh59NymscfBeRehDo24g/kyc {"ip":"::1"}
+2026-05-05 14:41:07 info: GET /api/subscriptions/user/user_3DIS6q5Lh59NymscfBeRehDo24g/active {"ip":"::1"}
+2026-05-05 14:41:07 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-05 14:41:07 info: GET /api/recommendations/user?page=1&limit=10 {"ip":"::1"}
+2026-05-05 14:41:08 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-05-05 14:41:08 info: GET /api/esign/active {"ip":"::1"}
+2026-05-05 14:41:08 info: GET /api/subscriptions/user/user_38FIedQidROhaT30VNmLVpP5SDH/active {"ip":"::1"}
+2026-05-05 14:41:08 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-05 14:41:08 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-05-05 14:41:58 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-05-05 14:41:58 info: GET /api/recommendations/user?page=1&limit=10 {"ip":"::1"}

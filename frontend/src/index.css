@@ -1,11 +1,13 @@
 :root {
+  --primary-color: #b93810;
+  --primary-hover: #922e0c;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: light;
+  color: #213547;
+  background-color: #ffffff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -24,9 +26,15 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  display: block;
   min-width: 320px;
+  min-height: 100vh;
+  background: #ffffff;
+  color: #213547;
+}
+
+#root {
+  width: 100%;
   min-height: 100vh;
 }
 
@@ -49,9 +57,44 @@ button {
 button:hover {
   border-color: #646cff;
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+button:focus {
+  outline: none; /* Fallback for older browsers if needed, though focus-visible handles it */
+}
+
+/* Global focus-visible styles for WCAG 2.4.7 */
+:focus-visible {
+  outline: 3px solid #b93810;
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode implementation */
+body.high-contrast-mode {
+  filter: contrast(1.2) saturate(1.2);
+  background-color: #000;
+  color: #fff;
+}
+
+body.high-contrast-mode img,
+body.high-contrast-mode video {
+  filter: contrast(0.8) saturate(0.8); /* Prevent media from being overly distorted */
+}
+
+body.high-contrast-mode .navbar {
+  background-color: #000;
+  border-bottom: 2px solid #fff;
+}
+
+body.high-contrast-mode .nav-link,
+body.high-contrast-mode .logo-text,
+body.high-contrast-mode .user-name {
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  background: none;
+}
+
+body.high-contrast-mode .btn-primary,
+body.high-contrast-mode .btn-secondary {
+  border: 2px solid #fff;
 }
 
 /* Common page container with proper spacing to avoid navbar clash */

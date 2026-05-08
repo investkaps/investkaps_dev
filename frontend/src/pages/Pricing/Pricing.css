@@ -5,6 +5,17 @@
   color: #2d3748;
 }
 
+.pricing-container .page-title,
+.pricing-container .page-subtitle {
+  text-align: center;
+}
+
+.pricing-container .page-subtitle {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* Active Subscription Banner */
 .active-subscription-banner {
   background: linear-gradient(135deg, #d1e7dd 0%, #a3cfbb 100%);
@@ -114,7 +125,7 @@
   overflow: hidden;
   width: 320px;
   height: auto;
-  min-height: 520px;
+  min-height: 620px;
 }
 
 .modern-plan-card::before {
@@ -355,12 +366,16 @@
   list-style: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: visible;
 }
 
 .modern-plan-features li,
 .modern-feature-item {
-  margin-bottom: 12px;
-  color: #1a202c !important;
+  margin-bottom: 0;
+  color: #1a202c;
   display: flex;
   align-items: flex-start;
   line-height: 1.5;
@@ -369,11 +384,11 @@
 }
 
 .modern-plan-card .modern-feature-item {
-  color: #1a202c !important;
+  color: #1a202c;
 }
 
 .modern-plan-card .modern-feature-item .feature-text {
-  color: #1a202c !important;
+  color: #1a202c;
 }
 
 .modern-plan-features .feature-icon {
@@ -403,13 +418,22 @@
   margin: 20px 0;
 }
 
+.modern-plan-card.featured .modern-plan-features {
+  overflow: visible;
+}
+
+.modern-plan-features .feature-text {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .modern-plan-card.featured .modern-plan-features li,
 .modern-plan-card.featured .modern-feature-item {
-  color: #1a202c !important;
+  color: #1a202c;
 }
 
 .modern-plan-card.featured .modern-feature-item .feature-text {
-  color: #1a202c !important;
+  color: #1a202c;
 }
 
 .modern-plan-card.featured .feature-icon {
@@ -753,7 +777,7 @@
     width: 100%;
     max-width: 320px;
     padding: 20px;
-    min-height: 450px;
+    min-height: 0;
   }
   
   .trading-options-grid {

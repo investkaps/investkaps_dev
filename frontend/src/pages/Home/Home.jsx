@@ -102,10 +102,15 @@ const Home = () => {
             viewport={{ once: true, amount: 0.3 }}
             variants={headerVariants}
           >
-            <span className="section-label">Our Proven Process</span>
-            <h2 className="section-title"></h2>
-            <p className="section-description">
+            <h2 className="section-title">
+              <span className="lang-en" lang="en">Our Proven Process</span>
+              <span className="lang-hi" lang="hi">हमारी सिद्ध प्रक्रिया</span>
+            </h2>
+            <p className="section-description lang-en" lang="en">
               Real results from our research-driven recommendations. Providing a glimpse of our work by sharing our recent winning recommendations is a tool to communicate factual & verifiable output of our trading and investment process. It should not be considered as an advertisement, promotion or claim.
+            </p>
+            <p className="section-description lang-hi" lang="hi">
+              हमारी अनुसंधान-आधारित अनुशंसाओं से वास्तविक परिणाम। हमारी हालिया सफल अनुशंसाओं को साझा करके अपने काम की एक झलक प्रदान करना हमारी ट्रेडिंग और निवेश प्रक्रिया के तथ्यात्मक और सत्यापन योग्य आउटपुट को संप्रेषित करने का एक उपकरण है। इसे विज्ञापन, प्रचार या दावे के रूप में नहीं माना जाना चाहिए।
             </p>
           </motion.div>
           
@@ -225,8 +230,8 @@ const Home = () => {
       </motion.section>
 
       <TestimonialsMarquee 
-        title="Testimonials"
-        description="What our client say about us"
+        title={<><span className="lang-en" lang="en">Testimonials</span><span className="lang-hi" lang="hi">प्रशंसापत्र</span></>}
+        description={<><span className="lang-en" lang="en">What our client say about us</span><span className="lang-hi" lang="hi">हमारे ग्राहक हमारे बारे में क्या कहते हैं</span></>}
         testimonials={testimonials}
       />
 

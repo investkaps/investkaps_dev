@@ -24,7 +24,7 @@ const FAQ = () => {
             rel="noopener noreferrer"
             className="faq-link"
           >
-            Click here
+            Read our SEBI RA basics FAQ PDF
           </a>.
         </>
       ),
@@ -40,7 +40,7 @@ const FAQ = () => {
             rel="noopener noreferrer"
             className="faq-link"
           >
-            Click here
+            Read investkaps offerings and subscription FAQs
           </a>.
         </>
       ),
@@ -50,9 +50,9 @@ const FAQ = () => {
         "How do I verify genuine Research Analyst so as to not fall prey to impersonation fraud?",
       answer: (
         <>
-          Please{' '}
+          Please review{' '}
           <Link to="/complaints-and-audit" className="faq-link">
-            click here
+            our complaints and audit guidance
           </Link>{' '}
           and refer to "Important Notice Regarding Fraudulent Activities".
           Ensure the correct registered RA details including contact number on{' '}

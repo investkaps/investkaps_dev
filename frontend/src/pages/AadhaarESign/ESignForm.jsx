@@ -6,18 +6,36 @@ import './ESignForm.css';
 
 // Get API URL from environment variables
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-// ⚠️ IMPORTANT: This profile ID must be a "Simple Sign" profile, NOT a "Template Workflow"
-// Current profile 'TNbM5NR' is a template workflow and requires additional fields
-// Create a new "Simple Sign" profile in Leegality dashboard and update this ID
-const LEEGALITY_PROFILE_ID = 'TNbM5NR'; // Original profile ID - endpoint was the issue
-
 // Import the BASE64_PDF from the base64.jsx file
 import { BASE64_PDF } from './base64.jsx';
+
+const SERVICE_TYPE = (() => {
+  const search = typeof window !== 'undefined' ? window.location.search : '';
+  return new URLSearchParams(search).get('serviceType') === 'IA' ? 'IA' : 'RA';
+})();
+
+const AGREEMENT_CONFIG = {
+  RA: {
+    profileId: import.meta.env.VITE_LEEGALITY_RA_PROFILE_ID || 'TNbM5NR',
+    fileName: import.meta.env.VITE_RA_AGREEMENT_NAME || 'RA Client Agreement',
+    base64: import.meta.env.VITE_RA_BASE64_PDF || BASE64_PDF,
+    heading: 'RA Aadhaar E-Sign Form',
+    description: 'Complete the Research Analyst agreement to continue with onboarding.'
+  },
+  IA: {
+    profileId: import.meta.env.VITE_LEEGALITY_IA_PROFILE_ID || import.meta.env.VITE_LEEGALITY_RA_PROFILE_ID || 'TNbM5NR',
+    fileName: import.meta.env.VITE_IA_AGREEMENT_NAME || 'IA Service Agreement',
+    base64: import.meta.env.VITE_IA_BASE64_PDF || BASE64_PDF,
+    heading: 'IA Aadhaar E-Sign Form',
+    description: 'Complete the Investment Advisor agreement to continue with onboarding.'
+  }
+};
 
 function ESignForm() {
   const navigate = useNavigate();
   const { getToken } = useAuth();
   const [formData, setFormData] = useState({ name: '', email: '' });
+  const agreement = AGREEMENT_CONFIG[SERVICE_TYPE];
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -95,8 +113,9 @@ function ESignForm() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          profileId: LEEGALITY_PROFILE_ID,
-          fileName: 'Terms and Conditions',
+          serviceType: SERVICE_TYPE,
+          profileId: agreement.profileId,
+          fileName: agreement.fileName,
           // ✅ FIXED: Match backend expectations
           invitees: [{ 
             name: formData.name, 
@@ -104,8 +123,8 @@ function ESignForm() {
           }], // Array format
           // ✅ FIXED: Correct structure for file with empty fields for template workflow
           file: {
-            name: 'Terms and Conditions',
-            file: BASE64_PDF,
+            name: agreement.fileName,
+            file: agreement.base64,
             fields: [{}] // Empty fields array for template workflow
           },
           irn: `INV-${Date.now()}-${Math.floor(Math.random() * 10000)}`
@@ -153,10 +172,9 @@ function ESignForm() {
   return (
     <div className="esign-container">
       <div className="esign-card">
-        <h2>Aadhaar E-Sign Form</h2>
+        <h2>{agreement.heading}</h2>
         <p className="esign-description">
-          Please enter your details below to proceed with the e-signing process. 
-          After submission, you will be redirected to the Aadhaar e-sign platform.
+          {agreement.description}
         </p>
         {error && <div className="error-message">{error}</div>}
         <form className="esign-form" onSubmit={handleSubmit}>
@@ -170,7 +188,6 @@ function ESignForm() {
               onChange={handleChange} 
               required 
               disabled={isLoading}
-              placeholder="Enter your full name"
             />
             <small>As per your Aadhaar card</small>
           </div>
@@ -184,7 +201,6 @@ function ESignForm() {
               onChange={handleChange} 
               required 
               disabled={isLoading}
-              placeholder="Enter your email address"
             />
             <small>You will receive the signed document on this email</small>
           </div>
