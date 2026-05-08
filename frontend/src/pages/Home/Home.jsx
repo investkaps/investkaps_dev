@@ -103,127 +103,49 @@ const Home = () => {
             variants={headerVariants}
           >
             <h2 className="section-title">
-              <span className="lang-en" lang="en">Our Proven Process</span>
+              <span className="lang-en" lang="en">Investment Advisory</span>
               <span className="lang-hi" lang="hi">हमारी सिद्ध प्रक्रिया</span>
             </h2>
             <p className="section-description lang-en" lang="en">
-              Real results from our research-driven recommendations. Providing a glimpse of our work by sharing our recent winning recommendations is a tool to communicate factual & verifiable output of our trading and investment process. It should not be considered as an advertisement, promotion or claim.
+              We are also a SEBI-registered Investment Adviser (Reg. No.: INA000022190). Discover our proven process from initial consultation through implementation and ongoing management. Explore our collective research and media presence across leading finance outlets, which showcases how we present investment ideas and market insights.
             </p>
             <p className="section-description lang-hi" lang="hi">
-              हमारी अनुसंधान-आधारित अनुशंसाओं से वास्तविक परिणाम। हमारी हालिया सफल अनुशंसाओं को साझा करके अपने काम की एक झलक प्रदान करना हमारी ट्रेडिंग और निवेश प्रक्रिया के तथ्यात्मक और सत्यापन योग्य आउटपुट को संप्रेषित करने का एक उपकरण है। इसे विज्ञापन, प्रचार या दावे के रूप में नहीं माना जाना चाहिए।
+              प्रारंभिक परामर्श से लेकर कार्यान्वयन और निरंतर प्रबंधन तक हमारी सिद्ध प्रक्रिया देखें। प्रमुख वित्तीय मीडिया आउटलेट्स में हमारी कवरेज देखें, जो यह दर्शाती है कि हम निवेश विचारों और बाजार अंतर्दृष्टियों को कैसे प्रस्तुत करते हैं।
             </p>
           </motion.div>
           
-          <div className="recommendations-showcase">
-            <h3 className="showcase-title">Recent Winning Recommendations</h3>
-            <div className="recommendations-grid">
-              <div className="recommendation-card">
-                <div className="recommendation-header">
-                  <span className="stock-name">Shriram Pistons</span>
-                  <span className="recommendation-badge success">On Target</span>
-                </div>
-                <div className="recommendation-details">
-                  <div className="detail-row">
-                    <span className="detail-label">Symbol</span>
-                    <span className="detail-value">SHRIPISTON</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Entry Price</span>
-                    <span className="detail-value">₹2,390</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Entry Date</span>
-                    <span className="detail-value">May 14, 2025</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Target Price</span>
-                    <span className="detail-value">₹3,500</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Duration</span>
-                    <span className="detail-value">12 months</span>
-                  </div>
-                  {/* <div className="detail-row highlight">
-                    <span className="detail-label">Returns (Dec 29th)</span>
-                    <span className="detail-value gain">+31.2%</span>
-                  </div> */}
-                </div>
-                {/* <div className="recommendation-timeline">
-                  <span className="timeline-text">Duration: 5 months</span>
-                </div> */}
+          <div className="process-steps">
+            <div className="steps-grid">
+              <div className="process-step-card">
+                <div className="process-step-number">01</div>
+                <h4 className="process-step-title">Initial Consultation</h4>
+                <p className="process-step-text">We start by understanding your financial picture, goals, risk tolerance, and life stage.</p>
               </div>
+              <div className="process-step-card">
+                <div className="process-step-number">02</div>
+                <h4 className="process-step-title">Strategy Development</h4>
+                <p className="process-step-text">A tailored plan is built for your objectives, whether wealth creation, retirement, ESOPs, or education funding.</p>
+              </div>
+              <div className="process-step-card">
+                <div className="process-step-number">03</div>
+                <h4 className="process-step-title">Implementation</h4>
+                <p className="process-step-text">We execute with disciplined monitoring, low-cost entry, and careful tracking of what matters most.</p>
+              </div>
+              <div className="process-step-card">
+                <div className="process-step-number">04</div>
+                <h4 className="process-step-title">Ongoing Management</h4>
+                <p className="process-step-text">Annual reviews, rebalancing, and life-event check-ins keep your plan aligned with your changing needs.</p>
+              </div>
+            </div>
+          </div>
 
-              <div className="recommendation-card">
-                <div className="recommendation-header">
-                  <span className="stock-name">Sanghvi Movers</span>
-                  <span className="recommendation-badge success">Target Achieved</span>
-                </div>
-                <div className="recommendation-details">
-                  <div className="detail-row">
-                    <span className="detail-label">Symbol</span>
-                    <span className="detail-value">SANGHVIMOV</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Entry Price</span>
-                    <span className="detail-value">₹336.7</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Entry Date</span>
-                    <span className="detail-value">Sep 4, 2025</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Exit Price</span>
-                    <span className="detail-value">₹387</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Exit Date</span>
-                    <span className="detail-value">Sep 16, 2025</span>
-                  </div>
-                  {/* <div className="detail-row highlight">
-                    <span className="detail-label">Returns</span>
-                    <span className="detail-value gain">+14.9%</span>
-                  </div> */}
-                </div>
-                {/* <div className="recommendation-timeline">
-                  <span className="timeline-text">Duration: 5 months</span>
-                </div> */}
-              </div>
-
-              <div className="recommendation-card">
-                <div className="recommendation-header">
-                  <span className="stock-name">Interarch Building</span>
-                  <span className="recommendation-badge success">Target Achieved</span>
-                </div>
-                <div className="recommendation-details">
-                  <div className="detail-row">
-                    <span className="detail-label">Symbol</span>
-                    <span className="detail-value">INTERARCH</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Entry Price</span>
-                    <span className="detail-value">₹2,175-2,200</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Entry Date</span>
-                    <span className="detail-value">Nov 4, 2025</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Exit Price</span>
-                    <span className="detail-value">₹2,400</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="detail-label">Exit Date</span>
-                    <span className="detail-value">Nov 7, 2025</span>
-                  </div>
-                  {/* <div className="detail-row highlight">
-                    <span className="detail-label">Returns</span>
-                    <span className="detail-value gain">+9.1%</span>
-                  </div> */}
-                </div>
-                {/* <div className="recommendation-timeline">
-                  <span className="timeline-text">Duration: 5 months</span>
-                </div> */}
-              </div>
+          <div className="media-showcase">
+            <h3 className="showcase-title">Media Presence</h3>
+            <p className="section-description">Explore our coverage and articles across leading finance and news platforms.</p>
+            <div className="media-links-list">
+              <a href="#" target="_blank" rel="noreferrer" className="media-link">Investing – Our approach to long-term investment ideas</a>
+              <a href="#" target="_blank" rel="noreferrer" className="media-link">MSN – Expert commentary on market trends and portfolio strategy</a>
+              <a href="#" target="_blank" rel="noreferrer" className="media-link">Economic Times – Research-led stock recommendations and outlook</a>
             </div>
           </div>
         </div>
