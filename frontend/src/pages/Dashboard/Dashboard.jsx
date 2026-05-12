@@ -401,17 +401,24 @@ const Dashboard = () => {
         const kycDone = prev.kyc.completed;
         const paymentDone = prev.payment.completed;
         const signingDone = prev.signing.completed;
+        const storedServiceType = String(localStorage.getItem('selected_onboarding_service_type') || '').toUpperCase();
+        const preferredServiceType = storedServiceType === 'IA' ? 'IA' : 'RA';
         if (adminStatus || (kycDone && paymentDone && signingDone)) {
           // Setup complete – go straight to dashboard
           setOnboardingPhase('done');
           setSelectedServices(new Set(['RA']));
         } else {
-          // Has KYC done → returning user, send straight to RA onboarding flow
+          // Has KYC done → returning user, send them to their selected onboarding flow
           if (kycDone) {
-            setOnboardingPhase('onboarding-ra');
-            setSelectedServices(new Set(['RA']));
-            // Also mirror KYC into IA steps
-            setIaSteps(ia => ({ ...ia, kyc: { ...ia.kyc, completed: true } }));
+            if (preferredServiceType === 'IA') {
+              setOnboardingPhase('onboarding-ia');
+              setSelectedServices(new Set(['IA']));
+              setActiveServiceTab('IA');
+              setIaSteps(ia => ({ ...ia, kyc: { ...ia.kyc, completed: true } }));
+            } else {
+              setOnboardingPhase('onboarding-ra');
+              setSelectedServices(new Set(['RA']));
+            }
           } else {
             // Brand new user – show service selector
             setOnboardingPhase('selecting');
@@ -474,16 +481,22 @@ const Dashboard = () => {
     setSelectedServices(new Set([service]));
   };
 
+  const storeSelectedService = (service) => {
+    localStorage.setItem('selected_onboarding_service_type', service);
+  };
+
   const handleConfirmServices = () => {
     if (selectedServices.size === 0) return;
     // If RA is selected, go to RA onboarding first
     if (selectedServices.has('RA')) {
       setActiveServiceTab('RA');
       setOnboardingPhase('onboarding-ra');
+      storeSelectedService('RA');
     } else {
       // IA only
       setActiveServiceTab('IA');
       setOnboardingPhase('onboarding-ia');
+      storeSelectedService('IA');
     }
   };
 
@@ -498,6 +511,7 @@ const Dashboard = () => {
       }));
       setActiveServiceTab('IA');
       setOnboardingPhase('onboarding-ia');
+      storeSelectedService('IA');
     } else {
       setOnboardingPhase('done');
     }
@@ -972,7 +986,7 @@ const Dashboard = () => {
         <div className="ob-topbar">
           <div className="ob-topbar-left">
             <img src="/logo.png" alt="InvestKaps" className="ob-topbar-logo" />
-            <span className="ob-topbar-title">Onboarding</span>
+            <span className="ob-topbar-title">{currentServiceType} Onboarding</span>
           </div>
           <div className="ob-topbar-right">
             <span className="ob-topbar-user">

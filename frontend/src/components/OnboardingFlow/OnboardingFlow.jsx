@@ -762,6 +762,8 @@ const OnboardingFlow = ({
             <div>
               <h2 className="ob-step-title">{activeStepMeta?.label}</h2>
               <p className="ob-step-subtitle">{activeStepMeta?.subtitle}</p>
+            <div className="ob-flow-badge" style={{ marginBottom: '0.5rem' }}>
+              {serviceType} Onboarding
             </div>
           </div>
           {activeStepMeta?.mandatory && (

@@ -11,7 +11,16 @@ import { RA_BASE64_PDF, IA_BASE64_PDF } from './base64.jsx';
 
 const SERVICE_TYPE = (() => {
   const search = typeof window !== 'undefined' ? window.location.search : '';
-  return new URLSearchParams(search).get('serviceType') === 'IA' ? 'IA' : 'RA';
+  const urlServiceType = new URLSearchParams(search).get('serviceType');
+  if (urlServiceType === 'IA' || urlServiceType === 'RA') {
+    return urlServiceType;
+  }
+
+  const storedServiceType = typeof window !== 'undefined'
+    ? window.localStorage.getItem('active_esign_service_type')
+    : null;
+
+  return storedServiceType === 'IA' ? 'IA' : 'RA';
 })();
 
 const AGREEMENT_CONFIG = {
