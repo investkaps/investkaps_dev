@@ -150,6 +150,39 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Document'
   }],
+  // Track which service types the user has completed onboarding for
+  clientTypes: {
+    RA: {
+      isCompleted: {
+        type: Boolean,
+        default: false
+      },
+      completedAt: {
+        type: Date,
+        default: null
+      },
+      agreementDocumentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Document',
+        default: null
+      }
+    },
+    IA: {
+      isCompleted: {
+        type: Boolean,
+        default: false
+      },
+      completedAt: {
+        type: Date,
+        default: null
+      },
+      agreementDocumentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Document',
+        default: null
+      }
+    }
+  },
   createdAt: {
     type: Date,
     default: Date.now

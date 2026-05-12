@@ -8,6 +8,8 @@ import StrategyManagement from './StrategyManagement';
 import KycManagement from '../../components/Admin/KycManagement';
 import StockRecommendationManagement from '../../components/Admin/StockRecommendationManagement';
 import PaymentApproval from './PaymentApproval';
+import QuestionnaireManagement from './QuestionnaireManagement';
+import QuestionnaireResponses from './QuestionnaireResponses';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -98,6 +100,12 @@ const AdminDashboard = () => {
             <li className={activeTab === 'payment-approval' ? 'active' : ''}>
               <button onClick={() => setActiveTab('payment-approval')}>Payment Approval</button>
             </li>
+            <li className={activeTab === 'questionnaire-management' ? 'active' : ''}>
+              <button onClick={() => setActiveTab('questionnaire-management')}>Questionnaires</button>
+            </li>
+            <li className={activeTab === 'questionnaire-responses' ? 'active' : ''}>
+              <button onClick={() => setActiveTab('questionnaire-responses')}>Responses</button>
+            </li>
             <li className={activeTab === 'settings' ? 'active' : ''}>
               <button onClick={() => setActiveTab('settings')}>Settings</button>
             </li>
@@ -121,6 +129,8 @@ const AdminDashboard = () => {
             {activeTab === 'strategies' && 'Strategy Management'}
             {activeTab === 'recommendations' && 'Stock Recommendations'}
             {activeTab === 'payment-approval' && 'Payment Approval'}
+            {activeTab === 'questionnaire-management' && 'Questionnaire Management'}
+            {activeTab === 'questionnaire-responses' && 'Questionnaire Responses'}
             {activeTab === 'settings' && 'Admin Settings'}
           </h1>
           <div className="admin-header-actions">
@@ -224,6 +234,10 @@ const AdminDashboard = () => {
         {activeTab === 'recommendations' && <StockRecommendationManagement />}
         
         {activeTab === 'payment-approval' && <PaymentApproval />}
+        
+        {activeTab === 'questionnaire-management' && <QuestionnaireManagement />}
+        
+        {activeTab === 'questionnaire-responses' && <QuestionnaireResponses />}
         
         {activeTab === 'settings' && (
           <div className="admin-section">

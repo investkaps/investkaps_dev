@@ -54,7 +54,7 @@ router.post('/esign', verifyToken, async (req, res) => {
     console.log('   File Name:', file?.name || fileName || 'Terms and Conditions');
     console.log('   IRN:', irn || 'auto-generated');
 
-    // ✅ FIXED: Pass correct parameters
+    // ✅ FIXED: Pass correct parameters including serviceType
     const result = await createSignRequest({
       name: inviteeName || name || '',
       email,
@@ -62,7 +62,8 @@ router.post('/esign', verifyToken, async (req, res) => {
       pdfBase64,
       fileName: file?.name || fileName || 'Terms and Conditions',
       irn,
-      fields: file?.fields || undefined
+      fields: file?.fields || undefined,
+      serviceType: normalizedServiceType
     });
 
     if (result.success) {
@@ -318,6 +319,32 @@ router.get('/esign/document/:documentId', verifyToken, async (req, res) => {
       document.esign.status = 'COMPLETED';
       document.esign.signedAt = new Date();
       document.esign.completedAt = new Date();
+      
+      // Update User's clientTypes when agreement is completed
+      const User = (await import('../model/User.js')).default;
+      const serviceType = document.serviceType || 'RA';
+      
+      try {
+        const user = await User.findById(userId);
+        if (user && serviceType && ['RA', 'IA'].includes(serviceType)) {
+          if (!user.clientTypes) {
+            user.clientTypes = { RA: {}, IA: {} };
+          }
+          if (!user.clientTypes[serviceType]) {
+            user.clientTypes[serviceType] = {};
+          }
+          
+          user.clientTypes[serviceType].isCompleted = true;
+          user.clientTypes[serviceType].completedAt = new Date();
+          user.clientTypes[serviceType].agreementDocumentId = document._id;
+          
+          await user.save();
+          console.log(`✅ Updated user ${userId} clientTypes.${serviceType} to completed`);
+        }
+      } catch (userUpdateError) {
+        logger.error('Error updating user clientTypes:', userUpdateError);
+        // Don't fail the request if user update fails
+      }
     }
     
     await document.save();

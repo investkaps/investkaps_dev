@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import OTPInput from '../OTPInput/OTPInput';
+import RiskQuestionnaire from '../RiskQuestionnaire/RiskQuestionnaire';
 import { esignAPI } from '../../services/api';
-import { BASE64_PDF } from '../../pages/AadhaarESign/base64.jsx';
+import { RA_BASE64_PDF, IA_BASE64_PDF } from '../../pages/AadhaarESign/base64.jsx';
 import './OnboardingFlow.css';
 
 /**
@@ -60,10 +61,14 @@ const OnboardingFlow = ({
   handlePhoneBypass,
   handlePhoneSkip,
   currentUser,
+  // Questionnaire
+  handleQuestionnaireComplete,
   // Signing
   activeDocumentId,
   handleCheckEsignStatus,
   handleEsignBypass,
+  esignStatusChecking,
+  esignStatusMessage,
   // Payment
   bypassLoading,
   handlePaymentBypass,
@@ -92,31 +97,50 @@ const OnboardingFlow = ({
         completed: steps.phone.completed,
         skippedForRa: serviceType === 'IA' && isRaCustomer && steps.phone.completed,
       },
-      {
-        id: 'signing',
-        label: serviceType === 'IA' ? 'IA Agreement' : 'RA Agreement',
-        subtitle: 'E-sign your service agreement',
-        icon: '📄',
-        mandatory: true,
-        completed: steps.signing.completed,
-        skippedForRa: false,
-      },
-      {
-        id: 'payment',
-        label: 'Subscription',
-        subtitle: 'Choose your plan',
-        icon: '💳',
-        mandatory: true,
-        completed: steps.payment.completed,
-        skippedForRa: false,
-      },
     ];
+
+    // Add questionnaire step for IA only (before signing)
+    if (serviceType === 'IA') {
+      base.push({
+        id: 'questionnaire',
+        label: 'Risk Profiling',
+        subtitle: 'Complete risk assessment',
+        icon: '📊',
+        mandatory: true,
+        completed: steps.questionnaire?.completed || false,
+        skippedForRa: false,
+      });
+    }
+
+    // Add signing and payment steps
+    base.push({
+      id: 'signing',
+      label: serviceType === 'IA' ? 'IA Agreement' : 'RA Agreement',
+      subtitle: 'E-sign your service agreement',
+      icon: '📄',
+      mandatory: true,
+      completed: steps.signing.completed,
+      skippedForRa: false,
+    });
+
+    base.push({
+      id: 'payment',
+      label: 'Subscription',
+      subtitle: 'Choose your plan',
+      icon: '💳',
+      mandatory: true,
+      completed: steps.payment.completed,
+      skippedForRa: false,
+    });
 
     // For IA – replace payment step label
     if (serviceType === 'IA') {
-      base[3].label = 'Activation';
-      base[3].subtitle = 'Complete & activate IA service';
-      base[3].icon = '🚀';
+      const paymentStepIndex = base.findIndex(s => s.id === 'payment');
+      if (paymentStepIndex !== -1) {
+        base[paymentStepIndex].label = 'Activation';
+        base[paymentStepIndex].subtitle = 'Complete & activate IA service';
+        base[paymentStepIndex].icon = '🚀';
+      }
     }
     return base;
   };
@@ -136,6 +160,7 @@ const OnboardingFlow = ({
   );
   const [esignSubmitting, setEsignSubmitting] = useState(false);
   const [esignFormError, setEsignFormError] = useState('');
+  const [questionnaireCompleted, setQuestionnaireCompleted] = useState(false);
 
   useEffect(() => {
     setEsignForm({
@@ -147,6 +172,16 @@ const OnboardingFlow = ({
   useEffect(() => {
     setEsignRequestSent(Boolean(activeDocumentId || localStorage.getItem('active_esign_document_id')));
   }, [activeDocumentId]);
+
+  useEffect(() => {
+    if (steps.signing.completed && activeStep === 'signing') {
+      const currentIndex = stepList.findIndex((step) => step.id === activeStep);
+      const nextStep = stepList[currentIndex + 1];
+      if (nextStep && canNavigateTo(nextStep.id)) {
+        setActiveStep(nextStep.id);
+      }
+    }
+  }, [steps.signing.completed, activeStep, stepList]);
 
   const completedCount = stepList.filter((s) => s.completed).length;
   const progress = Math.round((completedCount / stepList.length) * 100);
@@ -201,13 +236,8 @@ const OnboardingFlow = ({
     setEsignFormError('');
 
     try {
-      const profileId = serviceType === 'IA'
-        ? (import.meta.env.VITE_LEEGALITY_IA_PROFILE_ID || import.meta.env.VITE_LEEGALITY_RA_PROFILE_ID || 'TNbM5NR')
-        : (import.meta.env.VITE_LEEGALITY_RA_PROFILE_ID || 'TNbM5NR');
-
-      const fileBase64 = serviceType === 'IA'
-        ? (import.meta.env.VITE_IA_BASE64_PDF || import.meta.env.VITE_RA_BASE64_PDF || BASE64_PDF)
-        : (import.meta.env.VITE_RA_BASE64_PDF || import.meta.env.VITE_IA_BASE64_PDF || BASE64_PDF);
+      const profileId = serviceType === 'IA' ? 'sJRIpdu' : 'TNbM5NR';
+      const fileBase64 = serviceType === 'IA' ? IA_BASE64_PDF : RA_BASE64_PDF;
 
       const response = await esignAPI.createSignRequest({
         serviceType,
@@ -231,6 +261,7 @@ const OnboardingFlow = ({
       }
 
       if (mongoDocumentId) localStorage.setItem('active_esign_document_id', mongoDocumentId);
+      localStorage.setItem('active_esign_service_type', serviceType);
       setEsignRequestSent(true);
       window.location.href = signUrl;
     } catch (error) {
@@ -447,6 +478,44 @@ const OnboardingFlow = ({
     );
   };
 
+  const renderQuestionnaireStep = () => {
+    if (steps.questionnaire?.completed || questionnaireCompleted) {
+      return (
+        <div className="ob-step-success">
+          <span className="ob-success-icon">✓</span>
+          <p className="ob-success-text">Risk profiling questionnaire completed successfully!</p>
+        </div>
+      );
+    }
+
+    return (
+      <RiskQuestionnaire
+        onComplete={(result) => {
+          console.log('Questionnaire completed:', result);
+          setQuestionnaireCompleted(true);
+          // Call parent callback to update state
+          if (handleQuestionnaireComplete) {
+            handleQuestionnaireComplete(result);
+          }
+          // Move to next step
+          const currentIndex = stepList.findIndex((step) => step.id === activeStep);
+          const nextStep = stepList[currentIndex + 1];
+          if (nextStep && canNavigateTo(nextStep.id)) {
+            setActiveStep(nextStep.id);
+          }
+        }}
+        onSkip={() => {
+          // Allow skipping if needed
+          const currentIndex = stepList.findIndex((step) => step.id === activeStep);
+          const nextStep = stepList[currentIndex + 1];
+          if (nextStep && canNavigateTo(nextStep.id)) {
+            setActiveStep(nextStep.id);
+          }
+        }}
+      />
+    );
+  };
+
   const renderSigningStep = () => {
     if (steps.signing.completed) {
       return (
@@ -519,6 +588,11 @@ const OnboardingFlow = ({
                 Request sent. Return here and click Check Status.
               </div>
             )}
+            {esignStatusChecking && (
+              <div className="ob-alert ob-alert-info">
+                <span className="ob-spinner-mini" /> {esignStatusMessage || 'Checking e-sign status...'}
+              </div>
+            )}
             <button
               type="button"
               className="ob-btn ob-btn-ghost"
@@ -540,9 +614,9 @@ const OnboardingFlow = ({
 
                 setEsignFormError(result.error || 'Unable to verify signing status right now.');
               }}
-              disabled={isLoading}
+              disabled={isLoading || esignStatusChecking}
             >
-              {isLoading ? 'Checking…' : 'Check Status'}
+              {esignStatusChecking ? 'Checking…' : isLoading ? 'Checking…' : 'Check Status'}
             </button>
             {isAdminUser && (
               <button type="button" className="ob-btn ob-btn-bypass" onClick={handleEsignBypass} disabled={isLoading}>
@@ -618,11 +692,12 @@ const OnboardingFlow = ({
     }
 
     switch (activeStep) {
-      case 'kyc':     return renderKycStep();
-      case 'phone':   return renderPhoneStep();
-      case 'signing': return renderSigningStep();
-      case 'payment': return renderPaymentStep();
-      default:        return null;
+      case 'kyc':           return renderKycStep();
+      case 'phone':         return renderPhoneStep();
+      case 'questionnaire': return renderQuestionnaireStep();
+      case 'signing':       return renderSigningStep();
+      case 'payment':       return renderPaymentStep();
+      default:              return null;
     }
   };
 

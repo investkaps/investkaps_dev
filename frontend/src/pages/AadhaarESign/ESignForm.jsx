@@ -6,8 +6,8 @@ import './ESignForm.css';
 
 // Get API URL from environment variables
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-// Import the BASE64_PDF from the base64.jsx file
-import { BASE64_PDF } from './base64.jsx';
+// Import the base64 PDFs from the base64.jsx file
+import { RA_BASE64_PDF, IA_BASE64_PDF } from './base64.jsx';
 
 const SERVICE_TYPE = (() => {
   const search = typeof window !== 'undefined' ? window.location.search : '';
@@ -16,16 +16,16 @@ const SERVICE_TYPE = (() => {
 
 const AGREEMENT_CONFIG = {
   RA: {
-    profileId: import.meta.env.VITE_LEEGALITY_RA_PROFILE_ID || 'TNbM5NR',
-    fileName: import.meta.env.VITE_RA_AGREEMENT_NAME || 'RA Client Agreement',
-    base64: import.meta.env.VITE_RA_BASE64_PDF || BASE64_PDF,
+    profileId: 'TNbM5NR',
+    fileName: 'RA Client Agreement',
+    base64: RA_BASE64_PDF,
     heading: 'RA Aadhaar E-Sign Form',
     description: 'Complete the Research Analyst agreement to continue with onboarding.'
   },
   IA: {
-    profileId: import.meta.env.VITE_LEEGALITY_IA_PROFILE_ID || import.meta.env.VITE_LEEGALITY_RA_PROFILE_ID || 'TNbM5NR',
-    fileName: import.meta.env.VITE_IA_AGREEMENT_NAME || 'IA Service Agreement',
-    base64: import.meta.env.VITE_IA_BASE64_PDF || BASE64_PDF,
+    profileId: 'sJRIpdu',
+    fileName: 'IA Service Agreement',
+    base64: IA_BASE64_PDF,
     heading: 'IA Aadhaar E-Sign Form',
     description: 'Complete the Investment Advisor agreement to continue with onboarding.'
   }
@@ -71,6 +71,7 @@ function ESignForm() {
           const data = await resp.json();
           if (data?.success && (data?.data?.isCompleted === true || data?.data?.status === 'COMPLETED' || data?.data?.status === 'completed')) {
             localStorage.removeItem('active_esign_document_id');
+            localStorage.removeItem('active_esign_service_type');
           }
         }
       } finally {
@@ -148,6 +149,7 @@ function ESignForm() {
           
           // Store MongoDB doc id for Dashboard to check status later
           if (mongoDocumentId) localStorage.setItem('active_esign_document_id', mongoDocumentId);
+          localStorage.setItem('active_esign_service_type', SERVICE_TYPE);
           
           // Store for status checking
           setSignUrl(extractedSignUrl);

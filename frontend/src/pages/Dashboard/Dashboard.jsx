@@ -80,6 +80,7 @@ const Dashboard = () => {
   const [iaSteps, setIaSteps] = useState({
     kyc: { completed: false, active: true, expanded: true },
     phone: { completed: false, active: false, expanded: false },
+    questionnaire: { completed: false, active: false, expanded: false },
     signing: { completed: false, active: false, expanded: false },
     payment: { completed: false, active: false, expanded: false }
   });
@@ -122,6 +123,8 @@ const Dashboard = () => {
   });
   // eSign state - will fetch from MongoDB
   const [activeDocumentId, setActiveDocumentId] = useState(null);
+  const [esignStatusChecking, setEsignStatusChecking] = useState(false);
+  const [esignStatusMessage, setEsignStatusMessage] = useState('');
   // eSign state - will fetch from MongoDB
   // Subscription and stock recommendations state
   const [activeSubscription, setActiveSubscription] = useState(null);
@@ -130,6 +133,117 @@ const Dashboard = () => {
   const [bypassLoading, setBypassLoading] = useState(false);
   // QR / manual payment request statuses
   const [pendingPaymentRequests, setPendingPaymentRequests] = useState([]);
+  const esignRetryTimerRef = useRef(null);
+
+  const clearEsignRetryTimer = () => {
+    if (esignRetryTimerRef.current) {
+      clearTimeout(esignRetryTimerRef.current);
+      esignRetryTimerRef.current = null;
+    }
+  };
+
+  const getStoredEsignServiceType = () => {
+    return String(localStorage.getItem('active_esign_service_type') || 'RA').toUpperCase();
+  };
+
+  const clearStoredEsignSession = () => {
+    setActiveDocumentId(null);
+    localStorage.removeItem('active_esign_document_id');
+    localStorage.removeItem('active_esign_service_type');
+  };
+
+  const applyCompletedEsignState = (serviceType) => {
+    if (serviceType === 'IA') {
+      setIaSteps(prev => ({
+        ...prev,
+        signing: { ...prev.signing, completed: true, active: true },
+        payment: { ...prev.payment, active: true }
+      }));
+      return;
+    }
+
+    setSteps(prev => ({
+      ...prev,
+      signing: { ...prev.signing, completed: true, active: true },
+      payment: { ...prev.payment, active: true }
+    }));
+  };
+
+  const checkEsignStatusOnce = async (docId) => {
+    const response = await esignAPI.checkDocumentStatus(docId);
+    if (!response.success) {
+      return { success: false, error: response.error || 'Unknown error' };
+    }
+
+    const data = response.data || {};
+    const apiStatus = String(data.status || '').toUpperCase();
+    const isCompleted = data.isCompleted === true || apiStatus === 'COMPLETED';
+
+    return {
+      success: true,
+      completed: isCompleted,
+      status: data.status,
+      data,
+    };
+  };
+
+  const runEsignStatusCheck = async ({ docId, serviceType, maxAttempts = 10, delayMs = 3000, showErrors = true }) => {
+    clearEsignRetryTimer();
+    setEsignStatusChecking(true);
+    setEsignStatusMessage('Checking e-sign status...');
+
+    let attempt = 0;
+
+    const finishFailure = (message) => {
+      clearEsignRetryTimer();
+      setEsignStatusChecking(false);
+      setEsignStatusMessage('');
+      if (showErrors) setError(message);
+      return { success: false, completed: false, error: message };
+    };
+
+    const runAttempt = async () => {
+      attempt += 1;
+
+      try {
+        const result = await checkEsignStatusOnce(docId);
+
+        if (result.success && result.completed) {
+          applyCompletedEsignState(serviceType);
+          clearStoredEsignSession();
+          clearEsignRetryTimer();
+          setEsignStatusChecking(false);
+          setEsignStatusMessage('E-signing completed successfully.');
+          return { success: true, completed: true, status: result.status };
+        }
+
+        const status = String(result.status || '').toUpperCase();
+        if (status === 'EXPIRED' || status === 'REJECTED') {
+          return finishFailure(status === 'EXPIRED'
+            ? 'E-signing link has expired. Please restart the process.'
+            : 'E-signing was rejected. Please restart the process.');
+        }
+
+        if (attempt < maxAttempts) {
+          setEsignStatusMessage(`Checking e-sign status... (${attempt}/${maxAttempts})`);
+          esignRetryTimerRef.current = setTimeout(runAttempt, delayMs);
+          return { success: true, completed: false, status: result.status };
+        }
+
+        return finishFailure('E-signing is still in progress. You can use Check Status to retry manually.');
+      } catch (err) {
+        if (attempt < maxAttempts) {
+          setEsignStatusMessage(`Checking e-sign status... (${attempt}/${maxAttempts})`);
+          esignRetryTimerRef.current = setTimeout(runAttempt, delayMs);
+          return { success: true, completed: false, status: 'PENDING' };
+        }
+
+        return finishFailure('Unable to verify signing status automatically. Please use Check Status to retry manually.');
+      }
+    };
+
+    return runAttempt();
+  };
 
   // ─── Dashboard Initialization ────────────────────────────────────────────────
   // All four initial API checks run in parallel before the dashboard renders.
@@ -159,13 +273,8 @@ const Dashboard = () => {
               const status = response.data.status;
               const isCompleted = status === 'COMPLETED' || status === 'completed';
               if (isCompleted) {
-                setSteps(prev => ({
-                  ...prev,
-                  signing: { ...prev.signing, completed: true },
-                  payment: { ...prev.payment, active: true }
-                }));
-                setActiveDocumentId(null);
-                localStorage.removeItem('active_esign_document_id');
+                applyCompletedEsignState(getStoredEsignServiceType());
+                clearStoredEsignSession();
               } else {
                 setActiveDocumentId(response.data.documentId);
                 localStorage.setItem('active_esign_document_id', response.data.documentId);
@@ -325,37 +434,26 @@ const Dashboard = () => {
     
     const storedActiveDocId = localStorage.getItem('active_esign_document_id');
     const docIdToCheck = activeDocumentId || storedActiveDocId;
+    const serviceTypeToUpdate = getStoredEsignServiceType();
 
     if (esignStatus === 'completed' && docIdToCheck) {
-      // User returned from e-signing, check status
-      const checkCompletionStatus = async () => {
-        try {
-          const response = await esignAPI.checkDocumentStatus(docIdToCheck);
-          const apiStatus = response.data?.status;
-          const isCompleted = response.data?.isCompleted === true || apiStatus === 'COMPLETED' || apiStatus === 'completed';
-
-          if (response.success && isCompleted) {
-            setSteps(prevSteps => ({
-              ...prevSteps,
-              signing: { ...prevSteps.signing, completed: true }
-            }));
-            
-            // Show success message
-            alert('E-signing completed successfully!');
-
-            // Clear stored active doc id once completed
-            localStorage.removeItem('active_esign_document_id');
-          }
-        } catch (err) {
-          console.error('Error checking e-sign status:', err);
+      runEsignStatusCheck({
+        docId: docIdToCheck,
+        serviceType: serviceTypeToUpdate,
+        maxAttempts: 10,
+        delayMs: 3000,
+        showErrors: true,
+      }).then((result) => {
+        if (result?.success && result.completed) {
+          alert('E-signing completed successfully!');
+        } else if (result?.error) {
+          console.error('Auto e-sign status check failed:', result.error);
         }
-      };
-      
-      checkCompletionStatus();
-      
-      // Clean up URL
-      window.history.replaceState({}, document.title, '/dashboard');
+
+        window.history.replaceState({}, document.title, '/dashboard');
+      });
     }
+    return () => clearEsignRetryTimer();
   }, [activeDocumentId]);
   
   // KYC, phone, esign, and subscription checks are all handled by
@@ -446,40 +544,43 @@ const Dashboard = () => {
   const handleCheckEsignStatus = async () => {
     const storedActiveDocId = localStorage.getItem('active_esign_document_id');
     const docIdToCheck = activeDocumentId || storedActiveDocId;
+    const serviceTypeToUpdate = getStoredEsignServiceType();
     if (!docIdToCheck || docIdToCheck === 'null' || docIdToCheck === 'undefined') {
       alert('No active e-signing session found. Please proceed to e-signing first.');
       return { success: false, error: 'No active e-signing session found.' };
     }
     setIsLoading(true);
     try {
-      const response = await esignAPI.checkDocumentStatus(docIdToCheck);
-      if (!response.success) {
-        const message = 'Failed to check status: ' + (response.error || 'Unknown error');
+      const result = await checkEsignStatusOnce(docIdToCheck);
+      if (!result.success) {
+        const message = 'Failed to check status: ' + (result.error || 'Unknown error');
         alert(message);
-        return { success: false, error: response.error || 'Unknown error' };
+        return { success: false, error: result.error || 'Unknown error' };
       }
-      const data = response.data;
-      if (data.isCompleted) {
-        setSteps(prev => ({ ...prev, signing: { ...prev.signing, completed: true }, payment: { ...prev.payment, active: true } }));
-        setActiveDocumentId(null);
-        localStorage.removeItem('active_esign_document_id');
+
+      if (result.completed) {
+        applyCompletedEsignState(serviceTypeToUpdate);
+        clearStoredEsignSession();
         alert('E-signing completed successfully!');
-        return { success: true, completed: true, status: data.status };
-      } else if (data.status === 'EXPIRED') {
-        alert('E-signing link has expired. Please restart the process.');
-        setActiveDocumentId(null);
-        localStorage.removeItem('active_esign_document_id');
-        return { success: true, completed: false, status: data.status };
-      } else if (data.status === 'REJECTED') {
-        alert('E-signing was rejected. Please restart the process.');
-        setActiveDocumentId(null);
-        localStorage.removeItem('active_esign_document_id');
-        return { success: true, completed: false, status: data.status };
-      } else {
-        const { signed, total } = data.signingDetails || { signed: 0, total: 1 };
-        alert(`E-signing in progress: ${signed}/${total} signed. Please complete the signing process.`);
-        return { success: true, completed: false, status: data.status, signingDetails: { signed, total } };
+        return { success: true, completed: true, status: result.status };
       }
+
+      const status = String(result.status || '').toUpperCase();
+      if (status === 'EXPIRED') {
+        alert('E-signing link has expired. Please restart the process.');
+        clearStoredEsignSession();
+        return { success: true, completed: false, status: result.status };
+      }
+
+      if (status === 'REJECTED') {
+        alert('E-signing was rejected. Please restart the process.');
+        clearStoredEsignSession();
+        return { success: true, completed: false, status: result.status };
+      }
+
+      const { signed, total } = result.data?.signingDetails || { signed: 0, total: 1 };
+      alert(`E-signing in progress: ${signed}/${total} signed. Please complete the signing process.`);
+      return { success: true, completed: false, status: result.status, signingDetails: { signed, total } };
     } catch (err) {
       alert('Error checking status: ' + err.message);
       return { success: false, error: err.message };
@@ -519,6 +620,11 @@ const Dashboard = () => {
     } finally {
       setBypassLoading(false);
     }
+  };
+
+  const handleQuestionnaireComplete = (result) => {
+    console.log('Questionnaire completed in Dashboard:', result);
+    setIaSteps(prev => ({ ...prev, questionnaire: { ...prev.questionnaire, completed: true, active: true }, signing: { ...prev.signing, active: true } }));
   };
 
   // Handle phone form input changes
@@ -826,7 +932,9 @@ const Dashboard = () => {
     phoneForm, otpSent, phoneError, phoneLoading, phoneAlreadyExists,
     handlePhoneInputChange, handleOtpChange, handleSendOTP, handleVerifyOTP,
     handlePhoneBypass, handlePhoneSkip,
+    handleQuestionnaireComplete,
     activeDocumentId, handleCheckEsignStatus, handleEsignBypass,
+    esignStatusChecking, esignStatusMessage,
     bypassLoading, handlePaymentBypass,
   };
 

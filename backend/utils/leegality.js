@@ -2,7 +2,16 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 
-function getLeegalityConfig() {
+function getLeegalityConfig(serviceType = 'RA') {
+  const normalizedServiceType = String(serviceType).toUpperCase();
+
+  if (normalizedServiceType === 'IA') {
+    return {
+      apiBase: process.env.LEEGALITY_API_BASE || 'https://app1.leegality.com/api/v3.0',
+      authToken: process.env.LEEGALITY_IA_AUTH_TOKEN || process.env.LEEGALITY_AUTH_TOKEN || ''
+    };
+  }
+
   return {
     apiBase: process.env.LEEGALITY_API_BASE || 'https://app1.leegality.com/api/v3.0',
     authToken: process.env.LEEGALITY_AUTH_TOKEN || ''
@@ -64,8 +73,8 @@ async function postWithRetry(url, body, options = {}, retries = 1) {
   }
 }
 
-async function createSignRequest({ name, email, profileId, pdfBase64, fileName, irn, fields }) {
-  const { apiBase, authToken } = getLeegalityConfig();
+async function createSignRequest({ name, email, profileId, pdfBase64, fileName, irn, fields, serviceType }) {
+  const { apiBase, authToken } = getLeegalityConfig(serviceType);
 
   // ✅ FIXED: Keep validation for PDF workflow
   if (!profileId || !pdfBase64 || !email) {

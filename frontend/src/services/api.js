@@ -442,6 +442,84 @@ export const adminAPI = {
     }
   },
 
+  // Questionnaire Management
+  getAllQuestionnaires: async () => {
+    try {
+      const res = await api.get('/questionnaire/admin/all');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error getting questionnaires:', message);
+      throw new Error(message);
+    }
+  },
+
+  getQuestionnaireById: async (id) => {
+    try {
+      const res = await api.get(`/questionnaire/admin/${id}`);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error getting questionnaire:', message);
+      throw new Error(message);
+    }
+  },
+
+  createQuestionnaire: async (data) => {
+    try {
+      const res = await api.post('/questionnaire/admin/create', data);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error creating questionnaire:', message);
+      throw new Error(message);
+    }
+  },
+
+  updateQuestionnaire: async (id, data) => {
+    try {
+      const res = await api.put(`/questionnaire/admin/${id}`, data);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error updating questionnaire:', message);
+      throw new Error(message);
+    }
+  },
+
+  deleteQuestionnaire: async (id) => {
+    try {
+      const res = await api.delete(`/questionnaire/admin/${id}`);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error deleting questionnaire:', message);
+      throw new Error(message);
+    }
+  },
+
+  getAllQuestionnaireResponses: async () => {
+    try {
+      const res = await api.get('/questionnaire/admin/responses/all');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error getting questionnaire responses:', message);
+      throw new Error(message);
+    }
+  },
+
+  getQuestionnaireResponseById: async (id) => {
+    try {
+      const res = await api.get(`/questionnaire/admin/responses/${id}`);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error getting questionnaire response:', message);
+      throw new Error(message);
+    }
+  },
+
   // Get all subscriptions (including inactive)
   getAllSubscriptions: async () => {
     try {
@@ -879,6 +957,45 @@ export const paymentRequestAPI = {
     } catch (err) {
       const { message } = extractError(err);
       console.error('Error fetching payment requests:', message);
+      throw new Error(message);
+    }
+  }
+};
+
+// Questionnaire API (User)
+export const questionnaireAPI = {
+  // Get active questionnaire
+  getActiveQuestionnaire: async () => {
+    try {
+      const res = await api.get('/questionnaire/active');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error getting active questionnaire:', message);
+      throw new Error(message);
+    }
+  },
+
+  // Submit questionnaire response
+  submitResponse: async (data) => {
+    try {
+      const res = await api.post('/questionnaire/submit', data);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error submitting questionnaire response:', message);
+      throw new Error(message);
+    }
+  },
+
+  // Get user's own response
+  getMyResponse: async () => {
+    try {
+      const res = await api.get('/questionnaire/my-response');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error getting user response:', message);
       throw new Error(message);
     }
   }

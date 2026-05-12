@@ -134,13 +134,18 @@
 }
 
 .reset-filters-btn {
-  background-color: white;
-  color: #4a5568;
-  border: 1px solid #e2e8f0;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .reset-filters-btn:hover {
-  background-color: #f7fafc;
+  background-color: #5a6268;
 }
 
 /* Subscriptions Table */

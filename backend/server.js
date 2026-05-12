@@ -28,6 +28,7 @@ import paymentRequestRoutes from './routes/paymentRequestRoutes.js';
 import newsletterRoutes from './routes/newsletterRoutes.js';
 import symbolRoutes from './routes/symbolRoutes.js';
 import ltpRoutes from './routes/ltpRoutes.js';
+import questionnaireRoutes from './routes/questionnaireRoutes.js';
 
 // Connect to MongoDB
 connectDB();
@@ -99,6 +100,7 @@ app.use('/api/payment-requests', paymentRequestRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/symbols', symbolRoutes);
 app.use('/api/ltp', ltpRoutes);
+app.use('/api/questionnaire', questionnaireRoutes);
 
 // ─── Ensure directories exist ───
 for (const dir of ['uploads', 'logs']) {

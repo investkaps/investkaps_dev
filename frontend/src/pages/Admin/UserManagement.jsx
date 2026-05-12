@@ -201,6 +201,7 @@ const UserManagement = () => {
                   <th>Name</th>
                   <th>Email</th>
                   <th>Role</th>
+                  <th>Client Types</th>
                   <th>KYC Status</th>
                   <th>Subscription</th>
                   <th>Actions</th>
@@ -218,6 +219,23 @@ const UserManagement = () => {
                       <span className={`role-badge ${user.role}`}>
                         {user.role}
                       </span>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                        {user.clientTypes?.RA?.isCompleted && (
+                          <span className="status-badge verified" title={`RA completed on ${new Date(user.clientTypes.RA.completedAt).toLocaleDateString()}`}>
+                            RA
+                          </span>
+                        )}
+                        {user.clientTypes?.IA?.isCompleted && (
+                          <span className="status-badge verified" title={`IA completed on ${new Date(user.clientTypes.IA.completedAt).toLocaleDateString()}`}>
+                            IA
+                          </span>
+                        )}
+                        {!user.clientTypes?.RA?.isCompleted && !user.clientTypes?.IA?.isCompleted && (
+                          <span className="status-badge inactive">None</span>
+                        )}
+                      </div>
                     </td>
                     <td>
                       <span className={`status-badge ${user.kycStatus?.isVerified ? 'verified' : 'pending'}`}>
@@ -340,6 +358,36 @@ const UserManagement = () => {
                     <span className="admin-details-label">Last Updated</span>
                     <span className="admin-details-value">
                       {new Date(selectedUser.updatedAt).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="admin-details-section">
+                <h4>Client Types</h4>
+                <div className="admin-details-grid">
+                  <div className="admin-details-item">
+                    <span className="admin-details-label">RA Client</span>
+                    <span className="admin-details-value">
+                      {selectedUser.clientTypes?.RA?.isCompleted ? (
+                        <span className="status-badge verified">
+                          Completed on {new Date(selectedUser.clientTypes.RA.completedAt).toLocaleDateString()}
+                        </span>
+                      ) : (
+                        <span className="status-badge inactive">Not Completed</span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="admin-details-item">
+                    <span className="admin-details-label">IA Client</span>
+                    <span className="admin-details-value">
+                      {selectedUser.clientTypes?.IA?.isCompleted ? (
+                        <span className="status-badge verified">
+                          Completed on {new Date(selectedUser.clientTypes.IA.completedAt).toLocaleDateString()}
+                        </span>
+                      ) : (
+                        <span className="status-badge inactive">Not Completed</span>
+                      )}
                     </span>
                   </div>
                 </div>
