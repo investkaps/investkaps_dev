@@ -183,8 +183,8 @@ const OnboardingFlow = ({
 
   useEffect(() => {
     // Only auto-advance when signing transitions from incomplete -> complete.
-    // This allows the user to revisit the signing step after it's completed.
-    if (steps.signing.completed && !prevSigningCompletedRef.current) {
+    // For IA, skip auto-advance — user must click "Proceed to Payment" manually.
+    if (steps.signing.completed && !prevSigningCompletedRef.current && serviceType !== 'IA') {
       const currentIndex = stepList.findIndex((step) => step.id === activeStep);
       const nextStep = stepList[currentIndex + 1];
       if (nextStep && canNavigateTo(nextStep.id)) {
@@ -215,6 +215,17 @@ const OnboardingFlow = ({
       }
     }
   }, [steps.phone.completed]);
+
+  // Auto-advance when questionnaire is completed
+  useEffect(() => {
+    if (steps.questionnaire?.completed && activeStep === 'questionnaire') {
+      const currentIndex = stepList.findIndex((step) => step.id === 'questionnaire');
+      const nextStep = stepList[currentIndex + 1];
+      if (nextStep) {
+        setActiveStep(nextStep.id);
+      }
+    }
+  }, [steps.questionnaire?.completed]);
 
   // Auto-polling for e-sign status
   const secondsPassedRef = useRef(0);
@@ -823,9 +834,6 @@ const OnboardingFlow = ({
                 </span>
                 {step.mandatory && !step.completed && (
                   <span className="ob-nav-required" title="Required">*</span>
-                )}
-                {step.skippedForRa && (
-                  <span className="ob-nav-skip-tag">Carried</span>
                 )}
               </button>
             );

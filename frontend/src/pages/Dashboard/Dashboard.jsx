@@ -773,6 +773,7 @@ const Dashboard = () => {
           phone: { ...prevSteps.phone, completed: true },
           kyc: { ...prevSteps.kyc, active: true, expanded: true }
         }));
+        setIaSteps(prev => ({ ...prev, phone: { ...prev.phone, completed: true } }));
         setOtpSent(false);
       } else {
         setPhoneError(response.error || 'Invalid OTP. Please try again.');
