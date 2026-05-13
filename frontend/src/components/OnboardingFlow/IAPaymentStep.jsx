@@ -88,6 +88,21 @@ const IAPaymentStep = ({ currentUser, onPaymentComplete }) => {
       return;
     }
 
+    // Extra safety checks & logging to help debug missing fields reported by backend
+    const resolvedUserId = currentUser?.id || currentUser?.clerkId || null;
+    if (!resolvedUserId) {
+      setError('Unable to determine your account id. Please refresh and try again.');
+      console.error('IAPaymentStep: missing user id on currentUser', currentUser);
+      return;
+    }
+
+    // Sanity-check before sending to server
+    if (!cleanName || !cleanTxnId || !resolvedUserId) {
+      setError('All fields are required');
+      console.warn('IAPaymentStep: missing fields', { cleanName, cleanTxnId, resolvedUserId, file: !!formData.transactionImage });
+      return;
+    }
+
     setUploading(true);
     setError('');
 
@@ -97,9 +112,17 @@ const IAPaymentStep = ({ currentUser, onPaymentComplete }) => {
       formDataToSend.append('transactionId', cleanTxnId);
       formDataToSend.append('transactionImage', formData.transactionImage);
       formDataToSend.append('amount', '0'); // IA activation is free, but we still collect payment proof
-      formDataToSend.append('userId', currentUser.id);
+      formDataToSend.append('userId', resolvedUserId);
       formDataToSend.append('serviceType', 'IA');
       formDataToSend.append('paymentMethod', paymentMethod);
+
+      // Debug: log form entries (do not log file binary)
+      try {
+        for (const pair of formDataToSend.entries()) {
+          if (pair[0] === 'transactionImage') continue;
+          console.debug('IAPaymentStep form:', pair[0], pair[1]);
+        }
+      } catch (logErr) { console.debug('IAPaymentStep: could not iterate form entries', logErr); }
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/payment-requests/submit`, {
         method: 'POST',
