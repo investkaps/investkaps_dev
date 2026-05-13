@@ -206,7 +206,8 @@ router.get('/esign/active', verifyToken, async (req, res) => {
       data: {
         documentId: document._id,
         status: document.esign?.status,
-        createdAt: document.createdAt
+        createdAt: document.createdAt,
+        serviceType: document.serviceType || 'RA'
       }
     });
   } catch (err) {

@@ -282,12 +282,18 @@ const Dashboard = () => {
             if (response.success && response.data.documentId) {
               const status = response.data.status;
               const isCompleted = status === 'COMPLETED' || status === 'completed';
+              // Prefer server-provided serviceType when available so we update
+              // the correct IA/RA step set. Fall back to stored type.
+              const serviceTypeFromResp = response.data.serviceType || getStoredEsignServiceType();
               if (isCompleted) {
-                applyCompletedEsignState(getStoredEsignServiceType());
+                applyCompletedEsignState(serviceTypeFromResp);
                 clearStoredEsignSession();
               } else {
                 setActiveDocumentId(response.data.documentId);
                 localStorage.setItem('active_esign_document_id', response.data.documentId);
+                if (response.data.serviceType) {
+                  localStorage.setItem('active_esign_service_type', response.data.serviceType);
+                }
               }
             }
           } catch (err) {
