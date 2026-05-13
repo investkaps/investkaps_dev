@@ -6,14 +6,18 @@ const CONTACT_URL = `${SITE_URL}/contact`;
 
 // ── Transporter ────────────────────────────────────────────────────────────────
 const createTransporter = () => {
-  const port = Number(process.env.SMTP_PORT) || 465;
+  const port = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT) || 587;
+  const host = process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com';
+  const user = process.env.SMTP_USER || process.env.EMAIL_USER;
+  const pass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
+
   return nodemailer.createTransport({
-    host:   process.env.SMTP_HOST || 'smtp.zoho.in',
-    port:   port,
+    host,
+    port,
     secure: port === 465, // Use SSL for port 465, TLS/STARTTLS for 587
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      user,
+      pass,
     },
   });
 };

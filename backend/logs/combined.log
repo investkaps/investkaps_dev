@@ -1214,3 +1214,5 @@
 2026-05-13 14:07:02 info: DELETE /api/admin/users/6a0431f6186f4014cbf3d203 {"ip":"::1"}
 2026-05-13 14:36:24 info: GET /api/payment-requests/all?status=pending {"ip":"::1"}
 2026-05-13 14:36:26 info: GET /api/payment-requests/all?status=pending {"ip":"::1"}
+2026-05-13 15:37:37 info: GET /api/questionnaire/admin/responses/all {"ip":"::1"}
+2026-05-13 15:37:38 info: GET /api/questionnaire/admin/responses/all {"ip":"::1"}
