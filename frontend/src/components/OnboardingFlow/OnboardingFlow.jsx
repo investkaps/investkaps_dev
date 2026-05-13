@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import OTPInput from '../OTPInput/OTPInput';
 import RiskQuestionnaire from '../RiskQuestionnaire/RiskQuestionnaire';
 import { esignAPI } from '../../services/api';
-import { RA_BASE64_PDF, IA_BASE64_PDF } from '../../pages/AadhaarESign/base64.jsx';
+import { loadAgreementBase64 } from '../../pages/AadhaarESign/agreementBase64Loader';
 import './OnboardingFlow.css';
 
 /**
@@ -183,6 +183,28 @@ const OnboardingFlow = ({
     }
   }, [steps.signing.completed, activeStep, stepList]);
 
+  // Auto-advance when KYC is verified successfully
+  useEffect(() => {
+    if (steps.kyc.completed && activeStep === 'kyc') {
+      const currentIndex = stepList.findIndex((step) => step.id === 'kyc');
+      const nextStep = stepList[currentIndex + 1];
+      if (nextStep) {
+        setActiveStep(nextStep.id);
+      }
+    }
+  }, [steps.kyc.completed]);
+
+  // Auto-advance when phone is verified
+  useEffect(() => {
+    if (steps.phone.completed && activeStep === 'phone') {
+      const currentIndex = stepList.findIndex((step) => step.id === 'phone');
+      const nextStep = stepList[currentIndex + 1];
+      if (nextStep) {
+        setActiveStep(nextStep.id);
+      }
+    }
+  }, [steps.phone.completed]);
+
   const completedCount = stepList.filter((s) => s.completed).length;
   const progress = Math.round((completedCount / stepList.length) * 100);
 
@@ -237,16 +259,16 @@ const OnboardingFlow = ({
 
     try {
       const profileId = serviceType === 'IA' ? 'sJRIpdu' : 'TNbM5NR';
-      const fileBase64 = serviceType === 'IA' ? IA_BASE64_PDF : RA_BASE64_PDF;
+      const fileBase64 = await loadAgreementBase64(serviceType);
 
       const response = await esignAPI.createSignRequest({
         serviceType,
         name: trimmedName,
         profileId,
-        fileName: serviceType === 'IA' ? 'IA Service Agreement' : 'RA Client Agreement',
+        fileName: serviceType === 'IA' ? 'investkaps Investment Advisory Agreement' : 'investkaps_Research_Analyst_Agreement_MITC',
         invitees: [{ name: trimmedName, email: trimmedEmail }],
         file: {
-          name: serviceType === 'IA' ? 'IA Service Agreement' : 'RA Client Agreement',
+          name: serviceType === 'IA' ? 'investkaps Investment Advisory Agreement' : 'investkaps_Research_Analyst_Agreement_MITC',
           file: fileBase64,
           fields: [{}],
         },
@@ -491,13 +513,11 @@ const OnboardingFlow = ({
     return (
       <RiskQuestionnaire
         onComplete={(result) => {
-          console.log('Questionnaire completed:', result);
-          setQuestionnaireCompleted(true);
-          // Call parent callback to update state
+          // Update parent DB state (marks questionnaire.completed = true in iaSteps)
           if (handleQuestionnaireComplete) {
             handleQuestionnaireComplete(result);
           }
-          // Move to next step
+          // Advance sidebar to IA Agreement — user explicitly clicked "Proceed"
           const currentIndex = stepList.findIndex((step) => step.id === activeStep);
           const nextStep = stepList[currentIndex + 1];
           if (nextStep && canNavigateTo(nextStep.id)) {
@@ -505,7 +525,6 @@ const OnboardingFlow = ({
           }
         }}
         onSkip={() => {
-          // Allow skipping if needed
           const currentIndex = stepList.findIndex((step) => step.id === activeStep);
           const nextStep = stepList[currentIndex + 1];
           if (nextStep && canNavigateTo(nextStep.id)) {
@@ -568,7 +587,7 @@ const OnboardingFlow = ({
           <div className="ob-doc-preview">
             <span className="ob-doc-icon">📋</span>
             <div>
-              <strong>{serviceType === 'IA' ? 'IA Service Agreement' : 'RA Client Agreement'}</strong>
+              <strong>{serviceType === 'IA' ? 'investkaps Investment Advisory Agreement' : 'investkaps_Research_Analyst_Agreement_MITC'}</strong>
               <p>Your signed copy will be sent to the email above.</p>
             </div>
           </div>
@@ -757,13 +776,16 @@ const OnboardingFlow = ({
       {/* ── Main Panel ───────────────────────────────────────────── */}
       <main className="ob-main">
         <div className="ob-main-header">
-          <div className="ob-step-meta">
-            <span className="ob-step-icon">{activeStepMeta?.icon}</span>
-            <div>
-              <h2 className="ob-step-title">{activeStepMeta?.label}</h2>
-              <p className="ob-step-subtitle">{activeStepMeta?.subtitle}</p>
+          <div>
             <div className="ob-flow-badge" style={{ marginBottom: '0.5rem' }}>
               {serviceType} Onboarding
+            </div>
+            <div className="ob-step-meta">
+              <span className="ob-step-icon">{activeStepMeta?.icon}</span>
+              <div>
+                <h2 className="ob-step-title">{activeStepMeta?.label}</h2>
+                <p className="ob-step-subtitle">{activeStepMeta?.subtitle}</p>
+              </div>
             </div>
           </div>
           {activeStepMeta?.mandatory && (

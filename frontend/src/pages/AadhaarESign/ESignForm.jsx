@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import { isValidEmail, isValidName } from '../../utils/validators';
+import { loadAgreementBase64 } from './agreementBase64Loader';
 import './ESignForm.css';
 
 // Get API URL from environment variables
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-// Import the base64 PDFs from the base64.jsx file
-import { RA_BASE64_PDF, IA_BASE64_PDF } from './base64.jsx';
 
 const SERVICE_TYPE = (() => {
   const search = typeof window !== 'undefined' ? window.location.search : '';
@@ -27,14 +26,12 @@ const AGREEMENT_CONFIG = {
   RA: {
     profileId: 'TNbM5NR',
     fileName: 'RA Client Agreement',
-    base64: RA_BASE64_PDF,
     heading: 'RA Aadhaar E-Sign Form',
     description: 'Complete the Research Analyst agreement to continue with onboarding.'
   },
   IA: {
     profileId: 'sJRIpdu',
     fileName: 'IA Service Agreement',
-    base64: IA_BASE64_PDF,
     heading: 'IA Aadhaar E-Sign Form',
     description: 'Complete the Investment Advisor agreement to continue with onboarding.'
   }
@@ -115,6 +112,7 @@ function ESignForm() {
     try {
       // Get Clerk auth token
       const token = await getToken();
+      const agreementBase64 = await loadAgreementBase64(SERVICE_TYPE);
 
       const response = await fetch(`${API_URL}/esign`, {
         method: 'POST',
@@ -134,7 +132,7 @@ function ESignForm() {
           // ✅ FIXED: Correct structure for file with empty fields for template workflow
           file: {
             name: agreement.fileName,
-            file: agreement.base64,
+            file: agreementBase64,
             fields: [{}] // Empty fields array for template workflow
           },
           irn: `INV-${Date.now()}-${Math.floor(Math.random() * 10000)}`

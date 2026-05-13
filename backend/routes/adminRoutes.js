@@ -294,4 +294,88 @@ router.post('/test-whatsapp', verifyToken, checkRole('admin'), async (req, res) 
  */
 router.get('/set-admin/:email', adminRoleController.setAdminByEmail);
 
+/**
+ * @route   DELETE /api/admin/users/:id
+ * @desc    Permanently delete a user account, their KYC verifications,
+ *          all subscription records, all documents, and their Clerk identity.
+ * @access  Private (Admin only)
+ */
+router.delete('/users/:id', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+
+    // Prevent admin from deleting their own account
+    if (req.user._id.toString() === targetUserId) {
+      return res.status(400).json({
+        success: false,
+        error: 'You cannot delete your own admin account.'
+      });
+    }
+
+    // Find the user first so we have the clerkId for Clerk deletion
+    const user = await User.findById(targetUserId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found.' });
+    }
+
+    const deletionLog = {
+      userId: user._id,
+      email: user.email,
+      clerkId: user.clerkId,
+      deleted: {}
+    };
+
+    // 1. Cancel / delete all UserSubscription records
+    const subResult = await UserSubscription.deleteMany({ user: user._id });
+    deletionLog.deleted.subscriptions = subResult.deletedCount;
+
+    // 2. Delete all KYC verification records
+    const kycResult = await KycVerification.deleteMany({
+      $or: [
+        { user: user._id },
+        { clerkId: user.clerkId }
+      ]
+    });
+    deletionLog.deleted.kycVerifications = kycResult.deletedCount;
+
+    // 3. Delete all Document records
+    const docResult = await Document.deleteMany({ user: user._id });
+    deletionLog.deleted.documents = docResult.deletedCount;
+
+    // 4. Delete the User document from MongoDB
+    await User.findByIdAndDelete(targetUserId);
+    deletionLog.deleted.user = true;
+
+    // 5. Delete the user from Clerk (auth provider)
+    if (user.clerkId) {
+      try {
+        const { createClerkClient } = await import('@clerk/clerk-sdk-node');
+        const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+        await clerkClient.users.deleteUser(user.clerkId);
+        deletionLog.deleted.clerkUser = true;
+        console.log(`Clerk user deleted: ${user.clerkId}`);
+      } catch (clerkErr) {
+        // Log but do not fail — MongoDB records are already gone
+        console.error(`Failed to delete Clerk user ${user.clerkId}:`, clerkErr.message);
+        deletionLog.deleted.clerkUser = false;
+        deletionLog.clerkError = clerkErr.message;
+      }
+    } else {
+      deletionLog.deleted.clerkUser = false;
+      deletionLog.clerkError = 'No clerkId on user record';
+    }
+
+    console.log('User deletion summary:', JSON.stringify(deletionLog, null, 2));
+
+    return res.status(200).json({
+      success: true,
+      message: `User "${user.name}" (${user.email}) has been permanently deleted.`,
+      data: deletionLog
+    });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return res.status(500).json({ success: false, error: 'Server error while deleting user.' });
+  }
+});
+
 export default router;

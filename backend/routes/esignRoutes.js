@@ -83,10 +83,10 @@ router.post('/esign', verifyToken, async (req, res) => {
         try {
           const document = new Document({
             user: userId,
-            name: fileName || (normalizedServiceType === 'IA' ? 'IA Service Agreement' : 'RA Client Agreement'),
+            name: fileName || (normalizedServiceType === 'IA' ? 'investkaps Investment Advisory Agreement' : 'investkaps_Research_Analyst_Agreement_MITC'),
             type: 'agreement',
             serviceType: normalizedServiceType,
-            fileName: fileName || (normalizedServiceType === 'IA' ? 'IA Service Agreement' : 'RA Client Agreement'),
+            fileName: fileName || (normalizedServiceType === 'IA' ? 'investkaps Investment Advisory Agreement' : 'investkaps_Research_Analyst_Agreement_MITC'),
             filePath: '/esign/documents',
             fileSize: 0,
             mimeType: 'application/pdf',
@@ -286,8 +286,8 @@ router.get('/esign/document/:documentId', verifyToken, async (req, res) => {
       return res.status(400).json({ success: false, error: 'No Leegality document ID found' });
     }
     
-    // Check status with Leegality API using corrected function
-    const leegalityResponse = await getDocumentDetails(leegalityDocumentId);
+    // Check status with Leegality API — pass serviceType so correct auth token is used
+    const leegalityResponse = await getDocumentDetails(leegalityDocumentId, document.serviceType || 'RA');
     
     if (!leegalityResponse.success) {
       console.log(' E-Sign Status Check: Leegality API error:', leegalityResponse.error);
@@ -477,7 +477,7 @@ router.post('/esign/webhook', async (req, res) => {
     }
 
     // Do the same thing as status check: call Leegality and update MongoDB
-    const statusResult = await getDocumentDetails(leegalityDocumentId);
+    const statusResult = await getDocumentDetails(leegalityDocumentId, document.serviceType || 'RA');
     if (statusResult.success) {
       const newStatus = statusResult.data.status;
       document.esign.currentStatus = newStatus;

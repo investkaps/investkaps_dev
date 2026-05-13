@@ -42,8 +42,8 @@ function generateRandomIRN() {
   return `INV-${Date.now()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
 }
 
-function createAxiosInstance() {
-  const { apiBase } = getLeegalityConfig();
+function createAxiosInstance(serviceType = 'RA') {
+  const { apiBase } = getLeegalityConfig(serviceType);
   return axios.create({
     baseURL: apiBase,
     timeout: 30000,
@@ -56,8 +56,8 @@ function createAxiosInstance() {
   });
 }
 
-async function postWithRetry(url, body, options = {}, retries = 1) {
-  const axiosInstance = createAxiosInstance();
+async function postWithRetry(url, body, options = {}, retries = 1, serviceType = 'RA') {
+  const axiosInstance = createAxiosInstance(serviceType);
   let attempt = 0;
   while (true) {
     try {
@@ -120,7 +120,7 @@ async function createSignRequest({ name, email, profileId, pdfBase64, fileName, 
   };
 
   try {
-    const resp = await postWithRetry('/sign/request', payload, { headers }, 1);
+    const resp = await postWithRetry('/sign/request', payload, { headers }, 1, serviceType);
     const normalized = resp.data?.data || resp.data;
     const apiStatus = resp.data?.status;
     
@@ -152,14 +152,14 @@ async function createSignRequest({ name, email, profileId, pdfBase64, fileName, 
   }
 }
 
-async function checkSignStatus(requestId) {
-  const { authToken } = getLeegalityConfig();
+async function checkSignStatus(requestId, serviceType = 'RA') {
+  const { authToken } = getLeegalityConfig(serviceType);
   if (!requestId) return { success: false, error: 'requestId required', httpStatus: 400 };
-  makeLog('Checking signature request status', 'INFO', { requestId });
+  makeLog('Checking signature request status', 'INFO', { requestId, serviceType });
   try {
-    const axiosInstance = createAxiosInstance();
+    const axiosInstance = createAxiosInstance(serviceType);
     const resp = await axiosInstance.get(`/sign/request/${requestId}`, {
-      headers: { 'X-Auth-Token': authToken } // ✅ FIXED: Correct auth header
+      headers: { 'X-Auth-Token': authToken }
     });
     makeLog('Signature request status retrieved', 'INFO', { requestId, status: resp.status });
     return { success: true, data: resp.data };
@@ -178,8 +178,8 @@ async function checkSignStatus(requestId) {
  * @param {string} documentId - Leegality document ID
  * @returns {Promise<Object>} Response with document details, signing status, and files
  */
-async function getDocumentDetails(documentId) {
-  const { apiBase, authToken } = getLeegalityConfig();
+async function getDocumentDetails(documentId, serviceType = 'RA') {
+  const { apiBase, authToken } = getLeegalityConfig(serviceType);
   if (!documentId) {
     return { success: false, error: 'documentId required', httpStatus: 400 };
   }
@@ -187,9 +187,9 @@ async function getDocumentDetails(documentId) {
   console.log('📤 LEEGALITY STATUS CHECK:');
   console.log('   URL:', `${apiBase}/sign/request?documentId=${documentId}`);
   console.log('   Document ID:', documentId);
+  console.log('   Service Type:', serviceType);
 
   try {
-    // Correct endpoint: GET /sign/request?documentId=XXX
     const resp = await axios.get(`${apiBase}/sign/request`, {
       params: { documentId },
       headers: { 'X-Auth-Token': authToken }

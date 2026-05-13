@@ -254,6 +254,18 @@ export const adminAPI = {
       throw new Error(message);
     }
   },
+
+  // Permanently delete a user — removes MongoDB records + Clerk identity
+  deleteUser: async (id) => {
+    try {
+      const res = await api.delete(`/admin/users/${id}`);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error deleting user:', message);
+      throw new Error(message);
+    }
+  },
   
   // Get all KYC verifications
   getAllKycVerifications: async () => {

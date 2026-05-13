@@ -11,7 +11,10 @@ const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [filterVerified, setFilterVerified] = useState('all');
-  
+  const [deletingUserId, setDeletingUserId] = useState(null);
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState({ show: false, userId: null, userName: '', userEmail: '', userRole: '' });
+  const [deleteSuccess, setDeleteSuccess] = useState(null);
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -114,6 +117,43 @@ const UserManagement = () => {
     }
   };
   
+  const openDeleteConfirm = (user) => {
+    setDeleteConfirmModal({
+      show: true,
+      userId: user._id,
+      userName: user.name || 'Unknown',
+      userEmail: user.email || '',
+      userRole: user.role
+    });
+  };
+
+  const closeDeleteConfirm = () => {
+    setDeleteConfirmModal({ show: false, userId: null, userName: '', userEmail: '', userRole: '' });
+  };
+
+  const handleDeleteUser = async () => {
+    const { userId, userName } = deleteConfirmModal;
+    try {
+      setDeletingUserId(userId);
+      closeDeleteConfirm();
+      await adminAPI.deleteUser(userId);
+
+      // Remove from local state
+      setUsers(prev => prev.filter(u => u._id !== userId));
+      if (selectedUser && selectedUser._id === userId) {
+        setSelectedUser(null);
+      }
+
+      setDeleteSuccess(`✓ User "${userName}" has been permanently deleted.`);
+      setTimeout(() => setDeleteSuccess(null), 5000);
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      setError(`Failed to delete user: ${err.message}`);
+    } finally {
+      setDeletingUserId(null);
+    }
+  };
+
   // Filter and sort users - admins first, then customers
   const filteredUsers = users
     .filter(user => {
@@ -141,9 +181,95 @@ const UserManagement = () => {
   
   return (
     <div className="admin-section">
+      {/* Delete confirmation modal */}
+      {deleteConfirmModal.show && (
+        <>
+          <div
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.65)', zIndex: 1100,
+              backdropFilter: 'blur(4px)'
+            }}
+            onClick={closeDeleteConfirm}
+          />
+          <div style={{
+            position: 'fixed', top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            background: '#1a1a2e', border: '1px solid #dc3545',
+            borderRadius: '12px', padding: '2rem',
+            width: '90%', maxWidth: '460px',
+            zIndex: 1101, boxShadow: '0 20px 60px rgba(220,53,69,0.3)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+              <span style={{ fontSize: '1.8rem' }}>⚠️</span>
+              <h3 style={{ color: '#ff6b6b', margin: 0, fontSize: '1.2rem' }}>Permanently Delete User</h3>
+            </div>
+
+            <p style={{ color: '#ccc', marginBottom: '0.5rem', fontSize: '0.95rem' }}>
+              You are about to permanently delete:
+            </p>
+            <div style={{
+              background: 'rgba(220,53,69,0.1)', border: '1px solid rgba(220,53,69,0.3)',
+              borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1rem'
+            }}>
+              <strong style={{ color: '#fff', display: 'block' }}>{deleteConfirmModal.userName}</strong>
+              <span style={{ color: '#aaa', fontSize: '0.9rem' }}>{deleteConfirmModal.userEmail}</span>
+            </div>
+
+            <p style={{ color: '#aaa', fontSize: '0.875rem', marginBottom: '1rem' }}>
+              This will permanently remove:
+            </p>
+            <ul style={{ color: '#ccc', fontSize: '0.875rem', margin: '0 0 1.5rem 1.2rem', lineHeight: 1.8 }}>
+              <li>MongoDB user account</li>
+              <li>All KYC verification records</li>
+              <li>All subscription plans (active &amp; historical)</li>
+              <li>All linked documents</li>
+              <li>Clerk authentication identity</li>
+            </ul>
+            <p style={{ color: '#ff6b6b', fontSize: '0.85rem', fontWeight: 600, marginBottom: '1.5rem' }}>
+              ⚠ This action is irreversible and cannot be undone.
+            </p>
+
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button
+                onClick={closeDeleteConfirm}
+                style={{
+                  padding: '0.6rem 1.4rem', borderRadius: '8px',
+                  border: '1px solid #555', background: 'transparent',
+                  color: '#ccc', cursor: 'pointer', fontSize: '0.9rem'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteUser}
+                style={{
+                  padding: '0.6rem 1.4rem', borderRadius: '8px',
+                  border: 'none', background: '#dc3545',
+                  color: '#fff', cursor: 'pointer', fontSize: '0.9rem',
+                  fontWeight: 600, letterSpacing: '0.02em'
+                }}
+              >
+                🗑 Confirm Delete
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
       {error && (
         <div className="admin-error">
           {error}
+        </div>
+      )}
+
+      {deleteSuccess && (
+        <div className="admin-success" style={{
+          background: '#0f5132', color: '#d1e7dd', border: '1px solid #badbcc',
+          borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1rem',
+          fontWeight: 500
+        }}>
+          {deleteSuccess}
         </div>
       )}
       
@@ -259,13 +385,8 @@ const UserManagement = () => {
                         onChange={(e) => {
                           const newRole = e.target.value;
                           const currentRole = user.role;
-                          
-                          // Only trigger if role actually changed
                           if (newRole !== currentRole) {
                             handleRoleChange(user._id, newRole, currentRole);
-                            
-                            // Reset dropdown to current role if user cancels
-                            // This will be overridden if the API call succeeds
                             e.target.value = currentRole;
                           }
                         }}
@@ -275,6 +396,23 @@ const UserManagement = () => {
                         <option value="customer">Customer</option>
                         <option value="admin">Admin</option>
                       </select>
+                      {user.role !== 'admin' && (
+                        <button
+                          className="admin-btn-small"
+                          disabled={deletingUserId === user._id}
+                          onClick={() => openDeleteConfirm(user)}
+                          style={{
+                            background: deletingUserId === user._id ? '#6c757d' : '#dc3545',
+                            color: '#fff',
+                            border: 'none',
+                            marginLeft: '4px',
+                            opacity: deletingUserId === user._id ? 0.7 : 1
+                          }}
+                          title="Permanently delete this user"
+                        >
+                          {deletingUserId === user._id ? '...' : '🗑 Delete'}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -316,12 +454,29 @@ const UserManagement = () => {
           >
             <div className="admin-details-header">
               <h3>User Details</h3>
-              <button 
-                className="admin-btn-close"
-                onClick={() => setSelectedUser(null)}
-              >
-                ×
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                {selectedUser.role !== 'admin' && (
+                  <button
+                    onClick={() => openDeleteConfirm(selectedUser)}
+                    disabled={deletingUserId === selectedUser._id}
+                    style={{
+                      padding: '0.4rem 1rem',
+                      background: '#dc3545', color: '#fff',
+                      border: 'none', borderRadius: '6px',
+                      cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem'
+                    }}
+                    title="Permanently delete this user"
+                  >
+                    {deletingUserId === selectedUser._id ? 'Deleting…' : '🗑 Delete Account'}
+                  </button>
+                )}
+                <button 
+                  className="admin-btn-close"
+                  onClick={() => setSelectedUser(null)}
+                >
+                  ×
+                </button>
+              </div>
             </div>
             
             <div className="admin-details-content">

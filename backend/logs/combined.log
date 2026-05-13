@@ -880,3 +880,175 @@
 2026-05-12 22:01:36 info: GET /api/subscriptions/admin/plans {"ip":"::1"}
 2026-05-12 22:01:36 info: GET /api/admin/kyc {"ip":"::1"}
 2026-05-12 22:01:36 info: GET /api/admin/kyc {"ip":"::1"}
+2026-05-13 10:53:53 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-05-13 10:53:53 info: GET /api/users/email/aiman.singh30%40gmail.com {"ip":"::1"}
+2026-05-13 10:53:53 info: GET /api/esign/active {"ip":"::1"}
+2026-05-13 10:53:53 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH/kyc {"ip":"::1"}
+2026-05-13 10:53:53 info: GET /api/subscriptions/user/user_38FIedQidROhaT30VNmLVpP5SDH/active {"ip":"::1"}
+2026-05-13 10:53:54 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-13 10:53:54 info: GET /api/users/email/aiman.singh30%40gmail.com/kyc {"ip":"::1"}
+2026-05-13 10:53:54 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-05-13 10:53:57 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-05-13 10:53:57 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-05-13 10:54:04 info: GET /api/admin/users {"ip":"::1"}
+2026-05-13 10:54:05 info: GET /api/admin/users {"ip":"::1"}
+2026-05-13 10:54:17 info: DELETE /api/admin/users/6a035ddc6207f63b7e9c6766 {"ip":"::1"}
+2026-05-13 10:56:13 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB {"ip":"::1"}
+2026-05-13 10:56:14 info: GET /api/users/email/aiman.singh%40kalvium.community {"ip":"::1"}
+2026-05-13 10:56:14 info: GET /api/users/email/aiman.singh%40kalvium.community {"ip":"::1"}
+2026-05-13 10:56:14 info: POST /api/users/create {"ip":"::1"}
+2026-05-13 10:56:14 info: GET /api/users/email/aiman.singh%40kalvium.community {"ip":"::1"}
+2026-05-13 10:56:16 info: GET /api/esign/active {"ip":"::1"}
+2026-05-13 10:56:16 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/kyc {"ip":"::1"}
+2026-05-13 10:56:16 info: GET /api/subscriptions/user/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/active {"ip":"::1"}
+2026-05-13 10:56:16 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-13 10:56:16 info: GET /api/users/email/aiman.singh%40kalvium.community/kyc {"ip":"::1"}
+2026-05-13 10:56:21 info: GET /api/kyc/check-pan/RARPS6224N {"ip":"::1"}
+2026-05-13 10:56:24 info: POST /api/kyc/verify {"ip":"::1"}
+2026-05-13 10:56:24 info: KYC request started {"requestId":"KYC_1778649984619_9g7mujv38"}
+2026-05-13 10:56:24 info: Calling KYC API (AWS EC2) {"pan":"RARP****","attempt":1}
+2026-05-13 10:56:26 info: KYC API response received {"status":200,"pan":"RARP****"}
+2026-05-13 10:56:26 info: KYC proxy response {"pan":"RARP****","statusCode":"07","success":true}
+2026-05-13 10:56:26 info: PAN KYC data fetched successfully {"pan":"RARP****","statusCode":"07"}
+2026-05-13 10:56:26 info: KYC proxy response received {"requestId":"KYC_1778649984619_9g7mujv38","pan":"RARP****","statusCode":"07","kycStatus":"VERIFIED"}
+2026-05-13 10:56:26 info: KYC data extracted {"requestId":"KYC_1778649984619_9g7mujv38","pan":"RARP****","kycStatus":"VERIFIED"}
+2026-05-13 10:56:26 info: KYC verification record saved {"requestId":"KYC_1778649984619_9g7mujv38","recordId":"6a040b8237e6ffdc40ee4fc1"}
+2026-05-13 10:56:26 info: User KYC status updated {"requestId":"KYC_1778649984619_9g7mujv38","userId":"6a040b7637e6ffdc40ee4fa8"}
+2026-05-13 10:56:26 info: KYC request completed successfully {"requestId":"KYC_1778649984619_9g7mujv38","recordId":"6a040b8237e6ffdc40ee4fc1","durationMs":1741}
+2026-05-13 11:03:01 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB {"ip":"::1"}
+2026-05-13 11:03:01 info: GET /api/esign/active {"ip":"::1"}
+2026-05-13 11:03:01 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/kyc {"ip":"::1"}
+2026-05-13 11:03:01 info: GET /api/subscriptions/user/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/active {"ip":"::1"}
+2026-05-13 11:03:01 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-13 11:03:05 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:03:05 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:04:22 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:04:22 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:05:15 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:05:16 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:10:51 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:10:52 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:13:23 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-05-13 11:13:23 info: GET /api/esign/active {"ip":"::1"}
+2026-05-13 11:13:23 info: GET /api/subscriptions/user/user_38FIedQidROhaT30VNmLVpP5SDH/active {"ip":"::1"}
+2026-05-13 11:13:23 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-13 11:13:23 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-05-13 11:13:23 info: GET /api/users/email/aiman.singh30%40gmail.com {"ip":"::1"}
+2026-05-13 11:13:23 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-05-13 11:13:39 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-05-13 11:13:40 info: GET /api/esign/active {"ip":"::1"}
+2026-05-13 11:13:40 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-13 11:13:40 info: GET /api/subscriptions/user/user_38FIedQidROhaT30VNmLVpP5SDH/active {"ip":"::1"}
+2026-05-13 11:13:40 info: GET /api/recommendations?page=1&limit=50&status=published {"ip":"::1"}
+2026-05-13 11:13:41 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-05-13 11:13:42 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-05-13 11:13:51 info: GET /api/questionnaire/admin/all {"ip":"::1"}
+2026-05-13 11:13:51 info: GET /api/questionnaire/admin/all {"ip":"::1"}
+2026-05-13 11:15:56 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:16:40 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB {"ip":"::1"}
+2026-05-13 11:16:40 info: GET /api/esign/active {"ip":"::1"}
+2026-05-13 11:16:40 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/kyc {"ip":"::1"}
+2026-05-13 11:16:40 info: GET /api/subscriptions/user/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/active {"ip":"::1"}
+2026-05-13 11:16:40 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-13 11:16:43 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:16:43 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:17:21 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB {"ip":"::1"}
+2026-05-13 11:17:21 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/kyc {"ip":"::1"}
+2026-05-13 11:17:21 info: GET /api/esign/active {"ip":"::1"}
+2026-05-13 11:17:21 info: GET /api/subscriptions/user/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/active {"ip":"::1"}
+2026-05-13 11:17:21 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-13 11:17:22 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:17:22 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:22:37 info: PUT /api/questionnaire/admin/6a02fad249b23e066a1b9d42 {"ip":"::1"}
+2026-05-13 11:22:38 info: Questionnaire 6a02fad249b23e066a1b9d42 updated
+2026-05-13 11:22:38 info: GET /api/questionnaire/admin/all {"ip":"::1"}
+2026-05-13 11:22:49 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB {"ip":"::1"}
+2026-05-13 11:22:49 info: GET /api/esign/active {"ip":"::1"}
+2026-05-13 11:22:49 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/kyc {"ip":"::1"}
+2026-05-13 11:22:49 info: GET /api/subscriptions/user/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/active {"ip":"::1"}
+2026-05-13 11:22:49 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-13 11:22:51 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:22:51 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:23:34 info: POST /api/questionnaire/submit {"ip":"::1"}
+2026-05-13 11:23:34 info: Questionnaire response submitted by user 6a040b7637e6ffdc40ee4fa8
+2026-05-13 11:23:36 info: Questionnaire results email sent to aiman.singh@kalvium.community: <2ab26f47-7243-9ba2-37a7-d107b0acacdb@zohomail.in>
+2026-05-13 11:23:36 info: Questionnaire results email sent to aiman.singh@kalvium.community
+2026-05-13 11:27:50 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB {"ip":"::1"}
+2026-05-13 11:27:50 info: GET /api/esign/active {"ip":"::1"}
+2026-05-13 11:27:50 info: GET /api/subscriptions/user/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/active {"ip":"::1"}
+2026-05-13 11:27:50 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/kyc {"ip":"::1"}
+2026-05-13 11:27:50 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-13 11:27:52 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:27:52 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:28:11 info: POST /api/questionnaire/submit {"ip":"::1"}
+2026-05-13 11:28:12 info: Questionnaire response submitted by user 6a040b7637e6ffdc40ee4fa8
+2026-05-13 11:28:13 info: Questionnaire results email sent to aiman.singh@kalvium.community: <77b26ce6-5ad5-07cd-42f8-28f4ae5114df@zohomail.in>
+2026-05-13 11:28:13 info: Questionnaire results email sent to aiman.singh@kalvium.community
+2026-05-13 11:29:14 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:31:01 info: POST /api/esign {"ip":"::1"}
+2026-05-13 11:37:45 info: POST /api/esign {"ip":"::1"}
+2026-05-13 11:37:47 info: POST /api/esign {"ip":"::1"}
+2026-05-13 11:37:50 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB {"ip":"::1"}
+2026-05-13 11:37:51 info: GET /api/esign/active {"ip":"::1"}
+2026-05-13 11:37:51 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/kyc {"ip":"::1"}
+2026-05-13 11:37:51 info: GET /api/subscriptions/user/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/active {"ip":"::1"}
+2026-05-13 11:37:51 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-13 11:38:06 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:38:07 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:38:53 info: GET /api/questionnaire/admin/responses/all {"ip":"::1"}
+2026-05-13 11:38:54 info: GET /api/questionnaire/admin/responses/all {"ip":"::1"}
+2026-05-13 11:38:57 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-05-13 11:38:57 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-05-13 11:38:57 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-05-13 11:39:01 info: GET /api/payment-requests/all?status=pending {"ip":"::1"}
+2026-05-13 11:39:01 info: GET /api/payment-requests/all?status=pending {"ip":"::1"}
+2026-05-13 11:39:02 info: GET /api/questionnaire/admin/responses/all {"ip":"::1"}
+2026-05-13 11:39:02 info: GET /api/questionnaire/admin/responses/all {"ip":"::1"}
+2026-05-13 11:39:04 info: GET /api/questionnaire/admin/responses/6a0411de37e6ffdc40ee53f7 {"ip":"::1"}
+2026-05-13 11:39:32 info: GET /api/questionnaire/admin/responses/6a0411de37e6ffdc40ee53f7 {"ip":"::1"}
+2026-05-13 11:49:03 info: GET /api/users/clerk/user_38FIedQidROhaT30VNmLVpP5SDH {"ip":"::1"}
+2026-05-13 11:49:04 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-05-13 11:49:04 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-05-13 11:49:06 info: GET /api/questionnaire/admin/all {"ip":"::1"}
+2026-05-13 11:49:06 info: GET /api/questionnaire/admin/all {"ip":"::1"}
+2026-05-13 11:49:12 info: GET /api/questionnaire/admin/responses/all {"ip":"::1"}
+2026-05-13 11:49:12 info: GET /api/questionnaire/admin/responses/all {"ip":"::1"}
+2026-05-13 11:49:13 info: GET /api/questionnaire/admin/responses/6a0411de37e6ffdc40ee53f7 {"ip":"::1"}
+2026-05-13 11:50:24 info: GET /api/questionnaire/admin/responses/all {"ip":"::1"}
+2026-05-13 11:50:42 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB {"ip":"::1"}
+2026-05-13 11:50:43 info: GET /api/esign/active {"ip":"::1"}
+2026-05-13 11:50:43 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/kyc {"ip":"::1"}
+2026-05-13 11:50:43 info: GET /api/subscriptions/user/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/active {"ip":"::1"}
+2026-05-13 11:50:43 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-13 11:50:44 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:50:44 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:52:31 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB {"ip":"::1"}
+2026-05-13 11:52:31 info: GET /api/esign/active {"ip":"::1"}
+2026-05-13 11:52:31 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/kyc {"ip":"::1"}
+2026-05-13 11:52:31 info: GET /api/subscriptions/user/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/active {"ip":"::1"}
+2026-05-13 11:52:31 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-13 11:52:33 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:52:33 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:55:04 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:55:05 info: GET /api/questionnaire/active {"ip":"::1"}
+2026-05-13 11:55:07 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB {"ip":"::1"}
+2026-05-13 11:55:07 info: GET /api/esign/active {"ip":"::1"}
+2026-05-13 11:55:07 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/kyc {"ip":"::1"}
+2026-05-13 11:55:07 info: GET /api/subscriptions/user/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/active {"ip":"::1"}
+2026-05-13 11:55:07 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-13 11:55:07 info: GET /api/questionnaire/my-response {"ip":"::1"}
+2026-05-13 11:55:10 info: POST /api/esign {"ip":"::1"}
+2026-05-13 11:55:24 info: POST /api/esign {"ip":"::1"}
+2026-05-13 11:55:55 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB {"ip":"::1"}
+2026-05-13 11:55:56 info: GET /api/esign/active {"ip":"::1"}
+2026-05-13 11:55:56 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/kyc {"ip":"::1"}
+2026-05-13 11:55:56 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-13 11:55:56 info: GET /api/subscriptions/user/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/active {"ip":"::1"}
+2026-05-13 11:55:56 info: GET /api/questionnaire/my-response {"ip":"::1"}
+2026-05-13 12:03:29 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB {"ip":"::1"}
+2026-05-13 12:03:29 info: GET /api/esign/active {"ip":"::1"}
+2026-05-13 12:03:29 info: GET /api/users/clerk/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/kyc {"ip":"::1"}
+2026-05-13 12:03:29 info: GET /api/questionnaire/my-response {"ip":"::1"}
+2026-05-13 12:03:29 info: GET /api/subscriptions/user/user_3DekZ3IniMLRMzAxCkm9PMdlBdB/active {"ip":"::1"}
+2026-05-13 12:03:29 info: GET /api/payment-requests/my-requests {"ip":"::1"}
+2026-05-13 12:03:35 info: POST /api/esign {"ip":"::1"}

@@ -5,7 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 import { useAuth } from '../../context/AuthContext';
 import { useRole } from '../../hooks/useRole';
-import { kycAPI, userAPI, phoneAPI, esignAPI, paymentRequestAPI } from '../../services/api';
+import { kycAPI, userAPI, phoneAPI, esignAPI, paymentRequestAPI, questionnaireAPI } from '../../services/api';
 import userSubscriptionAPI from '../../services/userSubscriptionAPI';
 import stockRecommendationAPI from '../../services/stockRecommendationAPI';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
@@ -13,6 +13,7 @@ import OTPInput from '../../components/OTPInput/OTPInput';
 import { isValidPhone, sanitizePhone, isValidPAN, formatPAN } from '../../utils/validators';
 import Loading from '../../components/Loading/Loading';
 import OnboardingFlow from '../../components/OnboardingFlow/OnboardingFlow';
+import IAOnboardingFlow from '../../components/OnboardingFlow/IAOnboardingFlow';
 import ServiceSelector from '../../components/OnboardingFlow/ServiceSelector';
 import './Dashboard.css';
 
@@ -150,6 +151,10 @@ const Dashboard = () => {
     setActiveDocumentId(null);
     localStorage.removeItem('active_esign_document_id');
     localStorage.removeItem('active_esign_service_type');
+  };
+
+  const clearStoredOnboardingSelection = () => {
+    localStorage.removeItem('selected_onboarding_service_type');
   };
 
   const applyCompletedEsignState = (serviceType) => {
@@ -389,6 +394,22 @@ const Dashboard = () => {
           } catch (err) { /* No payment requests yet */ }
         })(),
 
+        // ── 6. Questionnaire response ──────────────────────────────────────────
+        (async () => {
+          try {
+            if (currentUser?.id) {
+              const qResponse = await questionnaireAPI.getMyResponse();
+              if (qResponse.success && qResponse.data) {
+                setIaSteps(prev => ({
+                  ...prev,
+                  questionnaire: { ...prev.questionnaire, completed: true, active: true },
+                  signing: { ...prev.signing, active: true } // unlock signing if questionnaire is done
+                }));
+              }
+            }
+          } catch (err) { /* No questionnaire response yet */ }
+        })(),
+
         ]),
         // Fallback so the dashboard never hangs if a check stalls
         new Promise(resolve => setTimeout(resolve, 10_000)),
@@ -407,6 +428,7 @@ const Dashboard = () => {
           // Setup complete – go straight to dashboard
           setOnboardingPhase('done');
           setSelectedServices(new Set(['RA']));
+          clearStoredOnboardingSelection();
         } else {
           // Has KYC done → returning user, send them to their selected onboarding flow
           if (kycDone) {
@@ -514,6 +536,7 @@ const Dashboard = () => {
       storeSelectedService('IA');
     } else {
       setOnboardingPhase('done');
+      clearStoredOnboardingSelection();
     }
   };
 
@@ -1022,11 +1045,18 @@ const Dashboard = () => {
 
         {/* Main onboarding shell */}
         <div className="ob-page-wrap">
-          <OnboardingFlow
-            {...onboardingCommonProps}
-            serviceType={currentServiceType}
-            steps={currentSteps}
-          />
+          {currentServiceType === 'IA' ? (
+            <IAOnboardingFlow
+              {...onboardingCommonProps}
+              steps={currentSteps}
+            />
+          ) : (
+            <OnboardingFlow
+              {...onboardingCommonProps}
+              serviceType={currentServiceType}
+              steps={currentSteps}
+            />
+          )}
 
           {/* CTA when current service is done */}
           {currentOnboardingDone && (
@@ -1034,10 +1064,11 @@ const Dashboard = () => {
               <span>Complete</span>
               <div>
                 <strong>{currentServiceType} onboarding complete!</strong>
-                {bothSelected && currentServiceType === 'RA' && !iaOnboardingDone
-                  ? <> <button className="ob-btn-link" onClick={handleRaOnboardingComplete}>Continue to IA onboarding →</button></>
-                  : <> <button className="ob-btn-link" onClick={() => setOnboardingPhase('done')}>Go to dashboard →</button></>
-                }
+                {bothSelected && currentServiceType === 'RA' && !iaOnboardingDone ? (
+                  <button className="ob-btn-link" onClick={handleRaOnboardingComplete}>Continue to IA onboarding →</button>
+                ) : (
+                  <button className="ob-btn-link" onClick={() => { clearStoredOnboardingSelection(); setOnboardingPhase('done'); }}>Go to dashboard →</button>
+                )}
               </div>
             </div>
           )}
