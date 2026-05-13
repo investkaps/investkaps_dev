@@ -6,19 +6,24 @@ const paymentRequestSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  serviceType: {
+    type: String,
+    enum: ['RA', 'IA'],
+    default: 'RA'
+  },
   plan: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Subscription',
-    required: true
+    required: false
   },
   planName: {
     type: String,
-    required: true
+    required: false
   },
   duration: {
     type: String,
     enum: ['monthly', 'sixMonth', 'yearly'],
-    required: true
+    required: false
   },
   amount: {
     type: Number,
@@ -39,6 +44,11 @@ const paymentRequestSchema = new mongoose.Schema({
   transactionImagePublicId: {
     type: String,
     required: true
+  },
+  paymentMethod: {
+    type: String,
+    enum: ['qr', 'bank_transfer'],
+    default: 'qr'
   },
   status: {
     type: String,

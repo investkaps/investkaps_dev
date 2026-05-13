@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import OTPInput from '../OTPInput/OTPInput';
 import RiskQuestionnaire from '../RiskQuestionnaire/RiskQuestionnaire';
+import IAPaymentStep from './IAPaymentStep';
 import { esignAPI } from '../../services/api';
 import { loadAgreementBase64 } from '../../pages/AadhaarESign/agreementBase64Loader';
 import './OnboardingFlow.css';
@@ -30,7 +31,7 @@ import './OnboardingFlow.css';
  *  activeDocumentId, handleCheckEsignStatus, handleEsignBypass
  *
  * Payment props:
- *  bypassLoading, handlePaymentBypass
+ *  bypassLoading, handlePaymentBypass, handleIaPaymentComplete
  */
 const OnboardingFlow = ({
   serviceType = 'RA',
@@ -72,6 +73,7 @@ const OnboardingFlow = ({
   // Payment
   bypassLoading,
   handlePaymentBypass,
+  handleIaPaymentComplete,
 }) => {
   const navigate = useNavigate();
 
@@ -112,7 +114,7 @@ const OnboardingFlow = ({
       });
     }
 
-    // Add signing and payment steps
+    // Add signing step
     base.push({
       id: 'signing',
       label: serviceType === 'IA' ? 'IA Agreement' : 'RA Agreement',
@@ -123,25 +125,17 @@ const OnboardingFlow = ({
       skippedForRa: false,
     });
 
+    // Add payment step for both IA and RA (with different labels)
     base.push({
       id: 'payment',
-      label: 'Subscription',
-      subtitle: 'Choose your plan',
+      label: serviceType === 'IA' ? 'Payment' : 'Subscription',
+      subtitle: serviceType === 'IA' ? 'Activate your IA service' : 'Choose your plan',
       icon: '💳',
       mandatory: true,
       completed: steps.payment.completed,
       skippedForRa: false,
     });
 
-    // For IA – replace payment step label
-    if (serviceType === 'IA') {
-      const paymentStepIndex = base.findIndex(s => s.id === 'payment');
-      if (paymentStepIndex !== -1) {
-        base[paymentStepIndex].label = 'Activation';
-        base[paymentStepIndex].subtitle = 'Complete & activate IA service';
-        base[paymentStepIndex].icon = '🚀';
-      }
-    }
     return base;
   };
 
@@ -170,8 +164,21 @@ const OnboardingFlow = ({
   }, [currentUser?.name, currentUser?.email]);
 
   useEffect(() => {
-    setEsignRequestSent(Boolean(activeDocumentId || localStorage.getItem('active_esign_document_id')));
-  }, [activeDocumentId]);
+    // Initialize esign polling flag from activeDocumentId or localStorage
+    // but only if the stored service type matches the current flow. This
+    // prevents leftover RA sessions from triggering IA polling.
+    const storedId = localStorage.getItem('active_esign_document_id');
+    const storedType = localStorage.getItem('active_esign_service_type');
+    const shouldUseStored = storedId && storedType === serviceType;
+    setEsignRequestSent(Boolean(activeDocumentId || shouldUseStored));
+  }, [activeDocumentId, serviceType]);
+
+  // If a sign request is active, ensure the signing step is focused so polling runs.
+  useEffect(() => {
+    if (esignRequestSent && activeStep !== 'signing') {
+      setActiveStep('signing');
+    }
+  }, [esignRequestSent, activeStep]);
 
   useEffect(() => {
     if (steps.signing.completed && activeStep === 'signing') {
@@ -204,6 +211,35 @@ const OnboardingFlow = ({
       }
     }
   }, [steps.phone.completed]);
+
+  // Auto-polling for e-sign status
+  const secondsPassedRef = useRef(0);
+  
+  useEffect(() => {
+    let intervalId;
+    if (esignRequestSent && !steps.signing.completed && activeStep === 'signing') {
+      secondsPassedRef.current = 0; // reset on new start
+      intervalId = setInterval(async () => {
+        secondsPassedRef.current += 10;
+        if (secondsPassedRef.current >= 180) {
+          clearInterval(intervalId);
+          setEsignFormError('Polling timed out. Please check status manually.');
+          return;
+        }
+        
+        if (handleCheckEsignStatus) {
+          const result = await handleCheckEsignStatus(true);
+          if (result && result.success && result.completed) {
+            setEsignRequestSent(true);
+            setEsignFormError('');
+            clearInterval(intervalId);
+          }
+        }
+      }, 10000);
+    }
+    return () => clearInterval(intervalId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [esignRequestSent, steps.signing.completed, activeStep]);
 
   const completedCount = stepList.filter((s) => s.completed).length;
   const progress = Math.round((completedCount / stepList.length) * 100);
@@ -283,7 +319,10 @@ const OnboardingFlow = ({
       }
 
       if (mongoDocumentId) localStorage.setItem('active_esign_document_id', mongoDocumentId);
+      // persist the service type and the email used for signing so we can
+      // show a confirmation mentioning the email after the user returns.
       localStorage.setItem('active_esign_service_type', serviceType);
+      localStorage.setItem('active_esign_signed_email', trimmedEmail);
       setEsignRequestSent(true);
       window.location.href = signUrl;
     } catch (error) {
@@ -501,15 +540,6 @@ const OnboardingFlow = ({
   };
 
   const renderQuestionnaireStep = () => {
-    if (steps.questionnaire?.completed || questionnaireCompleted) {
-      return (
-        <div className="ob-step-success">
-          <span className="ob-success-icon">✓</span>
-          <p className="ob-success-text">Risk profiling questionnaire completed successfully!</p>
-        </div>
-      );
-    }
-
     return (
       <RiskQuestionnaire
         onComplete={(result) => {
@@ -537,11 +567,86 @@ const OnboardingFlow = ({
 
   const renderSigningStep = () => {
     if (steps.signing.completed) {
+      if (serviceType === 'IA') {
+        return (
+          <div className="ob-step-success">
+            <span className="ob-success-icon" style={{fontSize: '48px'}}>✓</span>
+            <h3>Agreement Signed</h3>
+            <p>Your Investment Advisor agreement has been signed successfully.</p>
+            <p style={{ color: '#64748b' }}>
+              A signed copy will be emailed to <strong>{localStorage.getItem('active_esign_signed_email') || currentUser?.email || esignForm.email}</strong> shortly.
+            </p>
+            <p style={{ marginTop: '8px' }}>
+              Our team will contact you soon to activate your IA service. If you'd prefer, you can book a meeting with us now.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              <a
+                href="https://calendly.com/investkaps/15min?month=2026-01"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ob-btn ob-btn-primary"
+                style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
+              >
+                Book a Meeting
+              </a>
+              <button
+                type="button"
+                className="ob-btn ob-btn-ghost"
+                onClick={() => setActiveStep('payment')}
+              >
+                Proceed to Payment
+              </button>
+            </div>
+          </div>
+        );
+      }
       return (
         <div className="ob-step-success">
           <span className="ob-success-icon">✓</span>
           <h3>Agreement Signed</h3>
           <p>All required documents have been successfully signed.</p>
+        </div>
+      );
+    }
+
+    if (esignRequestSent) {
+      return (
+        <div className="ob-step-body" style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <div className="ob-spinner" style={{ margin: '0 auto 20px auto', width: '48px', height: '48px', border: '4px solid #f3f3f3', borderTop: '4px solid #6366f1', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+          <h3>Checking signing status...</h3>
+          <p style={{ color: '#64748b', marginTop: '10px' }}>
+            Please complete the e-signing process in the new tab.<br />
+            We are automatically checking your status.
+          </p>
+          {esignFormError && <div className="ob-alert ob-alert-error" style={{ marginTop: '20px' }}>{esignFormError}</div>}
+          <div style={{ marginTop: '30px' }}>
+            <button
+              type="button"
+              className="ob-btn ob-btn-ghost"
+              onClick={async () => {
+                const result = await handleCheckEsignStatus?.(false);
+                if (!result) return;
+                if (result.success && result.completed) {
+                  setEsignRequestSent(true);
+                  setEsignFormError('');
+                  return;
+                }
+                if (result.success && !result.completed) {
+                  setEsignFormError('Signing is not complete yet. Please finish the signature.');
+                  return;
+                }
+                setEsignFormError(result.error || 'Unable to verify signing status right now.');
+              }}
+              disabled={isLoading}
+            >
+              Check Status Manually
+            </button>
+            {isAdminUser && (
+              <button type="button" className="ob-btn ob-btn-bypass" onClick={handleEsignBypass} disabled={isLoading} style={{ marginLeft: '10px' }}>
+                ⚡ Bypass (Admin)
+              </button>
+            )}
+          </div>
         </div>
       );
     }
@@ -593,49 +698,8 @@ const OnboardingFlow = ({
           </div>
 
           <div className="ob-actions">
-            {!esignRequestSent ? (
-              <button type="submit" className="ob-btn ob-btn-primary" disabled={esignSubmitting}>
-                {esignSubmitting ? 'Starting E-Sign…' : 'Proceed to E-Sign'}
-              </button>
-            ) : (
-              <button type="button" className="ob-btn ob-btn-primary" disabled>
-                Request Sent
-              </button>
-            )}
-            {esignRequestSent && (
-              <div className="ob-alert ob-alert-info">
-                Request sent. Return here and click Check Status.
-              </div>
-            )}
-            {esignStatusChecking && (
-              <div className="ob-alert ob-alert-info">
-                <span className="ob-spinner-mini" /> {esignStatusMessage || 'Checking e-sign status...'}
-              </div>
-            )}
-            <button
-              type="button"
-              className="ob-btn ob-btn-ghost"
-              onClick={async () => {
-                const result = await handleCheckEsignStatus?.();
-                if (!result) return;
-
-                if (result.success && result.completed) {
-                  setEsignRequestSent(true);
-                  setEsignFormError('');
-                  return;
-                }
-
-                if (result.success && !result.completed) {
-                  setEsignRequestSent(false);
-                  setEsignFormError('Signing is not complete yet. Please proceed to e-sign again and finish the signature.');
-                  return;
-                }
-
-                setEsignFormError(result.error || 'Unable to verify signing status right now.');
-              }}
-              disabled={isLoading || esignStatusChecking}
-            >
-              {esignStatusChecking ? 'Checking…' : isLoading ? 'Checking…' : 'Check Status'}
+            <button type="submit" className="ob-btn ob-btn-primary" disabled={esignSubmitting}>
+              {esignSubmitting ? 'Starting E-Sign…' : 'Proceed to E-Sign'}
             </button>
             {isAdminUser && (
               <button type="button" className="ob-btn ob-btn-bypass" onClick={handleEsignBypass} disabled={isLoading}>
@@ -659,39 +723,35 @@ const OnboardingFlow = ({
       );
     }
 
+    if (serviceType === 'IA') {
+      return (
+        <IAPaymentStep 
+          currentUser={currentUser} 
+          onPaymentComplete={handleIaPaymentComplete}
+        />
+      );
+    }
+
     return (
       <div className="ob-step-body">
-        {serviceType === 'IA' ? (
-          <>
-            <p className="ob-step-desc">
-              Your IA onboarding is almost complete. The final activation step will be available soon.
-            </p>
-            <div className="ob-alert ob-alert-info">
-              🔔 This step is being configured. You will be notified once it's ready.
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="ob-step-desc">
-              Choose your investment plan and complete payment to start receiving stock recommendations.
-            </p>
-            <div className="ob-actions">
-              <button className="ob-btn ob-btn-primary" onClick={() => navigate('/pricing')}>
-                Choose Plan & Pay
-              </button>
-              {isAdminUser && (
-                <button
-                  type="button"
-                  className="ob-btn ob-btn-bypass"
-                  onClick={handlePaymentBypass}
-                  disabled={bypassLoading}
-                >
-                  {bypassLoading ? 'Creating…' : '⚡ Bypass (Admin)'}
-                </button>
-              )}
-            </div>
-          </>
-        )}
+        <p className="ob-step-desc">
+          Choose your investment plan and complete payment to start receiving stock recommendations.
+        </p>
+        <div className="ob-actions">
+          <button className="ob-btn ob-btn-primary" onClick={() => navigate('/pricing')}>
+            Choose Plan & Pay
+          </button>
+          {isAdminUser && (
+            <button
+              type="button"
+              className="ob-btn ob-btn-bypass"
+              onClick={handlePaymentBypass}
+              disabled={bypassLoading}
+            >
+              {bypassLoading ? 'Creating…' : '⚡ Bypass (Admin)'}
+            </button>
+          )}
+        </div>
       </div>
     );
   };

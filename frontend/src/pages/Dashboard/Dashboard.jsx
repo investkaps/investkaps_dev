@@ -151,27 +151,32 @@ const Dashboard = () => {
     setActiveDocumentId(null);
     localStorage.removeItem('active_esign_document_id');
     localStorage.removeItem('active_esign_service_type');
+    // remove the stored signer email as well
+    localStorage.removeItem('active_esign_signed_email');
   };
 
   const clearStoredOnboardingSelection = () => {
     localStorage.removeItem('selected_onboarding_service_type');
   };
 
-  const applyCompletedEsignState = (serviceType) => {
-    if (serviceType === 'IA') {
-      setIaSteps(prev => ({
+  const applyCompletedEsignState = (serviceTypeToUpdate) => {
+    // Mark signing as completed for the given service. Do NOT auto-complete
+    // the payment step for IA — IA requires explicit payment proof submission
+    // and admin approval. Only activate the payment step so the user can
+    // submit proof.
+    if (serviceTypeToUpdate === 'IA') {
+      setIaSteps(prev => ({ 
+        ...prev, 
+        signing: { ...prev.signing, completed: true, active: true },
+        payment: { ...prev.payment, active: true } 
+      }));
+    } else {
+      setSteps(prev => ({
         ...prev,
         signing: { ...prev.signing, completed: true, active: true },
         payment: { ...prev.payment, active: true }
       }));
-      return;
     }
-
-    setSteps(prev => ({
-      ...prev,
-      signing: { ...prev.signing, completed: true, active: true },
-      payment: { ...prev.payment, active: true }
-    }));
   };
 
   const checkEsignStatusOnce = async (docId) => {
@@ -578,12 +583,12 @@ const Dashboard = () => {
     setIaSteps(prev => ({ ...prev, phone: { ...prev.phone, completed: true } }));
   };
 
-  const handleCheckEsignStatus = async () => {
+  const handleCheckEsignStatus = async (isAutoPolling = false) => {
     const storedActiveDocId = localStorage.getItem('active_esign_document_id');
     const docIdToCheck = activeDocumentId || storedActiveDocId;
     const serviceTypeToUpdate = getStoredEsignServiceType();
     if (!docIdToCheck || docIdToCheck === 'null' || docIdToCheck === 'undefined') {
-      alert('No active e-signing session found. Please proceed to e-signing first.');
+      if (!isAutoPolling) alert('No active e-signing session found. Please proceed to e-signing first.');
       return { success: false, error: 'No active e-signing session found.' };
     }
     setIsLoading(true);
@@ -591,35 +596,35 @@ const Dashboard = () => {
       const result = await checkEsignStatusOnce(docIdToCheck);
       if (!result.success) {
         const message = 'Failed to check status: ' + (result.error || 'Unknown error');
-        alert(message);
+        if (!isAutoPolling) alert(message);
         return { success: false, error: result.error || 'Unknown error' };
       }
 
       if (result.completed) {
         applyCompletedEsignState(serviceTypeToUpdate);
         clearStoredEsignSession();
-        alert('E-signing completed successfully!');
+        if (!isAutoPolling) alert('E-signing completed successfully!');
         return { success: true, completed: true, status: result.status };
       }
 
       const status = String(result.status || '').toUpperCase();
       if (status === 'EXPIRED') {
-        alert('E-signing link has expired. Please restart the process.');
+        if (!isAutoPolling) alert('E-signing link has expired. Please restart the process.');
         clearStoredEsignSession();
         return { success: true, completed: false, status: result.status };
       }
 
       if (status === 'REJECTED') {
-        alert('E-signing was rejected. Please restart the process.');
+        if (!isAutoPolling) alert('E-signing was rejected. Please restart the process.');
         clearStoredEsignSession();
         return { success: true, completed: false, status: result.status };
       }
 
       const { signed, total } = result.data?.signingDetails || { signed: 0, total: 1 };
-      alert(`E-signing in progress: ${signed}/${total} signed. Please complete the signing process.`);
+      if (!isAutoPolling) alert(`E-signing in progress: ${signed}/${total} signed. Please complete the signing process.`);
       return { success: true, completed: false, status: result.status, signingDetails: { signed, total } };
     } catch (err) {
-      alert('Error checking status: ' + err.message);
+      if (!isAutoPolling) alert('Error checking status: ' + err.message);
       return { success: false, error: err.message };
     } finally {
       setIsLoading(false);
@@ -662,6 +667,11 @@ const Dashboard = () => {
   const handleQuestionnaireComplete = (result) => {
     console.log('Questionnaire completed in Dashboard:', result);
     setIaSteps(prev => ({ ...prev, questionnaire: { ...prev.questionnaire, completed: true, active: true }, signing: { ...prev.signing, active: true } }));
+  };
+
+  const handleIaPaymentComplete = (result) => {
+    console.log('IA payment completed in Dashboard:', result);
+    setIaSteps(prev => ({ ...prev, payment: { ...prev.payment, completed: true } }));
   };
 
   // Handle phone form input changes
@@ -871,6 +881,11 @@ const Dashboard = () => {
           signing: { ...prevSteps.signing, active: true },
           payment: { ...prevSteps.payment, active: true }
         }));
+        setIaSteps(prevSteps => ({
+          ...prevSteps,
+          kyc: { ...prevSteps.kyc, completed: true, active: true },
+          phone: { ...prevSteps.phone, active: true }
+        }));
         setKycCheckCompleted(true);
       } else {
         // Non-verified informational statuses (under process, on hold, rejected, etc.)
@@ -972,7 +987,7 @@ const Dashboard = () => {
     handleQuestionnaireComplete,
     activeDocumentId, handleCheckEsignStatus, handleEsignBypass,
     esignStatusChecking, esignStatusMessage,
-    bypassLoading, handlePaymentBypass,
+    bypassLoading, handlePaymentBypass, handleIaPaymentComplete,
   };
 
   const hasAdminAccess = isAdminUser || isAdmin();

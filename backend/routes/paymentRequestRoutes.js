@@ -33,13 +33,26 @@ const upload = multer({
 // Submit payment request
 router.post('/submit', upload.single('transactionImage'), async (req, res) => {
   try {
-    const { senderName, transactionId, planId, planName, duration, amount, userId } = req.body;
+    const { senderName, transactionId, planId, planName, duration, amount, userId, serviceType = 'RA', paymentMethod = 'qr' } = req.body;
 
-    if (!senderName || !transactionId || !planId || !duration || !amount || !userId) {
+    // For IA payments, planId and duration are not required
+    const isIaPayment = serviceType === 'IA';
+    
+    if (!senderName || !transactionId || !amount || !userId) {
       return res.status(400).json({
         success: false,
-        message: 'All fields are required'
+        message: 'All required fields are required'
       });
+    }
+
+    // For RA payments, validate plan and duration
+    if (!isIaPayment) {
+      if (!planId || !duration) {
+        return res.status(400).json({
+          success: false,
+          message: 'Plan ID and duration are required for RA payments'
+        });
+      }
     }
 
     if (!req.file) {
@@ -58,13 +71,16 @@ router.post('/submit', upload.single('transactionImage'), async (req, res) => {
       });
     }
 
-    // Check if plan exists
-    const plan = await Subscription.findById(planId);
-    if (!plan) {
-      return res.status(404).json({
-        success: false,
-        message: 'Plan not found'
-      });
+    // Check if plan exists (only for RA)
+    let plan = null;
+    if (!isIaPayment) {
+      plan = await Subscription.findById(planId);
+      if (!plan) {
+        return res.status(404).json({
+          success: false,
+          message: 'Plan not found'
+        });
+      }
     }
 
     // Upload image to Cloudinary
@@ -73,14 +89,16 @@ router.post('/submit', upload.single('transactionImage'), async (req, res) => {
     // Create payment request
     const paymentRequest = new PaymentRequest({
       user: user._id,
-      plan: planId,
-      planName: planName || plan.name,
-      duration,
+      serviceType,
+      plan: !isIaPayment ? planId : undefined,
+      planName: planName || (plan ? plan.name : undefined),
+      duration: !isIaPayment ? duration : undefined,
       amount: parseFloat(amount),
       senderName,
       transactionId,
       transactionImageUrl: uploadResult.url,
       transactionImagePublicId: uploadResult.publicId,
+      paymentMethod,
       status: 'pending'
     });
 
@@ -188,43 +206,50 @@ router.post('/approve/:id', verifyToken, checkRole('admin'), async (req, res) =>
       });
     }
 
-    // Calculate subscription dates
-    const startDate = new Date();
-    let endDate = new Date();
+    let userSubscription = null;
 
-    switch (paymentRequest.duration) {
-      case 'monthly':
-        endDate.setMonth(endDate.getMonth() + 1);
-        break;
-      case 'sixMonth':
-        endDate.setMonth(endDate.getMonth() + 6);
-        break;
-      case 'yearly':
-        endDate.setFullYear(endDate.getFullYear() + 1);
-        break;
+    // Only create subscription for RA payments
+    if (paymentRequest.serviceType === 'RA') {
+      // Calculate subscription dates
+      const startDate = new Date();
+      let endDate = new Date();
+
+      switch (paymentRequest.duration) {
+        case 'monthly':
+          endDate.setMonth(endDate.getMonth() + 1);
+          break;
+        case 'sixMonth':
+          endDate.setMonth(endDate.getMonth() + 6);
+          break;
+        case 'yearly':
+          endDate.setFullYear(endDate.getFullYear() + 1);
+          break;
+      }
+
+      // Create user subscription
+      userSubscription = new UserSubscription({
+        user: paymentRequest.user._id,
+        subscription: paymentRequest.plan._id,
+        duration: paymentRequest.duration,
+        startDate,
+        endDate,
+        price: paymentRequest.amount,
+        status: 'active',
+        paymentMethod: 'qr_code',
+        paymentRequestId: paymentRequest._id
+      });
+
+      await userSubscription.save();
     }
-
-    // Create user subscription
-    const userSubscription = new UserSubscription({
-      user: paymentRequest.user._id,
-      subscription: paymentRequest.plan._id,
-      duration: paymentRequest.duration,
-      startDate,
-      endDate,
-      price: paymentRequest.amount,
-      status: 'active',
-      paymentMethod: 'qr_code',
-      paymentRequestId: paymentRequest._id
-    });
-
-    await userSubscription.save();
 
     // Update payment request
     paymentRequest.status = 'approved';
     paymentRequest.approvedBy = admin._id;
     paymentRequest.approvedAt = new Date();
     paymentRequest.adminNotes = adminNotes;
-    paymentRequest.userSubscription = userSubscription._id;
+    if (userSubscription) {
+      paymentRequest.userSubscription = userSubscription._id;
+    }
     await paymentRequest.save();
 
     // Email the user that their payment was approved (fire-and-forget)

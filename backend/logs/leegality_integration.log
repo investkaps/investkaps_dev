@@ -36,3 +36,4 @@
 {"timestamp":"2026-02-14T08:26:40.987Z","level":"INFO","message":"Document details retrieved","details":{"documentId":"01KHDKZ3BYTP84JM8M38F6EH54","status":200,"apiStatus":1}}
 {"timestamp":"2026-05-05T08:28:07.577Z","level":"INFO","message":"Document details retrieved","details":{"documentId":"01KQVM066D6ME4PSJ93XFDT19M","status":200,"apiStatus":1}}
 {"timestamp":"2026-05-05T08:29:04.071Z","level":"INFO","message":"Document details retrieved","details":{"documentId":"01KQVM066D6ME4PSJ93XFDT19M","status":200,"apiStatus":1}}
+{"timestamp":"2026-05-13T08:27:07.097Z","level":"INFO","message":"Document details retrieved","details":{"documentId":"01KRG6RY6MMCXZE7XEM97DYY2N","status":200,"apiStatus":1}}

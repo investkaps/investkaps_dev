@@ -5,16 +5,18 @@ const SITE_URL  = process.env.FRONTEND_URL || 'https://investkaps.com';
 const CONTACT_URL = `${SITE_URL}/contact`;
 
 // ── Transporter ────────────────────────────────────────────────────────────────
-const createTransporter = () =>
-  nodemailer.createTransport({
+const createTransporter = () => {
+  const port = Number(process.env.SMTP_PORT) || 465;
+  return nodemailer.createTransport({
     host:   process.env.SMTP_HOST || 'smtp.zoho.in',
-    port:   Number(process.env.SMTP_PORT) || 587,
-    secure: false,
+    port:   port,
+    secure: port === 465, // Use SSL for port 465, TLS/STARTTLS for 587
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
   });
+};
 
 // ── Colour helper (positional, matches frontend palette) ───────────────────────
 const PALETTE = ['#22c55e', '#84cc16', '#f59e0b', '#f97316', '#ef4444', '#dc2626'];

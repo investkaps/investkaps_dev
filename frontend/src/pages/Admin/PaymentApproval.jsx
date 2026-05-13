@@ -171,7 +171,8 @@ const PaymentApproval = () => {
               <tr>
                 <th>Date</th>
                 <th>User</th>
-                <th>Plan</th>
+                <th>Service Type</th>
+                <th>Plan / Details</th>
                 <th>Duration</th>
                 <th>Amount</th>
                 <th>Sender Name</th>
@@ -193,14 +194,37 @@ const PaymentApproval = () => {
                     </div>
                   </td>
                   <td>
-                    <strong>{request.planName}</strong>
-                    <div style={{ fontSize: '0.85em', color: '#6c757d' }}>
-                      {request.plan?.packageCode}
-                    </div>
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '4px 12px',
+                      borderRadius: '4px',
+                      fontSize: '0.85em',
+                      fontWeight: '600',
+                      backgroundColor: request.serviceType === 'IA' ? '#dbeafe' : '#fef3c7',
+                      color: request.serviceType === 'IA' ? '#1e40af' : '#92400e'
+                    }}>
+                      {request.serviceType}
+                    </span>
                   </td>
                   <td>
-                    {request.duration === 'sixMonth' ? '6 Months' : 
-                     request.duration.charAt(0).toUpperCase() + request.duration.slice(1)}
+                    {request.serviceType === 'RA' ? (
+                      <>
+                        <strong>{request.planName}</strong>
+                        <div style={{ fontSize: '0.85em', color: '#6c757d' }}>
+                          {request.plan?.packageCode}
+                        </div>
+                      </>
+                    ) : (
+                      <strong>{request.paymentMethod === 'bank_transfer' ? 'Bank Transfer' : 'QR Payment'}</strong>
+                    )}
+                  </td>
+                  <td>
+                    {request.serviceType === 'RA' ? (
+                      request.duration === 'sixMonth' ? '6 Months' : 
+                      request.duration.charAt(0).toUpperCase() + request.duration.slice(1)
+                    ) : (
+                      'N/A'
+                    )}
                   </td>
                   <td>
                     <strong>₹{request.amount.toLocaleString()}</strong>
@@ -290,16 +314,44 @@ const PaymentApproval = () => {
                 <h4>Subscription Details</h4>
                 <div className="admin-details-grid">
                   <div className="admin-details-item">
-                    <span className="admin-details-label">Plan</span>
-                    <span className="admin-details-value">{selectedRequest.planName}</span>
-                  </div>
-                  <div className="admin-details-item">
-                    <span className="admin-details-label">Duration</span>
+                    <span className="admin-details-label">Service Type</span>
                     <span className="admin-details-value">
-                      {selectedRequest.duration === 'sixMonth' ? '6 Months' : 
-                       selectedRequest.duration.charAt(0).toUpperCase() + selectedRequest.duration.slice(1)}
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '4px 12px',
+                        borderRadius: '4px',
+                        fontSize: '0.85em',
+                        fontWeight: '600',
+                        backgroundColor: selectedRequest.serviceType === 'IA' ? '#dbeafe' : '#fef3c7',
+                        color: selectedRequest.serviceType === 'IA' ? '#1e40af' : '#92400e'
+                      }}>
+                        {selectedRequest.serviceType}
+                      </span>
                     </span>
                   </div>
+                  {selectedRequest.serviceType === 'RA' && (
+                    <>
+                      <div className="admin-details-item">
+                        <span className="admin-details-label">Plan</span>
+                        <span className="admin-details-value">{selectedRequest.planName}</span>
+                      </div>
+                      <div className="admin-details-item">
+                        <span className="admin-details-label">Duration</span>
+                        <span className="admin-details-value">
+                          {selectedRequest.duration === 'sixMonth' ? '6 Months' : 
+                           selectedRequest.duration.charAt(0).toUpperCase() + selectedRequest.duration.slice(1)}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                  {selectedRequest.serviceType === 'IA' && (
+                    <div className="admin-details-item">
+                      <span className="admin-details-label">Payment Method</span>
+                      <span className="admin-details-value">
+                        {selectedRequest.paymentMethod === 'bank_transfer' ? 'Bank Transfer' : 'QR Payment'}
+                      </span>
+                    </div>
+                  )}
                   <div className="admin-details-item">
                     <span className="admin-details-label">Amount</span>
                     <span className="admin-details-value">

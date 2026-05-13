@@ -123,8 +123,9 @@ const GaugeMeter = ({ pct, color, thresholds }) => {
 /* ─────────────────────────────────────────────────────────────────
    ResultScreen
 ───────────────────────────────────────────────────────────────────*/
-const ResultScreen = ({ riskProfile, totalScore, riskProfileThresholds, onProceed }) => {
+const ResultScreen = ({ riskProfile, totalScore, riskProfileThresholds, sectionResponses, onProceed }) => {
   const [animated, setAnimated] = useState(false);
+  const [showAnswers, setShowAnswers] = useState(false);
 
   // Sort thresholds by minPoints so colours / positions are consistent
   const sorted = useMemo(() =>
@@ -204,6 +205,40 @@ const ResultScreen = ({ riskProfile, totalScore, riskProfileThresholds, onProcee
         <p>A copy of your responses and risk profile has been sent to your registered email address.</p>
       </div>
 
+      {/* Toggle Answers */}
+      {sectionResponses && sectionResponses.length > 0 && (
+        <div className="rq-answers-toggle">
+          <button 
+            type="button" 
+            className="rq-btn rq-btn-ghost" 
+            onClick={() => setShowAnswers(!showAnswers)}
+            style={{ width: '100%', marginBottom: '20px' }}
+          >
+            {showAnswers ? 'Hide My Responses ↑' : 'View My Responses ↓'}
+          </button>
+
+          {showAnswers && (
+            <div className="rq-review-list" style={{ textAlign: 'left', marginBottom: '24px' }}>
+              {sectionResponses.map((section, sIdx) => (
+                <div key={sIdx} className="rq-review-section">
+                  <h4 style={{ fontSize: '13px', color: '#64748b', textTransform: 'uppercase', marginBottom: '12px' }}>{section.sectionName}</h4>
+                  {section.answers.map((ans, aIdx) => (
+                    <div key={aIdx} className="rq-review-item" style={{ padding: '12px', background: '#f8fafc', borderRadius: '8px', marginBottom: '8px' }}>
+                      <div className="rq-review-q" style={{ marginBottom: '4px' }}>
+                        <span style={{ fontWeight: 500, color: '#0f172a' }}>{ans.questionText}</span>
+                      </div>
+                      <div className="rq-review-a">
+                        <span style={{ color: '#6366f1', fontWeight: 500 }}>{ans.selectedOptionText}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Proceed button */}
       <button className="rq-btn rq-btn-proceed" onClick={onProceed}>
         Proceed to IA Agreement →
@@ -242,6 +277,21 @@ const RiskQuestionnaire = ({ onComplete, onSkip }) => {
       });
       setResponses(init);
       setError(null);
+
+      // Check if user already submitted
+      try {
+        const myRes = await questionnaireAPI.getMyResponse();
+        if (myRes.success && myRes.data) {
+          setResult({
+            riskProfile: myRes.data.riskProfile,
+            totalScore: myRes.data.totalScore,
+            riskProfileThresholds: data.riskProfileThresholds
+          });
+        }
+      } catch (err) {
+        // No response found, continue as normal
+      }
+
     } catch (err) {
       console.error('Error fetching questionnaire:', err);
       setError('Failed to load questionnaire. Please try again.');
@@ -333,7 +383,7 @@ const RiskQuestionnaire = ({ onComplete, onSkip }) => {
 
       if (res.success) {
         // Just store result — onComplete is called only when user clicks "Proceed" in ResultScreen
-        setResult({ riskProfile: res.data.riskProfile, totalScore: res.data.totalScore });
+        setResult({ riskProfile: res.data.riskProfile, totalScore: res.data.totalScore, sectionResponses });
       }
     } catch (err) {
       console.error('Error submitting questionnaire:', err);
@@ -379,6 +429,7 @@ const RiskQuestionnaire = ({ onComplete, onSkip }) => {
           riskProfile={result.riskProfile}
           totalScore={result.totalScore}
           riskProfileThresholds={questionnaire.riskProfileThresholds || []}
+          sectionResponses={result.sectionResponses || []}
           onProceed={() => onComplete && onComplete({ totalScore: result.totalScore, riskProfile: result.riskProfile })}
         />
       </div>
