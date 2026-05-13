@@ -143,6 +143,16 @@ const Dashboard = () => {
     }
   };
 
+  // Persist IA payment completed state when an approved payment request is present
+  useEffect(() => {
+    try {
+      const approvedIa = pendingPaymentRequests.some(r => String(r.serviceType || '').toUpperCase() === 'IA' && String(r.status || '').toLowerCase() === 'approved');
+      if (approvedIa) {
+        setIaSteps(prev => ({ ...prev, payment: { ...prev.payment, completed: true } }));
+      }
+    } catch (err) { /* ignore */ }
+  }, [pendingPaymentRequests]);
+
   const getStoredEsignServiceType = () => {
     return String(localStorage.getItem('active_esign_service_type') || 'RA').toUpperCase();
   };
@@ -401,6 +411,11 @@ const Dashboard = () => {
             if (prResponse?.data) {
               const requests = Array.isArray(prResponse.data) ? prResponse.data : prResponse.data?.data || [];
               setPendingPaymentRequests(requests);
+              // If user has an approved IA payment request, persist IA payment completion
+              const approvedIa = requests.some(r => String(r.serviceType || '').toUpperCase() === 'IA' && String(r.status || '').toLowerCase() === 'approved');
+              if (approvedIa) {
+                setIaSteps(prev => ({ ...prev, payment: { ...prev.payment, completed: true } }));
+              }
             }
           } catch (err) { /* No payment requests yet */ }
         })(),

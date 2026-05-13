@@ -155,6 +155,7 @@ const OnboardingFlow = ({
   const [esignSubmitting, setEsignSubmitting] = useState(false);
   const [esignFormError, setEsignFormError] = useState('');
   const [questionnaireCompleted, setQuestionnaireCompleted] = useState(false);
+  const prevSigningCompletedRef = useRef(false);
 
   useEffect(() => {
     setEsignForm({
@@ -181,13 +182,16 @@ const OnboardingFlow = ({
   }, [esignRequestSent, activeStep]);
 
   useEffect(() => {
-    if (steps.signing.completed && activeStep === 'signing') {
+    // Only auto-advance when signing transitions from incomplete -> complete.
+    // This allows the user to revisit the signing step after it's completed.
+    if (steps.signing.completed && !prevSigningCompletedRef.current) {
       const currentIndex = stepList.findIndex((step) => step.id === activeStep);
       const nextStep = stepList[currentIndex + 1];
       if (nextStep && canNavigateTo(nextStep.id)) {
         setActiveStep(nextStep.id);
       }
     }
+    prevSigningCompletedRef.current = steps.signing.completed;
   }, [steps.signing.completed, activeStep, stepList]);
 
   // Auto-advance when KYC is verified successfully
