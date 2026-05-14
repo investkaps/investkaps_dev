@@ -12,7 +12,7 @@ const AnswerSchema = new mongoose.Schema({
   },
   selectedOptionId: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true
+    required: false
   },
   selectedOptionText: {
     type: String,

@@ -6,15 +6,17 @@ const CONTACT_URL = `${SITE_URL}/contact`;
 
 // ── Transporter ────────────────────────────────────────────────────────────────
 const createTransporter = () => {
-  const port = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT) || 587;
-  const host = process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com';
-  const user = process.env.SMTP_USER || process.env.EMAIL_USER;
-  const pass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
+  // Use IA-specific credentials if available, otherwise fall back to generic credentials
+  const port = Number(process.env.SMTP_PORT_IA || process.env.SMTP_PORT || process.env.EMAIL_PORT) || 587;
+  const host = process.env.SMTP_HOST_IA || process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com';
+  const user = process.env.SMTP_USER_IA || process.env.SMTP_USER || process.env.EMAIL_USER;
+  const pass = process.env.SMTP_PASS_IA || process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
+  const secure = process.env.EMAIL_SECURE_IA === 'true' || (port === 465);
 
   return nodemailer.createTransport({
     host,
     port,
-    secure: port === 465, // Use SSL for port 465, TLS/STARTTLS for 587
+    secure, // Use SSL for port 465, TLS/STARTTLS for 587
     auth: {
       user,
       pass,
@@ -47,7 +49,7 @@ export const sendQuestionnaireResultsEmail = async (
     const html = buildEmail(userName, questionnaireData, responseData);
 
     const info = await transporter.sendMail({
-      from:    `"InvestKaps IA" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+      from:    process.env.SMTP_FROM_IA || `"InvestKaps IA" <${process.env.SMTP_USER || process.env.SMTP_USER_IA}>`,
       to:      userEmail,
       subject: 'Your Risk Profile — InvestKaps Investment Advisor',
       html,

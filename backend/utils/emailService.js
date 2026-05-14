@@ -6,13 +6,20 @@ let transporter = null;
 
 const getTransporter = () => {
   if (!transporter) {
+    // Use IA-specific credentials if available, otherwise fall back to generic credentials
+    const host = process.env.SMTP_HOST_IA || process.env.EMAIL_HOST || 'smtp.gmail.com';
+    const port = Number(process.env.SMTP_PORT_IA || process.env.EMAIL_PORT) || 587;
+    const secure = process.env.EMAIL_SECURE_IA === 'true' || process.env.EMAIL_SECURE === 'true';
+    const user = process.env.SMTP_USER_IA || process.env.EMAIL_USER;
+    const pass = process.env.SMTP_PASS_IA || process.env.EMAIL_PASSWORD;
+
     transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-      port: process.env.EMAIL_PORT || 587,
-      secure: process.env.EMAIL_SECURE === 'true',
+      host,
+      port,
+      secure,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
+        user,
+        pass
       }
     });
   }
@@ -22,8 +29,8 @@ const getTransporter = () => {
 // Send email function
 const sendEmail = async (options) => {
   try {
-    // Default from address
-    const from = process.env.EMAIL_FROM || 'InvestKaps <noreply@investkaps.com>';
+    // Default from address - use IA-specific if available
+    const from = process.env.SMTP_FROM_IA || process.env.EMAIL_FROM || 'InvestKaps <noreply@investkaps.com>';
     
     const mailOptions = {
       from,

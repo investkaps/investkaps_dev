@@ -111,7 +111,10 @@ const IAPaymentStep = ({ currentUser, onPaymentComplete }) => {
       formDataToSend.append('senderName', cleanName);
       formDataToSend.append('transactionId', cleanTxnId);
       formDataToSend.append('transactionImage', formData.transactionImage);
-      formDataToSend.append('amount', '0'); // IA activation is free, but we still collect payment proof
+      formDataToSend.append('amount', '0'); // Amount can be updated by admin later
+      formDataToSend.append('planId', '6a042ef92b5f23d183b50770'); // Using dummy IA plan created
+      formDataToSend.append('planName', 'Investment Advisory Services');
+      formDataToSend.append('duration', 'yearly');
       formDataToSend.append('userId', resolvedUserId);
       formDataToSend.append('serviceType', 'IA');
       formDataToSend.append('paymentMethod', paymentMethod);

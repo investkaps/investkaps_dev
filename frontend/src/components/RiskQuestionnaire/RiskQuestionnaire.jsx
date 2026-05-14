@@ -509,20 +509,39 @@ const RiskQuestionnaire = ({ onComplete, onSkip }) => {
           </p>
 
           <div className="rq-options">
-            {(currentQuestion.options || []).map((option, idx) => {
-              const isSelected = currentResponse?.optionId === option._id;
-              return (
-                <button
-                  key={option._id}
-                  className={`rq-option ${isSelected ? 'rq-option-selected' : ''}`}
-                  onClick={() => handleOptionSelect(currentQuestion._id, option._id, option.text, option.points)}
-                >
-                  <span className="rq-option-letter">{optionLetters[idx] ?? idx + 1}</span>
-                  <span className="rq-option-text">{option.text}</span>
-                  {isSelected && <span className="rq-option-check">✓</span>}
-                </button>
-              );
-            })}
+            {currentQuestion.questionType === 'text' ? (
+              <div className="rq-text-input-wrap">
+                <textarea
+                  className="rq-textarea"
+                  placeholder="Type your answer here..."
+                  value={currentResponse?.optionText || ''}
+                  onChange={(e) => {
+                    const text = e.target.value;
+                    setResponses(prev => ({
+                      ...prev,
+                      [currentQuestion._id]: text ? { optionId: null, optionText: text, points: 0 } : null
+                    }));
+                  }}
+                  rows={4}
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '15px', fontFamily: 'inherit', resize: 'vertical' }}
+                />
+              </div>
+            ) : (
+              (currentQuestion.options || []).map((option, idx) => {
+                const isSelected = currentResponse?.optionId === option._id;
+                return (
+                  <button
+                    key={option._id}
+                    className={`rq-option ${isSelected ? 'rq-option-selected' : ''}`}
+                    onClick={() => handleOptionSelect(currentQuestion._id, option._id, option.text, option.points)}
+                  >
+                    <span className="rq-option-letter">{optionLetters[idx] ?? idx + 1}</span>
+                    <span className="rq-option-text">{option.text}</span>
+                    {isSelected && <span className="rq-option-check">✓</span>}
+                  </button>
+                );
+              })
+            )}
           </div>
         </div>
 
