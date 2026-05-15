@@ -20,21 +20,12 @@ const AdminDashboard = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   
-  // Check if user is admin, redirect to home if not
-  useEffect(() => {
-    if (!currentUser) {
-      // Wait for currentUser to be populated
-      return;
-    }
-    
-    if (currentUser.role !== 'admin') {
-      navigate('/');
-    }
-  }, [currentUser, navigate]);
+  // AdminRoute already verified the user is admin, so no need to redirect here.
+  // Just fetch dashboard data if user is available.
 
   useEffect(() => {
-    // Only fetch dashboard data if user is admin
-    if (!currentUser || currentUser.role !== 'admin') return;
+    // Fetch dashboard data when component mounts and currentUser is available
+    if (!currentUser) return;
     
     const fetchDashboardData = async () => {
       try {

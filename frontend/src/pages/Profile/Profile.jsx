@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { userAPI } from '../../services/api';
+import { setupAPI, userAPI } from '../../services/api';
 import './Profile.css';
 
 const Profile = () => {
@@ -13,39 +13,55 @@ const Profile = () => {
   useEffect(() => {
     if (!currentUser?.id) return;
 
+    let mounted = true;
+
     const fetchUserDetails = async () => {
       try {
         setLoading(true);
         setError(null);
 
+        let resolvedUser = null;
+
         try {
           const response = await userAPI.getUserByClerkId(currentUser.id);
           if (response.success && response.user) {
-            setUserDetails(response.user);
-            return;
+            resolvedUser = response.user;
           }
         } catch (_) { /* try email fallback */ }
 
-        if (currentUser.email) {
+        if (!resolvedUser && currentUser.email) {
           const response = await userAPI.getUserByEmail(currentUser.email);
           if (response.success && response.user) {
-            setUserDetails(response.user);
-            return;
+            resolvedUser = response.user;
           }
         }
 
-        // Fallback to Clerk context — no error; data is still available
-        setUserDetails(currentUser);
+        // Backend admin-status is the final source of truth for the role label.
+        let isAdminUser = false;
+        try {
+          const adminResponse = await setupAPI.getAdminStatus();
+          isAdminUser = !!adminResponse?.data?.isAdmin;
+        } catch (_) {
+          isAdminUser = String(resolvedUser?.role || currentUser?.role || '').toLowerCase() === 'admin';
+        }
+
+        const finalUser = resolvedUser || currentUser;
+        if (finalUser && mounted) {
+          setUserDetails({
+            ...finalUser,
+            role: isAdminUser ? 'admin' : (finalUser.role || 'customer')
+          });
+        }
       } catch (err) {
         console.error('Error fetching user details:', err);
         // If we have basic Clerk data, use it silently instead of showing an error
-        if (currentUser) {
+        if (currentUser && mounted) {
           setUserDetails(currentUser);
         } else {
           setError('Could not load your profile information. Please try again later.');
         }
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
@@ -68,6 +84,9 @@ const Profile = () => {
 
     fetchUserDetails();
     fetchPaymentRequests();
+    return () => {
+      mounted = false;
+    };
   }, [currentUser]);
 
   const fmt = (d) =>
@@ -124,7 +143,7 @@ const Profile = () => {
             <h1>{userDetails?.name || 'User'}</h1>
             <p className="pf-hero-email">{userDetails?.email}</p>
             <div className="pf-badges">
-              <span className="pf-badge role">{userDetails?.role || 'Customer'}</span>
+              <span className="pf-badge role">{String(userDetails?.role || 'customer').toLowerCase() === 'admin' ? 'Admin' : 'Customer'}</span>
               {kyc?.isVerified && <span className="pf-badge kyc-ok">KYC Verified</span>}
               {activeSub && <span className="pf-badge sub-active">Active Plan</span>}
             </div>
@@ -140,7 +159,7 @@ const Profile = () => {
               <Row label="Full Name"      value={userDetails?.name} />
               <Row label="Email"          value={userDetails?.email} />
               <Row label="Phone"          value={userDetails?.profile?.phone} />
-              <Row label="Role"           value={userDetails?.role || 'Customer'} />
+              <Row label="Role"           value={String(userDetails?.role || 'customer').toLowerCase() === 'admin' ? 'Admin' : 'Customer'} />
               <Row label="Member Since"   value={fmt(userDetails?.createdAt)} />
               <Row label="Email Verified" value="Yes" className="ok" />
             </div>

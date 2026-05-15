@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useRole } from '../../hooks/useRole';
+import { setupAPI, userAPI } from '../../services/api';
 import './Navbar.css';
 
 const Navbar = ({ scrolled }) => {
@@ -20,6 +21,8 @@ const Navbar = ({ scrolled }) => {
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
   const { isAdmin } = useRole();
+  const [isAdminUser, setIsAdminUser] = useState(false);
+  const [roleResolved, setRoleResolved] = useState(false);
   
   // Function to validate JWT token
   const isTokenValid = (token) => {
@@ -67,6 +70,65 @@ const Navbar = ({ scrolled }) => {
       document.body.classList.add('high-contrast-mode');
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const resolveRole = async () => {
+      if (!isAuthenticated) {
+        if (mounted) {
+          setIsAdminUser(false);
+          setRoleResolved(true);
+        }
+        return;
+      }
+
+      try {
+        const adminStatusResponse = await setupAPI.getAdminStatus();
+        if (!mounted) return;
+
+        if (adminStatusResponse?.data?.isAdmin) {
+          setIsAdminUser(true);
+          setRoleResolved(true);
+          return;
+        }
+      } catch (err) {
+        // Fall through to user-based lookup below.
+      }
+
+      if (currentUser?.role) {
+        if (mounted) {
+          setIsAdminUser(currentUser.role === 'admin');
+          setRoleResolved(true);
+        }
+        return;
+      }
+
+      try {
+        let response = null;
+        if (currentUser?.id) {
+          response = await userAPI.getUserByClerkId(currentUser.id);
+        } else if (currentUser?.email) {
+          response = await userAPI.getUserByEmail(currentUser.email);
+        }
+
+        const resolvedRole = response?.user?.role || 'customer';
+        if (!mounted) return;
+        setIsAdminUser(resolvedRole === 'admin');
+      } catch (err) {
+        if (!mounted) return;
+        setIsAdminUser(false);
+      } finally {
+        if (mounted) setRoleResolved(true);
+      }
+    };
+
+    resolveRole();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isAuthenticated, currentUser]);
 
   const switchLanguage = (lang) => {
     setLanguage(lang);
@@ -246,7 +308,7 @@ const Navbar = ({ scrolled }) => {
                             <i className="settings-icon"></i> Settings
                           </Link>
                         </li>
-                        {isAdmin() && (
+                        {isAdminUser && (
                           <li>
                             <Link to="/admin" onClick={() => setDropdownOpen(false)}>
                               <i className="admin-icon"></i> Admin Dashboard

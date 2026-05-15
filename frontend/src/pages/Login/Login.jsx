@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { userAPI } from '../../services/api';
 import Loading from '../../components/Loading/Loading';
 import OTPInput from '../../components/OTPInput/OTPInput';
 import { isValidEmail } from '../../utils/validators';
@@ -33,11 +34,40 @@ const Login = () => {
     }
   };
 
+  const resolvePostLoginRoute = async () => {
+    const userRole = currentUser?.role;
+    if (userRole === 'admin') return '/admin/dashboard';
+    if (userRole === 'customer') return '/dashboard';
+
+    try {
+      if (currentUser?.id) {
+        const response = await userAPI.getUserByClerkId(currentUser.id);
+        const resolvedRole = response?.user?.role;
+        if (resolvedRole === 'admin') return '/admin/dashboard';
+        return '/dashboard';
+      }
+      if (currentUser?.email) {
+        const response = await userAPI.getUserByEmail(currentUser.email);
+        const resolvedRole = response?.user?.role;
+        if (resolvedRole === 'admin') return '/admin/dashboard';
+      }
+    } catch (err) {
+      console.warn('Could not resolve role before redirect:', err);
+    }
+
+    return '/dashboard';
+  };
+
   // Redirect if user is already logged in
   useEffect(() => {
     const hasValidToken = isTokenPresentAndLooksValid();
     if (currentUser && hasValidToken) {
-      navigate('/dashboard');
+      let cancelled = false;
+      (async () => {
+        const route = await resolvePostLoginRoute();
+        if (!cancelled) navigate(route, { replace: true });
+      })();
+      return () => { cancelled = true; };
     }
   }, [currentUser, navigate]);
 
@@ -103,25 +133,7 @@ const Login = () => {
 
       // After successful verify, give Clerk/useAuth a little time to populate currentUser
       setTimeout(() => {
-        const token = localStorage.getItem('clerk_jwt');
-        
-        if (currentUser?.role) {
-          if (currentUser.role === 'admin') {
-            navigate('/admin/dashboard');
-            return;
-          }
-          navigate('/dashboard');
-        } else if (token) {
-          setTimeout(() => {
-            if (currentUser?.role === 'admin') {
-              navigate('/admin/dashboard');
-            } else {
-              navigate('/dashboard');
-            }
-          }, 500);
-        } else {
-          setTimeout(() => navigate('/dashboard'), 800);
-        }
+        resolvePostLoginRoute().then((route) => navigate(route, { replace: true }));
       }, 800);
     } else {
       setErrors({ otp: result.error || 'Invalid OTP. Please try again.' });

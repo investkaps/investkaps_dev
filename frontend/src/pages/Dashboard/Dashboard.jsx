@@ -5,7 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 import { useAuth } from '../../context/AuthContext';
 import { useRole } from '../../hooks/useRole';
-import { kycAPI, userAPI, phoneAPI, esignAPI, paymentRequestAPI, questionnaireAPI } from '../../services/api';
+import { kycAPI, userAPI, phoneAPI, esignAPI, paymentRequestAPI, questionnaireAPI, setupAPI } from '../../services/api';
 import userSubscriptionAPI from '../../services/userSubscriptionAPI';
 import stockRecommendationAPI from '../../services/stockRecommendationAPI';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
@@ -59,6 +59,7 @@ const Dashboard = () => {
   
   // Memoize admin status to prevent continuous checks
   const [isAdminUser, setIsAdminUser] = useState(false);
+  const [roleResolved, setRoleResolved] = useState(false);
   
   // Set admin status once when component mounts or user changes
   useEffect(() => {
@@ -69,6 +70,73 @@ const Dashboard = () => {
       }
     }
   }, [currentUser, isAdmin, isAdminUser]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const resolveRole = async () => {
+      if (authLoading) return;
+
+      if (!currentUser) {
+        if (mounted) setRoleResolved(true);
+        return;
+      }
+
+      try {
+        const adminStatusResponse = await setupAPI.getAdminStatus();
+        if (!mounted) return;
+        if (adminStatusResponse?.data?.isAdmin) {
+          setIsAdminUser(true);
+          setRoleResolved(true);
+          navigate('/admin/dashboard', { replace: true });
+          return;
+        }
+      } catch (err) {
+        // Fall through to user-based lookup below.
+      }
+
+      if (currentUser.role) {
+        const currentRole = currentUser.role;
+        if (mounted) {
+          setIsAdminUser(currentRole === 'admin');
+          setRoleResolved(true);
+        }
+        if (currentRole === 'admin') {
+          navigate('/admin/dashboard', { replace: true });
+        }
+        return;
+      }
+
+      try {
+        let response = null;
+        if (currentUser.id) {
+          response = await userAPI.getUserByClerkId(currentUser.id);
+        } else if (currentUser.email) {
+          response = await userAPI.getUserByEmail(currentUser.email);
+        }
+
+        const resolvedRole = response?.user?.role || 'customer';
+        if (!mounted) return;
+
+        setIsAdminUser(resolvedRole === 'admin');
+        setRoleResolved(true);
+
+        if (resolvedRole === 'admin') {
+          navigate('/admin/dashboard', { replace: true });
+        }
+      } catch (err) {
+        if (!mounted) return;
+        setIsAdminUser(false);
+        setRoleResolved(true);
+      }
+    };
+
+    resolveRole();
+
+    return () => {
+      mounted = false;
+    };
+  }, [authLoading, currentUser, navigate]);
   
   const [steps, setSteps] = useState({
     kyc: { completed: false, active: true, expanded: true },
@@ -991,7 +1059,7 @@ const Dashboard = () => {
   }, [currentUser, isSetupComplete, activeSubscription, isAdminUser]);
   
   // Block render until all initial checks have resolved
-  if (authLoading || !dashboardReady) {
+  if (authLoading || !dashboardReady || !roleResolved) {
     return <Loading message="Loading your dashboard…" />;
   }
 

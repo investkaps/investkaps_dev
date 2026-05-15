@@ -82,6 +82,13 @@ export const AuthProvider = ({ children }) => {
       // First, check if user exists by email
       try {
         const response = await userAPI.getUserByEmail(maybeClerkUser.primaryEmailAddress.emailAddress);
+        if (response?.user) {
+          setCurrentUser(prev => prev ? ({
+            ...prev,
+            ...response.user,
+            role: response.user.role || prev.role || 'customer'
+          }) : response.user);
+        }
         return response.user;
       } catch (error) {
         // User not found, proceed with creation
@@ -94,6 +101,14 @@ export const AuthProvider = ({ children }) => {
         name: maybeClerkUser.firstName || maybeClerkUser.primaryEmailAddress.emailAddress.split('@')[0],
         isVerified: maybeClerkUser.emailAddresses?.[0]?.verification?.status === 'verified'
       });
+
+      if (response?.user) {
+        setCurrentUser(prev => prev ? ({
+          ...prev,
+          ...response.user,
+          role: response.user.role || prev.role || 'customer'
+        }) : response.user);
+      }
 
       return response.user;
     } catch (err) {
@@ -176,7 +191,14 @@ export const AuthProvider = ({ children }) => {
                 setCurrentUser(user);
               }
               // Try to create backend user asynchronously
-              createOrUpdateBackendUser(clerkUser);
+              const createdUser = await createOrUpdateBackendUser(clerkUser);
+              if (mounted && createdUser) {
+                setCurrentUser(prev => ({
+                  ...prev,
+                  ...createdUser,
+                  role: createdUser.role || prev?.role || 'customer'
+                }));
+              }
             }
           } catch (err) {
             console.error('❌ AUTH: Error getting token from Clerk user:', err);
@@ -288,7 +310,14 @@ export const AuthProvider = ({ children }) => {
             };
             setCurrentUser(userObj);
             // Ensure backend user exists
-            createOrUpdateBackendUser(maybeUser);
+            const backendUser = await createOrUpdateBackendUser(maybeUser);
+            if (backendUser) {
+              setCurrentUser(prev => ({
+                ...prev,
+                ...backendUser,
+                role: backendUser.role || prev?.role || 'customer'
+              }));
+            }
           } else {
             // If Clerk hasn't populated user, set minimal info but don't use session email
             // We'll wait for Clerk to provide the proper email
@@ -397,7 +426,14 @@ export const AuthProvider = ({ children }) => {
             };
             setCurrentUser(userObj);
             // Create backend user
-            createOrUpdateBackendUser(maybeUser);
+            const backendUser = await createOrUpdateBackendUser(maybeUser);
+            if (backendUser) {
+              setCurrentUser(prev => ({
+                ...prev,
+                ...backendUser,
+                role: backendUser.role || prev?.role || 'customer'
+              }));
+            }
           } else {
             // clerkUser not available yet; checkAuthStatus will create the backend user later
             console.warn('Clerk user not yet available after registration; will create backend user when Clerk loads');
