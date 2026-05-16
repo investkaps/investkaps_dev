@@ -5,6 +5,21 @@
   color: #2d3748;
 }
 
+.pricing-page-content {
+  display: block;
+}
+
+.pricing-plans-section {
+  margin-top: 28px;
+}
+
+.pricing-plans-title {
+  margin: 0 0 18px;
+  font-size: 1.8rem;
+  color: #0f172a;
+  text-align: center;
+}
+
 .pricing-container .page-title,
 .pricing-container .page-subtitle {
   text-align: center;
@@ -45,7 +60,7 @@
   flex-shrink: 0;
 }
 
-.banner-text h3 {
+.banner-text h2 {
   margin: 0 0 8px 0;
   color: #0f5132;
   font-size: 1.2rem;
@@ -151,9 +166,9 @@
 }
 
 .modern-plan-card.featured {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%);
   border-color: #667eea;
-  box-shadow: 0 15px 50px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 15px 50px rgba(29, 78, 216, 0.35);
   transform: scale(1.05);
 }
 
@@ -344,6 +359,14 @@
   color: #a0aec0;
   margin: 0;
   font-style: italic;
+}
+
+.modern-select-btn:focus-visible,
+.duration-close-btn:focus-visible,
+button.payment-method-card:focus-visible,
+.duration-option:focus-within {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
 }
 
 
@@ -539,17 +562,25 @@
 .duration-modal-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 16px;
   padding: 24px 28px;
   background: #1e293b;
   border-bottom: 1px solid #e5e7eb;
 }
 
-.duration-modal-header h3 {
+.duration-modal-header h2 {
   margin: 0;
   font-size: 1.4rem;
   font-weight: 700;
   color: #ffffff;
+}
+
+.modal-description {
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .duration-close-btn {
@@ -569,6 +600,12 @@
 
 .duration-close-btn:hover {
   opacity: 0.7;
+}
+
+.duration-close-btn:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 .duration-options {
@@ -592,6 +629,11 @@
   align-items: center;
   text-align: center;
   min-height: 200px;
+}
+
+.duration-option:focus-within {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.16);
 }
 
 .duration-option input[type="radio"] {
@@ -717,6 +759,78 @@
   cursor: not-allowed;
 }
 
+.duration-actions .modern-select-btn:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
+}
+
+.payment-method-modal .duration-modal-header h2 {
+  font-size: 1.4rem;
+}
+
+.payment-method-options {
+  padding: 32px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  background: #f9fafb;
+}
+
+button.payment-method-card {
+  appearance: none;
+  font: inherit;
+  width: 100%;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+button.payment-method-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+  transform: translateY(-4px);
+}
+
+button.payment-method-card:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
+}
+
+.payment-method-title {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.payment-method-description {
+  display: block;
+  margin: 0 0 20px;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.payment-method-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%);
+  color: white;
+  font-weight: 600;
+}
+
 @media (max-width: 968px) {
   .duration-modal {
     max-width: 95%;
@@ -733,7 +847,7 @@
     padding: 20px;
   }
   
-  .duration-modal-header h3 {
+  .duration-modal-header h2 {
     font-size: 1.2rem;
   }
   
@@ -815,7 +929,7 @@
     padding: 16px 12px;
   }
   
-  .duration-modal-header h3 {
+  .duration-modal-header h2 {
     font-size: 1.1rem;
     line-height: 1.3;
   }

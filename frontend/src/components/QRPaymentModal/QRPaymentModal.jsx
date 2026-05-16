@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaTimes as FaClose } from 'react-icons/fa';
 import { isValidName, isValidTransactionId, isValidFileSize, isValidImageType, sanitizeInput } from '../../utils/validators';
 import './QRPaymentModal.css';
@@ -13,6 +13,69 @@ const QRPaymentModal = ({ plan, duration, price, onClose, currentUser, onSuccess
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const dialogRef = useRef(null);
+
+  const focusableSelector = [
+    'button:not([disabled])',
+    '[href]:not([aria-hidden="true"])',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(', ');
+
+  const getFocusableElements = (container) => {
+    if (!container) return [];
+    return Array.from(container.querySelectorAll(focusableSelector)).filter((element) => element.getAttribute('aria-hidden') !== 'true');
+  };
+
+  const focusFirstElement = () => {
+    const dialogElement = dialogRef.current;
+    if (!dialogElement) return;
+
+    const focusableElements = getFocusableElements(dialogElement);
+    (focusableElements[0] || dialogElement).focus();
+  };
+
+  useEffect(() => {
+    requestAnimationFrame(focusFirstElement);
+  }, []);
+
+  useEffect(() => {
+    requestAnimationFrame(focusFirstElement);
+  }, [success]);
+
+  const handleDialogKeyDown = (event) => {
+    const dialogElement = dialogRef.current;
+
+    if (event.key === 'Escape' && !uploading) {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+
+    if (event.key !== 'Tab' || !dialogElement) {
+      return;
+    }
+
+    const focusableElements = getFocusableElements(dialogElement);
+    if (focusableElements.length === 0) {
+      event.preventDefault();
+      dialogElement.focus();
+      return;
+    }
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    if (event.shiftKey && document.activeElement === firstElement) {
+      event.preventDefault();
+      lastElement.focus();
+    } else if (!event.shiftKey && document.activeElement === lastElement) {
+      event.preventDefault();
+      firstElement.focus();
+    }
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -105,12 +168,21 @@ const QRPaymentModal = ({ plan, duration, price, onClose, currentUser, onSuccess
 
   if (success) {
     return (
-      <div className="duration-modal-overlay">
-        <div className="qr-payment-modal">
-          <div className="success-message">
+      <div className="duration-modal-overlay" role="presentation">
+        <div
+          className="qr-payment-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="qr-payment-success-title"
+          aria-describedby="qr-payment-success-description"
+          tabIndex={-1}
+          ref={dialogRef}
+          onKeyDown={handleDialogKeyDown}
+        >
+          <div className="success-message" role="status" aria-live="polite" aria-atomic="true">
             <div className="success-icon">✓</div>
-            <h3>Payment Request Submitted!</h3>
-            <p>Your payment request has been submitted successfully.</p>
+            <h3 id="qr-payment-success-title">Payment Request Submitted!</h3>
+            <p id="qr-payment-success-description">Your payment request has been submitted successfully.</p>
             <p>Our admin will verify and approve your subscription within 24 hours.</p>
             <button className="modern-select-btn" onClick={onClose}>
               Close
@@ -122,18 +194,32 @@ const QRPaymentModal = ({ plan, duration, price, onClose, currentUser, onSuccess
   }
 
   return (
-    <div className="duration-modal-overlay">
-      <div className="qr-payment-modal">
+    <div className="duration-modal-overlay" role="presentation">
+      <div
+        className="qr-payment-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="qr-payment-modal-title"
+        aria-describedby="qr-payment-modal-description"
+        tabIndex={-1}
+        ref={dialogRef}
+        onKeyDown={handleDialogKeyDown}
+      >
         <div className="duration-modal-header">
-          <h3>QR Code Payment</h3>
-          <button className="duration-close-btn" onClick={onClose} aria-label="Close">
+          <div>
+            <h2 id="qr-payment-modal-title">QR Code Payment</h2>
+            <p id="qr-payment-modal-description" className="modal-description">
+              Complete the transfer using QR and upload your transaction proof.
+            </p>
+          </div>
+          <button className="duration-close-btn" onClick={onClose} aria-label="Close modal">
             <FaClose />
           </button>
         </div>
 
         <div className="qr-payment-content">
           <div className="qr-payment-details">
-            <h4>Payment Details</h4>
+            <h3>Payment Details</h3>
             <div className="payment-info">
               <div className="info-row">
                 <span className="label">Plan:</span>
@@ -151,7 +237,7 @@ const QRPaymentModal = ({ plan, duration, price, onClose, currentUser, onSuccess
           </div>
 
           <div className="qr-code-section">
-            <h4>Scan QR Code to Pay</h4>
+            <h3>Scan QR Code to Pay</h3>
             <div className="qr-code-placeholder">
               <img 
                 src="/qrcode.png" 
@@ -165,7 +251,7 @@ const QRPaymentModal = ({ plan, duration, price, onClose, currentUser, onSuccess
           <form onSubmit={handleSubmit} className="qr-payment-form">
             <h4>Upload Transaction Proof</h4>
             
-            {error && <div id="qr-payment-error" className="error-message">{error}</div>}
+            {error && <div id="qr-payment-error" className="error-message" role="alert">{error}</div>}
 
             <div className="form-group">
               <label htmlFor="senderName">Sender Name *</label>
@@ -176,6 +262,7 @@ const QRPaymentModal = ({ plan, duration, price, onClose, currentUser, onSuccess
                 onChange={(e) => setFormData({ ...formData, senderName: e.target.value })}
                 placeholder="Enter name as per transaction"
                 required
+                autoComplete="name"
                 aria-describedby={error ? 'qr-payment-error' : undefined}
               />
             </div>
@@ -188,6 +275,7 @@ const QRPaymentModal = ({ plan, duration, price, onClose, currentUser, onSuccess
                 value={formData.transactionId}
                 onChange={(e) => setFormData({ ...formData, transactionId: e.target.value })}
                 required
+                autoComplete="off"
                 aria-describedby={error ? 'qr-payment-error' : undefined}
               />
             </div>

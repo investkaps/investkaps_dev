@@ -69,6 +69,59 @@
   gap: 1rem;
 }
 
+/* CTA Button styles */
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 2rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.cta-button-primary {
+  background: var(--primary-color, #c63d13);
+  color: white;
+  border: 1px solid var(--primary-color, #c63d13);
+  box-shadow: 0 4px 6px rgba(198, 61, 19, 0.2);
+}
+
+.cta-button-primary:hover {
+  background: var(--primary-hover, #a93210);
+  border-color: var(--primary-hover, #a93210);
+  box-shadow: 0 7px 14px rgba(169, 50, 15, 0.3);
+  transform: translateY(-2px);
+}
+
+.cta-button-primary:focus-visible {
+  outline: 3px solid #b93810;
+  outline-offset: 2px;
+}
+
+.cta-button-outline {
+  background: transparent;
+  border: 2px solid white;
+  color: white;
+  box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
+}
+
+.cta-button-outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 7px 14px rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.cta-button-outline:focus-visible {
+  outline: 3px solid white;
+  outline-offset: 2px;
+}
+
 .cta-decoration {
   position: absolute;
   border-radius: 50%;

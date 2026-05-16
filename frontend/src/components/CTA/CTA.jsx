@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import './CTA.css';
-import Button from '../Button/Button';
 
 const CTA = () => {
   const containerVariants = {
@@ -60,17 +59,13 @@ const CTA = () => {
             अपने लक्ष्यों के अनुरूप व्यक्तिगत स्टॉक अनुशंसाएं और बाजार अंतर्दृष्टि प्राप्त करें।
           </motion.p>
           <motion.div className="cta-buttons" variants={itemVariants}>
-            <Link to="/dashboard">
-              <Button type="primary" size="large">
-                <span className="lang-en" lang="en">Get Started Today</span>
-                <span className="lang-hi" lang="hi">आज ही शुरू करें</span>
-              </Button>
+            <Link to="/dashboard" className="cta-button cta-button-primary">
+              <span className="lang-en" lang="en">Get Started Today</span>
+              <span className="lang-hi" lang="hi">आज ही शुरू करें</span>
             </Link>
-            <Link to="/dashboard">
-              <Button type="outline" size="large">
-                <span className="lang-en" lang="en">View Dashboard</span>
-                <span className="lang-hi" lang="hi">डैशबोर्ड देखें</span>
-              </Button>
+            <Link to="/dashboard" className="cta-button cta-button-outline">
+              <span className="lang-en" lang="en">View Dashboard</span>
+              <span className="lang-hi" lang="hi">डैशबोर्ड देखें</span>
             </Link>
           </motion.div>
         </motion.div>

@@ -99,7 +99,6 @@ function App() {
   }, [scrolled]);
 
   useEffect(() => {
-    // Removed accessibility widget workarounds
   }, []);
 
   if (!clerkPubKey) {

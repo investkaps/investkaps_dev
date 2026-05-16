@@ -152,6 +152,12 @@
   border: 2px solid transparent;
 }
 
+.social-button:focus-visible,
+.hero-cta-button:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
+}
+
 .social-button svg {
   width: 20px;
   height: 20px;
@@ -185,6 +191,14 @@
   box-shadow: 0 8px 20px rgba(41, 171, 226, 0.3);
 }
 
+.social-button.telegram:focus-visible {
+  outline-color: #7dd3fc;
+}
+
+.social-button.whatsapp:focus-visible {
+  outline-color: #86efac;
+}
+
 .hero-cta-button {
   display: inline-block;
   background: linear-gradient(135deg, #2980b9, #3498db);
@@ -203,6 +217,10 @@
 .hero-cta-button:hover {
   transform: translateY(-3px);
   box-shadow: 0 15px 40px rgba(41, 128, 185, 0.4);
+}
+
+.hero-cta-button:focus-visible {
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.25), 0 10px 30px rgba(41, 128, 185, 0.3);
 }
 
 .hero-cta-primary {
@@ -237,6 +255,10 @@
   background: rgba(255, 255, 255, 0.2);
   border-color: rgba(255, 255, 255, 0.5);
   transform: translateY(-3px);
+}
+
+.hero-cta-secondary:focus-visible {
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.18);
 }
 
 .hero-features {

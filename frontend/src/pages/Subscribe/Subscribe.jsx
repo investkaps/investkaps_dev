@@ -141,7 +141,12 @@ const Subscribe = () => {
             </>
           )}
         </div>
-        <div className={`plan-details ${isExpanded && !isComingSoon ? 'open' : ''}`}>
+        <div 
+          className={`plan-details ${isExpanded && !isComingSoon ? 'open' : ''}`}
+          tabIndex={isExpanded && !isComingSoon ? "0" : "-1"}
+          role="region"
+          aria-label={`Details for ${plan.name}`}
+        >
           {plan.details.map((detail) => (
             <div key={detail.label} className="plan-detail-block">
               <h4>{detail.label}</h4>

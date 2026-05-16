@@ -34,7 +34,17 @@ const PDFReportGenerator = ({ recommendation, onClose }) => {
         summary:         recommendation.description || ''
       }));
     }
-  }, [recommendation]);
+
+    // Handle ESC key press to close modal
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && !loading) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => document.removeEventListener('keydown', handleEscapeKey);
+  }, [recommendation, loading, onClose]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -87,7 +97,7 @@ const PDFReportGenerator = ({ recommendation, onClose }) => {
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="pdf-modal-header">
           <h2>PDF Report</h2>
-          <button className="close-btn" onClick={onClose}>×</button>
+          <button className="close-btn" onClick={onClose} aria-label="Close modal">×</button>
         </div>
 
         <div className="pdf-modal-body">

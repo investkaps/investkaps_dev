@@ -203,6 +203,12 @@
   line-height: 1.7;
 }
 
+/* WCAG AA Contrast Fix: Home Page Only */
+.proven-process-container .section-description,
+.media-showcase .section-description {
+  color: #475569;
+}
+
 /* Recommendation Link */
 .recommendation-link {
   display: inline-flex;
@@ -234,7 +240,13 @@
 }
 
 /* Recommendations Showcase */
-.recommendations-showcase {
+  transition: all 0.3s ease;
+}
+.recommendation-link:focus-visible,
+.media-link:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
+}
   margin-top: 5rem;
 }
 
@@ -315,6 +327,10 @@
   transform: translateY(-2px);
   border-color: #93c5fd;
   background: #eff6ff;
+}
+.media-link:focus-visible {
+  background: #eff6ff;
+  border-color: #f59e0b;
 }
 
 .recommendations-grid {

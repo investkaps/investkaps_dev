@@ -116,26 +116,26 @@ const Home = () => {
           
           <div className="process-steps">
             <div className="steps-grid">
-              <div className="process-step-card">
+              <article className="process-step-card">
                 <div className="process-step-number">01</div>
-                <h4 className="process-step-title">Initial Consultation</h4>
+                <h3 className="process-step-title">Initial Consultation</h3>
                 <p className="process-step-text">We start by understanding your financial picture, goals, risk tolerance, and life stage.</p>
-              </div>
-              <div className="process-step-card">
+              </article>
+              <article className="process-step-card">
                 <div className="process-step-number">02</div>
-                <h4 className="process-step-title">Strategy Development</h4>
+                <h3 className="process-step-title">Strategy Development</h3>
                 <p className="process-step-text">A tailored plan is built for your objectives, whether wealth creation, retirement, ESOPs, or education funding.</p>
-              </div>
-              <div className="process-step-card">
+              </article>
+              <article className="process-step-card">
                 <div className="process-step-number">03</div>
-                <h4 className="process-step-title">Implementation</h4>
+                <h3 className="process-step-title">Implementation</h3>
                 <p className="process-step-text">We execute with disciplined monitoring, low-cost entry, and careful tracking of what matters most.</p>
-              </div>
-              <div className="process-step-card">
+              </article>
+              <article className="process-step-card">
                 <div className="process-step-number">04</div>
-                <h4 className="process-step-title">Ongoing Management</h4>
+                <h3 className="process-step-title">Ongoing Management</h3>
                 <p className="process-step-text">Annual reviews, rebalancing, and life-event check-ins keep your plan aligned with your changing needs.</p>
-              </div>
+              </article>
             </div>
           </div>
 

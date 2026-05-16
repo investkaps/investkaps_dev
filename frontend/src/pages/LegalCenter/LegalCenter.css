@@ -50,6 +50,7 @@
 
 .legal-nav-link:hover {
   background: #dbeafe;
+  color: #3730a3;
 }
 
 .legal-sections {
@@ -218,7 +219,7 @@
 
 .legal-contact-section .whatsapp-link {
   display: inline-block;
-  color: #0f8a42;
+  color: #0b6b34;
   text-decoration: none;
   font-weight: 600;
   font-size: 1.125rem;
@@ -370,6 +371,11 @@
   border: 1px solid #dbe4f0;
   border-radius: 14px;
   background: #ffffff;
+}
+
+.legal-table-wrap:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 2px;
 }
 
 .legal-table {

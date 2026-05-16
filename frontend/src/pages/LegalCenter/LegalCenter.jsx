@@ -731,7 +731,7 @@ const LegalCenter = () => {
             </p>
             <h3>Data for the Month Ending March 2026</h3>
             <div className="legal-table-shell">
-              <div className="legal-table-wrap">
+              <div className="legal-table-wrap" tabIndex={0} role="region" aria-label="Complaints and audit data table">
                 <table className="legal-table">
                   <thead>
                     <tr>
@@ -791,7 +791,7 @@ const LegalCenter = () => {
             </div>
             <h3>Trend of Monthly Disposal of Complaints</h3>
             <div className="legal-table-shell">
-              <div className="legal-table-wrap">
+              <div className="legal-table-wrap" tabIndex={0} role="region" aria-label="Monthly complaints disposal trend table">
                 <table className="legal-table">
                   <thead>
                     <tr>
@@ -814,7 +814,7 @@ const LegalCenter = () => {
             </div>
             <h3>Trend of Annual Disposal of Complaints</h3>
             <div className="legal-table-shell">
-              <div className="legal-table-wrap">
+              <div className="legal-table-wrap" tabIndex={0} role="region" aria-label="Annual complaints disposal trend table">
                 <table className="legal-table">
                   <thead>
                     <tr>

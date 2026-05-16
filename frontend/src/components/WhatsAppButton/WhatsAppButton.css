@@ -14,12 +14,12 @@
 .whatsapp-icon {
   width: 60px;
   height: 60px;
-  background: #0d6b38;
+  background: #005c1f;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 92, 31, 0.4);
   transition: all 0.3s ease;
   cursor: pointer;
 }
@@ -32,7 +32,7 @@
 
 .whatsapp-float:hover .whatsapp-icon {
   transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+  box-shadow: 0 6px 20px rgba(0, 92, 31, 0.5);
 }
 
 .whatsapp-tooltip {
@@ -76,7 +76,7 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: #0d6b38;
+  background: #005c1f;
   animation: whatsapp-pulse 2s infinite;
   z-index: -1;
 }

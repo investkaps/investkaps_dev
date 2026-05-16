@@ -11,6 +11,10 @@ const Pricing = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const hasFetched = useRef(false);
+  const durationDialogRef = useRef(null);
+  const paymentDialogRef = useRef(null);
+  const lastTriggerRef = useRef(null);
+  const previouslyOpenRef = useRef(false);
 
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,6 +25,7 @@ const Pricing = () => {
   const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [activeSubscriptions, setActiveSubscriptions] = useState([]);
+  const anyModalOpen = showDurationModal || showPaymentMethodModal || showQRModal;
 
   // ---- Duration options shown in the modal
   const durationOptions = [
@@ -28,6 +33,63 @@ const Pricing = () => {
     { key: 'sixMonth', label: '6 Months', description: 'Save up to 10%' },
     { key: 'yearly', label: 'Yearly', description: 'Best value, save up to 20%' }
   ];
+
+  const focusableSelector = [
+    'button:not([disabled])',
+    '[href]:not([aria-hidden="true"])',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(', ');
+
+  const getFocusableElements = (container) => {
+    if (!container) return [];
+
+    return Array.from(container.querySelectorAll(focusableSelector)).filter((element) => {
+      const isHidden = element.getAttribute('aria-hidden') === 'true';
+      const hasDisabledAncestor = element.closest('[disabled]');
+      return !isHidden && !hasDisabledAncestor;
+    });
+  };
+
+  const focusFirstElementInDialog = (dialogElement) => {
+    if (!dialogElement) return;
+
+    const focusableElements = getFocusableElements(dialogElement);
+    const target = focusableElements[0] || dialogElement;
+    target.focus();
+  };
+
+  const handleDialogKeyDown = (event, dialogElement, onEscape) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onEscape();
+      return;
+    }
+
+    if (event.key !== 'Tab') {
+      return;
+    }
+
+    const focusableElements = getFocusableElements(dialogElement);
+    if (focusableElements.length === 0) {
+      event.preventDefault();
+      dialogElement?.focus();
+      return;
+    }
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    if (event.shiftKey && document.activeElement === firstElement) {
+      event.preventDefault();
+      lastElement.focus();
+    } else if (!event.shiftKey && document.activeElement === lastElement) {
+      event.preventDefault();
+      firstElement.focus();
+    }
+  };
 
   // ---- Load Razorpay script if needed
   const loadRazorpayScript = () =>
@@ -90,12 +152,37 @@ const Pricing = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    document.body.style.overflow = anyModalOpen ? 'hidden' : '';
+
+    if (anyModalOpen) {
+      if (showDurationModal) {
+        requestAnimationFrame(() => focusFirstElementInDialog(durationDialogRef.current));
+      } else if (showPaymentMethodModal) {
+        requestAnimationFrame(() => focusFirstElementInDialog(paymentDialogRef.current));
+      }
+    } else if (previouslyOpenRef.current) {
+      requestAnimationFrame(() => {
+        lastTriggerRef.current?.focus();
+      });
+    }
+
+    previouslyOpenRef.current = anyModalOpen;
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [anyModalOpen, showDurationModal, showPaymentMethodModal]);
+
   // ---- Helpers
   const getCurrentPrice = (plan, duration = 'monthly') =>
     plan?.pricing?.[duration] || 0;
 
-  const handleSelectPlan = (plan) => {
+  const handleSelectPlan = (plan, event) => {
     // Allow multiple subscriptions - users can purchase any plan
+    lastTriggerRef.current = event?.currentTarget || null;
     setSelectedPlan(plan);
     setSelectedDuration('monthly');
     setShowDurationModal(true);
@@ -265,15 +352,17 @@ const Pricing = () => {
       <h1 className="page-title">Choose Your Investment Plan</h1>
       <p className="page-subtitle">Select the plan that works best for your trading needs</p>
 
+      <div className="pricing-page-content" aria-hidden={anyModalOpen ? 'true' : undefined}>
+
       {/* Active Subscriptions Banner */}
       {activeSubscriptions.length > 0 && (
         <div className="active-subscription-banner">
           <div className="banner-content">
             <div className="banner-icon">✓</div>
             <div className="banner-text">
-              <h3>
+              <h2>
                 You have <strong>{activeSubscriptions.length}</strong> active {activeSubscriptions.length === 1 ? 'subscription' : 'subscriptions'}
-              </h3>
+              </h2>
               <p>
                 You can purchase additional plans to access more features and strategies.
               </p>
@@ -282,10 +371,13 @@ const Pricing = () => {
         </div>
       )}
 
-      {error && <div className="error-banner">{error}</div>}
+      {error && <div className="error-banner" role="alert">{error}</div>}
+
+        <section className="pricing-plans-section" aria-labelledby="available-plans-heading">
+          <h2 id="available-plans-heading" className="pricing-plans-title">Available Plans</h2>
 
       {loading && plans.length === 0 ? (
-        <div className="loading-container">
+        <div className="loading-container" aria-live="polite" aria-busy="true">
           <div className="loading-spinner"></div>
           <p>Loading subscription plans...</p>
         </div>
@@ -350,7 +442,7 @@ const Pricing = () => {
                 <div className="modern-plan-actions">
                   <button
                     className={`modern-select-btn ${isCurrentPlan ? 'active-plan-btn' : ''}`}
-                    onClick={() => handleSelectPlan(plan)}
+                    onClick={(event) => handleSelectPlan(plan, event)}
                   >
                     {isCurrentPlan ? 'Active - Add More Time' : 'Select Plan'}
                     {!isCurrentPlan && <FaArrowRight className="arrow-icon" />}
@@ -365,13 +457,30 @@ const Pricing = () => {
         </div>
       )}
 
+        </section>
+      </div>
+
       {/* Duration Modal */}
       {showDurationModal && selectedPlan && (
-        <div className="duration-modal-overlay" role="dialog" aria-modal="true">
-          <div className="duration-modal">
+        <div className="duration-modal-overlay" role="presentation">
+          <div
+            className="duration-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="duration-modal-title"
+            aria-describedby="duration-modal-description"
+            tabIndex={-1}
+            ref={durationDialogRef}
+            onKeyDown={(event) => handleDialogKeyDown(event, durationDialogRef.current, closeDurationModal)}
+          >
             <div className="duration-modal-header">
-              <h3>Select Duration for {selectedPlan.name}</h3>
-              <button className="duration-close-btn" onClick={closeDurationModal} aria-label="Close">
+              <div>
+                <h2 id="duration-modal-title">Select Duration for {selectedPlan.name}</h2>
+                <p id="duration-modal-description" className="modal-description">
+                  Choose the subscription length that best matches your trading horizon.
+                </p>
+              </div>
+              <button className="duration-close-btn" onClick={closeDurationModal} aria-label="Close modal">
                 <FaClose />
               </button>
             </div>
@@ -427,32 +536,50 @@ const Pricing = () => {
 
       {/* Payment Method Selection Modal */}
       {showPaymentMethodModal && selectedPlan && (
-        <div className="duration-modal-overlay" role="dialog" aria-modal="true">
-          <div className="duration-modal">
+        <div className="duration-modal-overlay" role="presentation">
+          <div
+            className="duration-modal payment-method-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="payment-method-modal-title"
+            aria-describedby="payment-method-modal-description"
+            tabIndex={-1}
+            ref={paymentDialogRef}
+            onKeyDown={(event) => handleDialogKeyDown(event, paymentDialogRef.current, () => setShowPaymentMethodModal(false))}
+          >
             <div className="duration-modal-header">
-              <h3>Choose Payment Method</h3>
-              <button className="duration-close-btn" onClick={() => setShowPaymentMethodModal(false)} aria-label="Close">
+              <div>
+                <h2 id="payment-method-modal-title">Choose Payment Method</h2>
+                <p id="payment-method-modal-description" className="modal-description">
+                  Select how you would like to complete payment for {selectedPlan.name}.
+                </p>
+              </div>
+              <button className="duration-close-btn" onClick={() => setShowPaymentMethodModal(false)} aria-label="Close modal">
                 <FaClose />
               </button>
             </div>
 
             <div className="payment-method-options">
-              <div className="payment-method-card" onClick={createOrder}>
-                <div className="payment-method-icon">💳</div>
-                <h4>Razorpay</h4>
-                <p>Pay with Card, UPI, Net Banking, Wallet</p>
-                <button className="payment-method-btn">Continue with Razorpay</button>
-              </div>
+              <button type="button" className="payment-method-card" onClick={createOrder}>
+                <div className="payment-method-icon" aria-hidden="true">💳</div>
+                <span className="payment-method-title">Razorpay</span>
+                <span className="payment-method-description">Pay with Card, UPI, Net Banking, Wallet</span>
+                <span className="payment-method-btn">Continue with Razorpay</span>
+              </button>
 
-              <div className="payment-method-card" onClick={() => {
-                setShowPaymentMethodModal(false);
-                setShowQRModal(true);
-              }}>
-                <div className="payment-method-icon">📱</div>
-                <h4>QR Code Payment</h4>
-                <p>Scan QR & upload transaction proof</p>
-                <button className="payment-method-btn">Pay via QR Code</button>
-              </div>
+              <button
+                type="button"
+                className="payment-method-card"
+                onClick={() => {
+                  setShowPaymentMethodModal(false);
+                  setShowQRModal(true);
+                }}
+              >
+                <div className="payment-method-icon" aria-hidden="true">📱</div>
+                <span className="payment-method-title">QR Code Payment</span>
+                <span className="payment-method-description">Scan QR & upload transaction proof</span>
+                <span className="payment-method-btn">Pay via QR Code</span>
+              </button>
             </div>
           </div>
         </div>
