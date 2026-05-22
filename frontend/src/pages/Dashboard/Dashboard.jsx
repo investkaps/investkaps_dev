@@ -349,182 +349,168 @@ const Dashboard = () => {
     const adminStatus = currentUser.role === 'admin';
 
     const initDashboard = async () => {
-      // 10 s failsafe – if any check hangs we still open the dashboard
+      // ── Step 1: Fetch all onboarding boolean flags in a single lean call ────
+      // This replaces the old multi-call waterfall (KYC by clerkId, KYC by email,
+      // phone status) with one server-computed, PII-free response.
+      let panKycDone = false;
+      let phoneDone  = false;
+      let esignDone  = false;
+
+      if (adminStatus) {
+        // Admin: treat everything as complete
+        panKycDone = true;
+        phoneDone  = true;
+        esignDone  = true;
+        setKycResult({
+          success: true,
+          message: 'As an admin, KYC verification is optional',
+          data: { fullName: currentUser.name, isVerified: true },
+          isAlreadyVerified: true,
+          isAdminBypass: true
+        });
+      } else if (currentUser.id) {
+        try {
+          const statusResp = await userAPI.getOnboardingStatus(currentUser.id);
+          if (statusResp?.success) {
+            const vs = statusResp.verificationStatus || {};
+            panKycDone = vs.panKyc === true;
+            phoneDone  = vs.phone  === true;
+            esignDone  = vs.esign  === true;
+
+            if (panKycDone) {
+              setKycResult({ success: true, message: 'KYC verification already completed', isAlreadyVerified: true });
+              setPanStatus({ checking: false, verified: true, validated: true, existsForOther: false, message: 'PAN already verified for your account' });
+            }
+          }
+        } catch (err) {
+          console.error('[Dashboard] onboarding-status fetch failed:', err.message);
+        }
+      }
+
+      // Apply the KYC/phone/esign step state immediately before other checks run
+      setKycCheckCompleted(panKycDone || !currentUser.id);
+      setIsLoading(false);
+
+      if (panKycDone) {
+        setSteps(prev => ({
+          ...prev,
+          kyc:     { ...prev.kyc,     completed: true, active: true },
+          phone:   { ...prev.phone,   active: true, completed: phoneDone },
+          signing: { ...prev.signing, active: true, completed: esignDone },
+          payment: { ...prev.payment, active: true }
+        }));
+        setIaSteps(prev => ({
+          ...prev,
+          kyc:   { ...prev.kyc,   completed: true, active: true },
+          phone: { ...prev.phone, completed: phoneDone, active: true }
+        }));
+      }
+
+      if (esignDone) {
+        // Signing step is complete — apply via the helper so IA/RA is handled correctly
+        const storedSvcType = getStoredEsignServiceType();
+        applyCompletedEsignState(storedSvcType);
+        clearStoredEsignSession();
+      }
+
+      // ── Step 2: Remaining parallel checks (not PII-sensitive) ──────────────
       await Promise.race([
         Promise.allSettled([
 
-        // ── 1. Esign: active document ─────────────────────────────────────────
-        (async () => {
-          try {
-            const response = await esignAPI.getActiveDocument();
-            if (response.success && response.data.documentId) {
-              const status = response.data.status;
-              const isCompleted = status === 'COMPLETED' || status === 'completed';
-              // Prefer server-provided serviceType when available so we update
-              // the correct IA/RA step set. Fall back to stored type.
-              const serviceTypeFromResp = response.data.serviceType || getStoredEsignServiceType();
-              if (isCompleted) {
-                applyCompletedEsignState(serviceTypeFromResp);
-                clearStoredEsignSession();
+          // ── Active esign document (for in-progress sessions) ──────────────
+          (async () => {
+            if (adminStatus || esignDone) return; // already handled
+            try {
+              const response = await esignAPI.getActiveDocument();
+              if (response.success && response.data.documentId) {
+                const status = response.data.status;
+                const isCompleted = status === 'COMPLETED' || status === 'completed';
+                const serviceTypeFromResp = response.data.serviceType || getStoredEsignServiceType();
+                if (isCompleted) {
+                  applyCompletedEsignState(serviceTypeFromResp);
+                  clearStoredEsignSession();
+                } else {
+                  setActiveDocumentId(response.data.documentId);
+                  localStorage.setItem('active_esign_document_id', response.data.documentId);
+                  if (response.data.serviceType) {
+                    localStorage.setItem('active_esign_service_type', response.data.serviceType);
+                  }
+                }
+              }
+            } catch (err) {
+              console.log('No active document found:', err.message);
+            }
+          })(),
+
+          // ── Active subscription ───────────────────────────────────────────
+          (async () => {
+            try {
+              const subResponse = await userSubscriptionAPI.getActiveSubscription(currentUser.id);
+              if (subResponse.success && subResponse.data) {
+                const subscriptions = Array.isArray(subResponse.data) ? subResponse.data : [subResponse.data];
+                if (subscriptions.length > 0) {
+                  setActiveSubscription(subscriptions[0]);
+                  setSteps(prev => ({ ...prev, payment: { ...prev.payment, completed: true, active: true } }));
+                  const raSubscription = subscriptions.find((entry) => {
+                    const serviceType = entry.serviceType || entry.subscription?.serviceType;
+                    return String(serviceType || '').toUpperCase() === 'RA';
+                  });
+                  setActiveRaSubscription(raSubscription || null);
+                }
               } else {
-                setActiveDocumentId(response.data.documentId);
-                localStorage.setItem('active_esign_document_id', response.data.documentId);
-                if (response.data.serviceType) {
-                  localStorage.setItem('active_esign_service_type', response.data.serviceType);
+                setActiveRaSubscription(null);
+              }
+            } catch (err) { /* No active subscription */ }
+          })(),
+
+          // ── QR / manual payment request statuses ─────────────────────────
+          (async () => {
+            try {
+              const prResponse = await paymentRequestAPI.getMyRequests();
+              if (prResponse?.data) {
+                const requests = Array.isArray(prResponse.data) ? prResponse.data : prResponse.data?.data || [];
+                setPendingPaymentRequests(requests);
+                const approvedIa = requests.some(r => String(r.serviceType || '').toUpperCase() === 'IA' && String(r.status || '').toLowerCase() === 'approved');
+                if (approvedIa) {
+                  setIaSteps(prev => ({ ...prev, payment: { ...prev.payment, completed: true } }));
                 }
               }
-            }
-          } catch (err) {
-            console.log('No active document found:', err.message);
-          }
-        })(),
+            } catch (err) { /* No payment requests yet */ }
+          })(),
 
-        // ── 2. KYC status ─────────────────────────────────────────────────────
-        (async () => {
-          try {
-            setIsLoading(true);
-            if (adminStatus) {
-              setKycResult({
-                success: true,
-                message: 'As an admin, KYC verification is optional',
-                data: { fullName: currentUser.name, isVerified: true },
-                isAlreadyVerified: true,
-                isAdminBypass: true
-              });
-              setSteps(prev => ({
-                phone: { ...prev.phone, completed: true },
-                kyc: { ...prev.kyc, completed: true, active: true },
-                signing: { ...prev.signing, completed: true, active: true },
-                payment: { ...prev.payment, completed: true, active: true }
-              }));
-              setKycCheckCompleted(true);
-              return;
-            }
-            let isVerified = false;
-            if (currentUser.id && !isVerified) {
-              try {
-                const response = await userAPI.getKYCStatusByClerkId(currentUser.id);
-                if (response.success && response.kycStatus?.isVerified) {
-                  setKycResult({ success: true, message: 'KYC verification already completed', data: response.kycStatus, isAlreadyVerified: true });
-                  if (response.kycStatus.panNumber) {
-                    setKycForm(prev => ({ ...prev, pan: response.kycStatus.panNumber }));
-                    setPanStatus({ checking: false, verified: true, validated: true, existsForOther: false, message: 'PAN already verified for your account' });
-                  }
-                  setSteps(prev => ({ ...prev, kyc: { ...prev.kyc, completed: true, active: true }, phone: { ...prev.phone, active: true }, signing: { ...prev.signing, active: true }, payment: { ...prev.payment, active: true } }));
-                  isVerified = true;
+          // ── Questionnaire response ────────────────────────────────────────
+          (async () => {
+            try {
+              if (currentUser?.id) {
+                const qResponse = await questionnaireAPI.getMyResponse();
+                if (qResponse.success && qResponse.data) {
+                  setIaSteps(prev => ({
+                    ...prev,
+                    questionnaire: { ...prev.questionnaire, completed: true, active: true },
+                    signing: { ...prev.signing, active: true }
+                  }));
                 }
-              } catch (err) { /* No KYC status by clerkId */ }
-            }
-            if (currentUser.email && !isVerified) {
-              try {
-                const response = await userAPI.getKYCStatusByEmail(currentUser.email);
-                if (response.success && response.kycStatus?.isVerified) {
-                  setKycResult({ success: true, message: 'KYC verification already completed', data: response.kycStatus, isAlreadyVerified: true });
-                  if (response.kycStatus.panNumber) {
-                    setKycForm(prev => ({ ...prev, pan: response.kycStatus.panNumber }));
-                    setPanStatus({ checking: false, verified: true, validated: true, existsForOther: false, message: 'PAN already verified for your account' });
-                  }
-                  setSteps(prev => ({ ...prev, kyc: { ...prev.kyc, completed: true, active: true }, phone: { ...prev.phone, active: true }, signing: { ...prev.signing, active: true }, payment: { ...prev.payment, active: true } }));
-                  isVerified = true;
-                }
-              } catch (err) { /* No KYC status by email */ }
-            }
-            setKycCheckCompleted(true);
-          } catch (err) {
-            console.error('Error checking KYC status:', err);
-          } finally {
-            setIsLoading(false);
-          }
-        })(),
-
-        // ── 3. Phone verification ──────────────────────────────────────────────
-        (async () => {
-          if (adminStatus) return;
-          try {
-            const response = await phoneAPI.checkPhoneStatus();
-            if (response.success && response.phoneVerified) {
-              setSteps(prev => ({ ...prev, phone: { ...prev.phone, completed: true } }));
-              // Mirror phone into IA steps too (carry-over for RA customers)
-              setIaSteps(prev => ({ ...prev, phone: { ...prev.phone, completed: true } }));
-              setPhoneForm({ phone: response.phone || '', otp: '' });
-            }
-          } catch (err) { /* Phone not verified yet */ }
-        })(),
-
-        // ── 4. Active subscription ─────────────────────────────────────────────
-        (async () => {
-          try {
-            const subResponse = await userSubscriptionAPI.getActiveSubscription(currentUser.id);
-            if (subResponse.success && subResponse.data) {
-              const subscriptions = Array.isArray(subResponse.data) ? subResponse.data : [subResponse.data];
-              if (subscriptions.length > 0) {
-                setActiveSubscription(subscriptions[0]);
-                setSteps(prev => ({ ...prev, payment: { ...prev.payment, completed: true, active: true } }));
-                const raSubscription = subscriptions.find((entry) => {
-                  const serviceType = entry.serviceType || entry.subscription?.serviceType;
-                  return String(serviceType || '').toUpperCase() === 'RA';
-                });
-                setActiveRaSubscription(raSubscription || null);
               }
-            } else {
-              setActiveRaSubscription(null);
-            }
-          } catch (err) { /* No active subscription */ }
-        })(),
-
-        // ── 5. QR / manual payment request statuses ───────────────────────────
-        (async () => {
-          try {
-            const prResponse = await paymentRequestAPI.getMyRequests();
-            if (prResponse?.data) {
-              const requests = Array.isArray(prResponse.data) ? prResponse.data : prResponse.data?.data || [];
-              setPendingPaymentRequests(requests);
-              // If user has an approved IA payment request, persist IA payment completion
-              const approvedIa = requests.some(r => String(r.serviceType || '').toUpperCase() === 'IA' && String(r.status || '').toLowerCase() === 'approved');
-              if (approvedIa) {
-                setIaSteps(prev => ({ ...prev, payment: { ...prev.payment, completed: true } }));
-              }
-            }
-          } catch (err) { /* No payment requests yet */ }
-        })(),
-
-        // ── 6. Questionnaire response ──────────────────────────────────────────
-        (async () => {
-          try {
-            if (currentUser?.id) {
-              const qResponse = await questionnaireAPI.getMyResponse();
-              if (qResponse.success && qResponse.data) {
-                setIaSteps(prev => ({
-                  ...prev,
-                  questionnaire: { ...prev.questionnaire, completed: true, active: true },
-                  signing: { ...prev.signing, active: true } // unlock signing if questionnaire is done
-                }));
-              }
-            }
-          } catch (err) { /* No questionnaire response yet */ }
-        })(),
+            } catch (err) { /* No questionnaire response yet */ }
+          })(),
 
         ]),
-        // Fallback so the dashboard never hangs if a check stalls
+        // Failsafe — dashboard never hangs if a check stalls
         new Promise(resolve => setTimeout(resolve, 10_000)),
       ]);
 
       // ── Determine onboarding phase after all checks ─────────────────────────
-      // We read step state via a snapshot inside the setter to get latest values
       setSteps(prev => {
-        // Determine phase based on resolved step state
-        const kycDone = prev.kyc.completed;
+        const kycDone     = prev.kyc.completed;
         const paymentDone = prev.payment.completed;
         const signingDone = prev.signing.completed;
         const storedServiceType = String(localStorage.getItem('selected_onboarding_service_type') || '').toUpperCase();
         const preferredServiceType = storedServiceType === 'IA' ? 'IA' : 'RA';
         if (adminStatus || (kycDone && paymentDone && signingDone)) {
-          // Setup complete – go straight to dashboard
           setOnboardingPhase('done');
           setSelectedServices(new Set(['RA']));
           clearStoredOnboardingSelection();
         } else {
-          // Has KYC done → returning user, send them to their selected onboarding flow
           if (kycDone) {
             if (preferredServiceType === 'IA') {
               setOnboardingPhase('onboarding-ia');
@@ -536,11 +522,10 @@ const Dashboard = () => {
               setSelectedServices(new Set(['RA']));
             }
           } else {
-            // Brand new user – show service selector
             setOnboardingPhase('selecting');
           }
         }
-        return prev; // no change to steps itself
+        return prev;
       });
 
       setDashboardReady(true);
@@ -549,6 +534,7 @@ const Dashboard = () => {
     initDashboard();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, currentUser]);
+
 
   // Handle e-sign completion redirect
   useEffect(() => {

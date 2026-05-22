@@ -79,22 +79,7 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      // First, check if user exists by email
-      try {
-        const response = await userAPI.getUserByEmail(maybeClerkUser.primaryEmailAddress.emailAddress);
-        if (response?.user) {
-          setCurrentUser(prev => prev ? ({
-            ...prev,
-            ...response.user,
-            role: response.user.role || prev.role || 'customer'
-          }) : response.user);
-        }
-        return response.user;
-      } catch (error) {
-        // User not found, proceed with creation
-      }
-
-      // If user doesn't exist, create them
+      // Backend /users/create is idempotent: create on first login and sync on repeats.
       const response = await userAPI.createUser({
         clerkId: maybeClerkUser.id,
         email: maybeClerkUser.primaryEmailAddress.emailAddress,
@@ -113,6 +98,15 @@ export const AuthProvider = ({ children }) => {
       return response.user;
     } catch (err) {
       console.error('❌ USER CREATION FAILED:', err.message);
+
+      // Fallback: if create call races with another client and returns conflict,
+      // or token refresh timing causes a transient failure, attempt clerkId lookup.
+      try {
+        const fallback = await userAPI.getUserByClerkId(maybeClerkUser.id);
+        return fallback?.user;
+      } catch (fallbackErr) {
+        console.error('❌ USER LOOKUP FALLBACK FAILED:', fallbackErr.message);
+      }
     }
   };
 

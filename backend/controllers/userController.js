@@ -20,25 +20,55 @@ export const createUser = async (req, res) => {
       });
     }
 
+    const normalizedEmail = email.toLowerCase();
+
     // Check if user already exists
     const existingUser = await User.findOne({ 
       $or: [
         { clerkId: finalClerkId },
-        { email: email.toLowerCase() }
+        { email: normalizedEmail }
       ]
     });
     
     if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        error: 'User already exists'
+      let updated = false;
+
+      // Keep clerk mapping in sync (useful if the same verified email was
+      // re-created in Clerk and received a new clerkId).
+      if (existingUser.clerkId !== finalClerkId) {
+        existingUser.clerkId = finalClerkId;
+        updated = true;
+      }
+
+      if (existingUser.email !== normalizedEmail) {
+        existingUser.email = normalizedEmail;
+        updated = true;
+      }
+
+      const desiredName = name || normalizedEmail.split('@')[0];
+      if (desiredName && existingUser.name !== desiredName) {
+        existingUser.name = desiredName;
+        updated = true;
+      }
+
+      if (typeof isVerified === 'boolean' && existingUser.isVerified !== isVerified) {
+        existingUser.isVerified = isVerified;
+        updated = true;
+      }
+
+      const syncedUser = updated ? await existingUser.save() : existingUser;
+
+      return res.status(200).json({
+        success: true,
+        message: updated ? 'User synced successfully' : 'User already exists',
+        user: syncedUser
       });
     }
 
-    console.log(' NEW USER CREATING:', email.toLowerCase());
+    console.log(' NEW USER CREATING:', normalizedEmail);
     const user = new User({
       clerkId: finalClerkId,
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       name: name || email.split('@')[0],
       isVerified: isVerified || false
     });

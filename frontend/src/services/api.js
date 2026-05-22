@@ -191,8 +191,27 @@ export const userAPI = {
         throw new Error(message);
       }
     });
+  },
+
+  /**
+   * Get onboarding status — lean endpoint, returns ONLY booleans.
+   * { verificationStatus: { panKyc, phone, esign }, clientTypes: { RA, IA }, role }
+   * Never returns raw PII. Used by Dashboard on mount.
+   */
+  getOnboardingStatus: async (clerkId) => {
+    return debounce(`onboarding_status_${clerkId}`, async () => {
+      try {
+        const res = await api.get(`/users/clerk/${clerkId}/onboarding-status`);
+        return res.data;
+      } catch (err) {
+        const { message } = extractError(err);
+        console.error('Error fetching onboarding status:', message);
+        throw new Error(message);
+      }
+    });
   }
 };
+
 
 export const adminAPI = {
   // Get admin dashboard data
