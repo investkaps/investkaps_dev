@@ -59,76 +59,43 @@ const UserSchema = new mongoose.Schema({
       default: null
     }
   },
+  // ── Verification Status Flags ──────────────────────────────────────────────
+  // These are the ONLY onboarding status values the frontend ever reads.
+  // Sensitive data (PAN, DOB, CAMS blobs) lives exclusively in KycVerification
+  // and Document schemas — never on this document.
+  //
+  // null  = step not yet started
+  // true  = step completed successfully
+  // false = step attempted but failed / blocked
+  verificationStatus: {
+    panKyc: {
+      type: Boolean,
+      default: null  // null = not started
+    },
+    phone: {
+      type: Boolean,
+      default: null  // null = not started
+    },
+    esign: {
+      type: Boolean,
+      default: null  // null = not started
+    }
+  },
+
   kycStatus: {
     isVerified: {
       type: Boolean,
       default: false
     },
-    panNumber: {
-      type: String,
-      trim: true,
-      default: null,
-      index: true  // Index for fast duplicate PAN checks
-    },
-    aadhaarNumber: {
-      type: String,
-      trim: true,
-      default: null
-    },
     verifiedAt: {
       type: Date,
       default: null
     },
-    // Reference to the latest successful KYC verification
+    // Reference to the latest successful KYC verification record
+    // Raw PAN/DOB/CAMS data lives there, NOT here.
     latestVerification: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'KycVerification',
-      default: null
-    },
-    // Full name from KYC verification
-    fullName: {
-      type: String,
-      trim: true,
-      default: null
-    },
-    // Father's name from KYC verification
-    fatherName: {
-      type: String,
-      trim: true,
-      default: null
-    },
-    // Date of birth from KYC verification
-    dob: {
-      type: String,
-      default: null
-    },
-    // Gender from KYC verification
-    gender: {
-      type: String,
-      trim: true,
-      default: null
-    },
-    // Nationality from KYC verification
-    nationality: {
-      type: String,
-      trim: true,
-      default: null
-    },
-    // Address from KYC verification
-    address: {
-      type: String,
-      trim: true,
-      default: null
-    },
-    // Mobile from KYC verification
-    mobile: {
-      type: String,
-      trim: true,
-      default: null
-    },
-    // CAMS KRA data (raw responses from CAMS APIs)
-    camsData: {
-      type: Object,
       default: null
     },
     // Per-user KYC attempt tracking (max 3 failed attempts then blocked)
@@ -193,8 +160,9 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
-// Compound index for fast PAN verification checks
-UserSchema.index({ 'kycStatus.panNumber': 1, 'kycStatus.isVerified': 1 });
+// Index for fast onboarding status lookups
+UserSchema.index({ 'verificationStatus.panKyc': 1 });
+UserSchema.index({ 'kycStatus.isVerified': 1 });
 
 // Update the updatedAt field on save
 UserSchema.pre('save', function(next) {

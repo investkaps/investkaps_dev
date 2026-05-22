@@ -3892,3 +3892,5 @@
 2026-05-15 15:05:25 info: GET /api/setup/admin-status {"ip":"::1"}
 2026-05-15 15:05:25 info: GET /api/admin/dashboard {"ip":"::1"}
 2026-05-15 15:05:26 info: GET /api/admin/dashboard {"ip":"::1"}
+2026-05-22 17:47:45 info: GET / {"ip":"::1"}
+2026-05-22 17:47:45 info: GET /favicon.ico {"ip":"::1"}

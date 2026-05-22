@@ -27,4 +27,9 @@ router.get('/email/:email/kyc', verifyToken, userController.getUserKYCStatusByEm
 router.get('/clerk/:clerkId/kyc/history', verifyToken, userController.getUserKYCHistory);
 router.get('/email/:email/kyc/history', verifyToken, userController.getUserKYCHistoryByEmail);
 
+// ── Onboarding status (lean endpoint — booleans only, no PII) ─────────────────
+// Used by the Dashboard to determine step completion without touching raw data.
+router.get('/clerk/:clerkId/onboarding-status', verifyToken, userController.getOnboardingStatus);
+
 export default router;
+

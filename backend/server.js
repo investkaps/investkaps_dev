@@ -36,13 +36,31 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Cloud Run sits behind Google Front End / load balancers, so Express must
+// trust forwarded headers for correct client IPs and protocol detection.
+app.set('trust proxy', 1);
+
 // ─── Middleware ───
-const allowedOrigins = [
+const allowedOrigins = new Set([
   'http://localhost:5173',
   'https://investkaps.com',
-  'https://www.investkaps.com'
-];
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+  'https://www.investkaps.com',
+  ...String(process.env.FRONTEND_URLS || process.env.FRONTEND_URL || '')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean)
+]);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.has(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(null, false);
+  },
+  credentials: true
+}));
 // Security headers: X-Content-Type-Options, X-Frame-Options, Referrer-Policy, etc.
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'same-site' },

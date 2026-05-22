@@ -170,14 +170,20 @@ export const verifyAndSaveKYC = async (req, res) => {
       });
     }
     
-    const existingPan = await User.findOne({ 
-      'kycStatus.panNumber': sanitizedPAN, 
-      'kycStatus.isVerified': true 
-    }).select('_id email clerkId kycStatus.verifiedAt kycStatus.camsData');
-    
-    if (existingPan) {
-      const isSameUser = req.user && req.user._id.equals(existingPan._id);
-      
+    // Check if THIS user has already verified with any PAN (look at KycVerification records)
+    const existingVerifiedRecord = await KycVerification.findOne({
+      pan: sanitizedPAN,
+      status: 'success',
+      kycStatus: 'VERIFIED'
+    }).select('_id user clerkId');
+
+    if (existingVerifiedRecord) {
+      // Determine if it belongs to the same user
+      const isSameUser = req.user && (
+        (existingVerifiedRecord.user && existingVerifiedRecord.user.equals(req.user._id)) ||
+        (existingVerifiedRecord.clerkId && existingVerifiedRecord.clerkId === req.clerkId)
+      );
+
       if (!isSameUser) {
         return res.status(409).json({
           success: false,
@@ -186,36 +192,17 @@ export const verifyAndSaveKYC = async (req, res) => {
           requestId: requestId
         });
       }
-      
-      // Same user re-verifying
+
+      // Same user re-verifying — return their existing verification status
       return res.json({
         success: true,
         isAlreadyVerified: true,
         isVerified: true,
         message: 'Your KYC verification has already been completed successfully',
-        data: {
-          Name: { value: existingPan.kycStatus.fullName || existingPan.kycStatus.camsData?.fullName || 'N/A', description: 'Full Name' },
-          FatherName: { value: existingPan.kycStatus.fatherName || existingPan.kycStatus.camsData?.fatherName || 'N/A', description: 'Father Name' },
-          PAN: { value: sanitizedPAN, description: 'PAN Number' },
-          Status: { value: existingPan.kycStatus.camsData?.kycStatus || 'VERIFIED', description: existingPan.kycStatus.camsData?.statusDescription || 'KYC Status' },
-          StatusCode: { value: existingPan.kycStatus.camsData?.camsStatusCode || 'N/A', description: 'CAMS Status Code' },
-          DOB: { value: existingPan.kycStatus.dob || existingPan.kycStatus.camsData?.dob || sanitizedDOB, description: 'Date of Birth' },
-          Gender: { value: existingPan.kycStatus.gender || existingPan.kycStatus.camsData?.gender || 'N/A', description: 'Gender' },
-          Nationality: { value: existingPan.kycStatus.nationality || existingPan.kycStatus.camsData?.nationality || 'N/A', description: 'Nationality' },
-          Address: { value: existingPan.kycStatus.address || existingPan.kycStatus.camsData?.address || 'N/A', description: 'Address' },
-          Mobile: { value: existingPan.kycStatus.mobile || existingPan.kycStatus.camsData?.mobile || 'N/A', description: 'Mobile Number' },
-          KYCMode: { value: existingPan.kycStatus.camsData?.kycMode || 'N/A', description: 'KYC Mode' },
-          SignFlag: { value: existingPan.kycStatus.camsData?.signFlag || 'N/A', description: 'Signature Available' },
-          IPVFlag: { value: existingPan.kycStatus.camsData?.ipvFlag || 'N/A', description: 'IPV Completed' },
-          IPVDate: { value: existingPan.kycStatus.camsData?.ipvDate || 'N/A', description: 'IPV Date' },
-          ApplicationNo: { value: existingPan.kycStatus.camsData?.applicationNo || 'N/A', description: 'Application Number' },
-          RegistrationDate: { value: existingPan.kycStatus.camsData?.registrationDate || 'N/A', description: 'Registration Date' }
-        },
-        verifiedAt: existingPan.kycStatus.verifiedAt,
         requestId: requestId
       });
     }
-    
+
     // ── Per-user KYC attempt tracking: block after 3 failed verification attempts ──
     if (req.user) {
       const freshUser = await User.findById(req.user._id).select('kycStatus.kycBlocked kycStatus.kycAttempts');
@@ -405,40 +392,21 @@ export const verifyAndSaveKYC = async (req, res) => {
 
     if (req.user) {
       const isVerified = isKYCVerified(extractedData.camsStatusCode);
-      
+
+      // ── Update User flags only ───────────────────────────────────────────────────
+      // Raw PII (name, DOB, gender, address, CAMS blobs) is stored ONLY in
+      // the KycVerification document (record._id).  The User document only
+      // gets the boolean summary + reference pointer.
       const updateData = {
-        "kycStatus.panNumber": sanitizedPAN,
-        "kycStatus.isVerified": isVerified,
-        "kycStatus.verifiedAt": isVerified ? new Date() : null,
-        "kycStatus.fullName": extractedData.fullName,
-        "kycStatus.fatherName": extractedData.fatherName,
-        "kycStatus.dob": extractedData.dob || sanitizedDOB,
-        "kycStatus.gender": extractedData.gender,
-        "kycStatus.nationality": extractedData.nationality,
-        "kycStatus.address": extractedData.address,
-        "kycStatus.mobile": extractedData.mobile,
-        "kycStatus.camsData": {
-          fullName: extractedData.fullName,
-          fatherName: extractedData.fatherName,
-          gender: extractedData.gender,
-          nationality: extractedData.nationality,
-          address: extractedData.address,
-          mobile: extractedData.mobile,
-          kycStatus: extractedData.kycStatus,
-          camsStatusCode: extractedData.camsStatusCode,
-          statusDescription: extractedData.statusDescription,
-          kycMode: extractedData.kycMode,
-          signFlag: extractedData.signFlag,
-          ipvFlag: extractedData.ipvFlag,
-          ipvDate: extractedData.ipvDate,
-          applicationNo: extractedData.applicationNo,
-          registrationDate: extractedData.registrationDate,
-          lastChecked: new Date()
-        }
+        'kycStatus.isVerified': isVerified,
+        'kycStatus.verifiedAt': isVerified ? new Date() : null,
+        'kycStatus.latestVerification': record._id,
+        // Boolean summary flag — this is what the frontend/dashboard reads
+        'verificationStatus.panKyc': isVerified ? true : false,
       };
-      
+
       await User.updateOne({ _id: req.user._id }, updateData);
-      logger.info('User KYC status updated', { requestId, userId: req.user._id });
+      logger.info('User KYC status updated', { requestId, userId: req.user._id, isVerified });
     }
 
     const duration = Date.now() - startTime;
@@ -592,19 +560,22 @@ export const checkPANExists = async (req, res) => {
     }
     const sanitizedPAN = pan.toUpperCase().trim();
 
-    const exists = !!(await User.exists({ 
-      'kycStatus.panNumber': sanitizedPAN,
-      'kycStatus.isVerified': true
-    })) || !!(await KycVerification.exists({ 
-      pan: sanitizedPAN, 
-      status: 'success' 
+    // Check KycVerification collection (source of truth for PAN records)
+    const exists = !!(await KycVerification.exists({
+      pan: sanitizedPAN,
+      status: 'success',
+      kycStatus: 'VERIFIED'
     }));
 
     // If the requesting user owns this PAN, tell them it's already done.
-    // For any other caller (or anonymous): only reveal exists=true/false.
-    const isSameUser = req.user && (
-      await User.exists({ _id: req.user._id, 'kycStatus.panNumber': sanitizedPAN, 'kycStatus.isVerified': true })
-    );
+    const isSameUser = exists && req.user && !!(await KycVerification.exists({
+      pan: sanitizedPAN,
+      status: 'success',
+      $or: [
+        { user: req.user._id },
+        { clerkId: req.clerkId }
+      ]
+    }));
 
     return res.json({
       success: true,
@@ -615,7 +586,7 @@ export const checkPANExists = async (req, res) => {
             ? 'Your KYC has already been completed for this PAN'
             : 'This PAN is already registered')
         : 'PAN not found in system'
-      // Deliberately no user object – avoids leaking other users\' PII
+      // Deliberately no user object – avoids leaking other users' PII
     });
   } catch (err) {
     logger.error('Error checking PAN existence', { error: err.message });

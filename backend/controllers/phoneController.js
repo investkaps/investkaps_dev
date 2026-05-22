@@ -179,6 +179,9 @@ export const verifyOTP = async (req, res) => {
         if (user) {
           user.profile.phone = phone;
           user.profile.phoneVerified = true;
+          // Mirror to verificationStatus flag — this is what the dashboard reads
+          if (!user.verificationStatus) user.verificationStatus = {};
+          user.verificationStatus.phone = true;
           await user.save();
 
           logger.info(`User phone updated in DB: ${user.profile.phone}`);

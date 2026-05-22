@@ -6,6 +6,7 @@ export const globalLimiter = rateLimit({
   max: 300,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => req.path === '/' || req.path === '/health' || req.path === '/_ah/health',
   message: { success: false, error: 'Too many requests, please try again later' }
 });
 

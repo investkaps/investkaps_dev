@@ -321,7 +321,7 @@ router.get('/esign/document/:documentId', verifyToken, async (req, res) => {
       document.esign.signedAt = new Date();
       document.esign.completedAt = new Date();
       
-      // Update User's clientTypes when agreement is completed
+      // Update User's clientTypes AND verificationStatus when agreement is completed
       const User = (await import('../model/User.js')).default;
       const serviceType = document.serviceType || 'RA';
       
@@ -338,12 +338,16 @@ router.get('/esign/document/:documentId', verifyToken, async (req, res) => {
           user.clientTypes[serviceType].isCompleted = true;
           user.clientTypes[serviceType].completedAt = new Date();
           user.clientTypes[serviceType].agreementDocumentId = document._id;
+
+          // Set the boolean flag — this is what the dashboard reads
+          if (!user.verificationStatus) user.verificationStatus = {};
+          user.verificationStatus.esign = true;
           
           await user.save();
-          console.log(`✅ Updated user ${userId} clientTypes.${serviceType} to completed`);
+          console.log(`✅ Updated user ${userId} clientTypes.${serviceType} + verificationStatus.esign = true`);
         }
       } catch (userUpdateError) {
-        logger.error('Error updating user clientTypes:', userUpdateError);
+        logger.error('Error updating user clientTypes/verificationStatus:', userUpdateError);
         // Don't fail the request if user update fails
       }
     }
@@ -494,6 +498,18 @@ router.post('/esign/webhook', async (req, res) => {
         document.esign.status = 'COMPLETED';
         document.esign.signedAt = new Date();
         document.esign.completedAt = new Date();
+
+        // Also update the User's verificationStatus.esign flag via webhook
+        try {
+          const User = (await import('../model/User.js')).default;
+          await User.updateOne(
+            { _id: document.user },
+            { $set: { 'verificationStatus.esign': true } }
+          );
+          logger.info('[ESIGN WEBHOOK] verificationStatus.esign set to true for user', { userId: document.user });
+        } catch (userErr) {
+          logger.error('[ESIGN WEBHOOK] Failed to update verificationStatus.esign:', userErr);
+        }
       }
 
       await document.save();

@@ -297,14 +297,16 @@ export const updateUserKYC = async (req, res) => {
       });
     }
     
-    // Update KYC fields
+    // Update KYC flags only (PII fields removed — they live in KycVerification)
     user.kycStatus = {
       ...user.kycStatus,
-      panNumber: panNumber || user.kycStatus.panNumber,
-      aadhaarNumber: aadhaarNumber || user.kycStatus.aadhaarNumber,
       isVerified: isVerified !== undefined ? isVerified : user.kycStatus.isVerified,
       verifiedAt: isVerified ? new Date() : user.kycStatus.verifiedAt
     };
+    // Keep verificationStatus.panKyc in sync
+    if (!user.verificationStatus) user.verificationStatus = {};
+    user.verificationStatus.panKyc = user.kycStatus.isVerified ? true : user.verificationStatus.panKyc;
+
     
     await user.save();
     
@@ -506,11 +508,9 @@ export const updateUserKYCByEmail = async (req, res) => {
       });
     }
     
-    // Update KYC fields
+    // Update KYC fields (only flags, not PII)
     user.kycStatus = {
       ...user.kycStatus,
-      panNumber: panNumber || user.kycStatus?.panNumber,
-      aadhaarNumber: aadhaarNumber || user.kycStatus?.aadhaarNumber,
       isVerified: isVerified !== undefined ? isVerified : user.kycStatus?.isVerified,
       verifiedAt: isVerified ? new Date() : user.kycStatus?.verifiedAt
     };
@@ -528,5 +528,57 @@ export const updateUserKYCByEmail = async (req, res) => {
       success: false,
       error: 'Internal server error'
     });
+  }
+};
+
+/**
+ * Get onboarding status — lean endpoint that returns ONLY boolean flags.
+ * Zero PII exposure. Used by the Dashboard to determine which steps are complete.
+ * Returns:
+ *   verificationStatus: { panKyc: bool|null, phone: bool|null, esign: bool|null }
+ *   clientTypes:        { RA: { isCompleted: bool }, IA: { isCompleted: bool } }
+ *   role:               'customer' | 'admin'
+ */
+export const getOnboardingStatus = async (req, res) => {
+  try {
+    // Support lookup by clerkId (param) or by the authenticated user
+    const clerkId = req.params.clerkId || req.clerkId;
+
+    if (!clerkId) {
+      return res.status(400).json({ success: false, error: 'clerkId is required' });
+    }
+
+    // IDOR guard: non-admin users can only fetch their own status
+    if (req.clerkId && req.clerkId !== clerkId && req.user?.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    const user = await User.findOne({ clerkId }).select(
+      'verificationStatus kycStatus.isVerified profile.phoneVerified clientTypes role'
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // Build the response — booleans only, no PII
+    // For backward-compat: if verificationStatus.phone is null but profile.phoneVerified
+    // is true (old records), treat it as true.
+    const panKyc = user.verificationStatus?.panKyc ?? (user.kycStatus?.isVerified ? true : null);
+    const phone  = user.verificationStatus?.phone  ?? (user.profile?.phoneVerified ? true : null);
+    const esign  = user.verificationStatus?.esign  ?? null;
+
+    return res.status(200).json({
+      success: true,
+      verificationStatus: { panKyc, phone, esign },
+      clientTypes: {
+        RA: { isCompleted: user.clientTypes?.RA?.isCompleted ?? false },
+        IA: { isCompleted: user.clientTypes?.IA?.isCompleted ?? false }
+      },
+      role: user.role || 'customer'
+    });
+  } catch (error) {
+    console.error('Error getting onboarding status:', error);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };
