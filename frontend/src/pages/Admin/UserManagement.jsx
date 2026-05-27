@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminAPI } from '../../services/api';
+import { adminAPI, esignAPI } from '../../services/api';
 import subscriptionAPI from '../../services/subscriptionAPI';
 import './AdminDashboard.css';
 
@@ -14,6 +14,9 @@ const UserManagement = () => {
   const [deletingUserId, setDeletingUserId] = useState(null);
   const [deleteConfirmModal, setDeleteConfirmModal] = useState({ show: false, userId: null, userName: '', userEmail: '', userRole: '' });
   const [deleteSuccess, setDeleteSuccess] = useState(null);
+  // Signed PDF fetch state (admin panel)
+  const [fetchingAdminDocId, setFetchingAdminDocId] = useState(null);
+  const [fetchAdminError, setFetchAdminError]     = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -65,6 +68,34 @@ const UserManagement = () => {
       setError('Failed to load user details. Please try again later.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  /**
+   * Admin: fetch signed PDF from Leegality → Cloudinary for any user's document.
+   * Updates selectedUser state in-place so View/Download appears without reload.
+   */
+  const handleAdminFetchPdf = async (docId) => {
+    setFetchingAdminDocId(docId);
+    setFetchAdminError(null);
+    try {
+      const result = await esignAPI.adminFetchSignedPdf(docId);
+      if (result.success && result.url) {
+        setSelectedUser(prev => ({
+          ...prev,
+          documents: (prev.documents || []).map(d =>
+            String(d._id) === String(docId)
+              ? { ...d, esign: { ...d.esign, signedPdfUrl: result.url, signedPdfFetchedBy: result.fetchedBy } }
+              : d
+          )
+        }));
+      } else {
+        setFetchAdminError(result.error || 'Failed to fetch signed PDF.');
+      }
+    } catch (err) {
+      setFetchAdminError(err.message || 'Failed to fetch signed PDF.');
+    } finally {
+      setFetchingAdminDocId(null);
     }
   };
   
@@ -773,32 +804,134 @@ const UserManagement = () => {
               </div>
               
               <div className="admin-details-section">
-                <h4>Documents</h4>
-                {selectedUser.documents && selectedUser.documents.length > 0 ? (
-                  <div className="admin-table-container">
-                    <table className="admin-table">
-                      <thead>
-                        <tr>
-                          <th>Date</th>
-                          <th>Type</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedUser.documents.map((document) => (
-                          <tr key={document._id}>
-                            <td>{new Date(document.createdAt).toLocaleString()}</td>
-                            <td>{document.type}</td>
-                            <td>
-                              <span className={`status-badge ${document.status}`}>
-                                {document.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                <h4>Documents &amp; E-Sign Agreements</h4>
+
+                {fetchAdminError && (
+                  <div style={{
+                    background: '#f8d7da', color: '#721c24',
+                    border: '1px solid #f5c6cb', borderRadius: '6px',
+                    padding: '0.6rem 1rem', marginBottom: '0.75rem', fontSize: '0.875rem'
+                  }}>
+                    ⚠ {fetchAdminError}
                   </div>
+                )}
+
+                {selectedUser.documents && selectedUser.documents.length > 0 ? (
+                  selectedUser.documents.map((doc) => {
+                    const es = doc.esign || {};
+                    const esignStatus = String(es.status || es.currentStatus || '').toUpperCase();
+                    const isCompleted = esignStatus === 'COMPLETED';
+                    const hasPdf = !!es.signedPdfUrl;
+                    const isFetching = fetchingAdminDocId === String(doc._id);
+
+                    const statusColor = isCompleted
+                      ? { background: '#d4edda', color: '#155724' }
+                      : esignStatus === 'REJECTED'
+                      ? { background: '#f8d7da', color: '#721c24' }
+                      : { background: '#fff3cd', color: '#856404' };
+
+                    return (
+                      <div key={doc._id} style={{
+                        border: '1px solid #e9ecef',
+                        borderLeft: `4px solid ${isCompleted ? '#28a745' : '#ffc107'}`,
+                        borderRadius: '8px',
+                        padding: '1rem 1.25rem',
+                        marginBottom: '0.75rem',
+                        background: '#fff'
+                      }}>
+                        {/* Header row */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                          <div>
+                            <strong style={{ color: '#2c3e50', fontSize: '0.95rem' }}>{doc.name}</strong>
+                            {doc.serviceType && (
+                              <span style={{
+                                marginLeft: '0.5rem', fontSize: '0.7rem', fontWeight: 700,
+                                background: '#e8f0fe', color: '#3c4fe0',
+                                padding: '0.15rem 0.5rem', borderRadius: '10px'
+                              }}>{doc.serviceType}</span>
+                            )}
+                          </div>
+                          <span style={{
+                            ...statusColor,
+                            fontSize: '0.75rem', fontWeight: 700,
+                            padding: '0.25rem 0.7rem', borderRadius: '12px'
+                          }}>
+                            {esignStatus || 'UNKNOWN'}
+                          </span>
+                        </div>
+
+                        {/* Detail grid */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.5rem', fontSize: '0.83rem', color: '#495057', marginBottom: '0.9rem' }}>
+                          <div><span style={{ color: '#adb5bd', fontSize: '0.7rem', textTransform: 'uppercase' }}>Created</span><br />{new Date(doc.createdAt).toLocaleString()}</div>
+                          {es.documentId && <div><span style={{ color: '#adb5bd', fontSize: '0.7rem', textTransform: 'uppercase' }}>Leegality ID</span><br /><code style={{ fontSize: '0.8rem' }}>{es.documentId}</code></div>}
+                          {es.irn        && <div><span style={{ color: '#adb5bd', fontSize: '0.7rem', textTransform: 'uppercase' }}>IRN</span><br /><code style={{ fontSize: '0.8rem' }}>{es.irn}</code></div>}
+                          {es.signedPdfFetchedAt && <div><span style={{ color: '#adb5bd', fontSize: '0.7rem', textTransform: 'uppercase' }}>PDF Fetched</span><br />{new Date(es.signedPdfFetchedAt).toLocaleString()} ({es.signedPdfFetchedBy})</div>}
+                        </div>
+
+                        {/* Signed PDF action */}
+                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                          {hasPdf ? (
+                            <>
+                              <a
+                                href={es.signedPdfUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+                                  padding: '0.35rem 0.85rem', borderRadius: '6px',
+                                  background: '#e8f4fd', color: '#1a73c8',
+                                  fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none'
+                                }}
+                              >
+                                👁 View Agreement
+                              </a>
+                              <a
+                                href={`${es.signedPdfUrl}?fl_attachment=1`}
+                                download
+                                style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+                                  padding: '0.35rem 0.85rem', borderRadius: '6px',
+                                  background: '#e6f9f0', color: '#0a6640',
+                                  fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none'
+                                }}
+                              >
+                                ⬇ Download PDF
+                              </a>
+                            </>
+                          ) : isCompleted ? (
+                            <button
+                              onClick={() => handleAdminFetchPdf(doc._id)}
+                              disabled={isFetching}
+                              style={{
+                                display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                                padding: '0.35rem 0.9rem', borderRadius: '6px',
+                                background: isFetching ? '#f5f5f5' : '#fff8e1',
+                                color: '#7c5700', border: '1px solid #ffe082',
+                                fontSize: '0.82rem', fontWeight: 600,
+                                cursor: isFetching ? 'not-allowed' : 'pointer',
+                                opacity: isFetching ? 0.7 : 1
+                              }}
+                            >
+                              {isFetching ? (
+                                <>
+                                  <span style={{
+                                    display: 'inline-block', width: 12, height: 12,
+                                    border: '2px solid #ffe082', borderTopColor: '#7c5700',
+                                    borderRadius: '50%', animation: 'spin 0.7s linear infinite'
+                                  }} />
+                                  Fetching…
+                                </>
+                              ) : '📥 Fetch Signed PDF'}
+                            </button>
+                          ) : (
+                            <span style={{ fontSize: '0.8rem', color: '#6c757d' }}>
+                              PDF available after document is completed
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
                 ) : (
                   <div className="admin-empty-state">
                     <p>No documents available.</p>

@@ -294,4 +294,85 @@ async function getDocumentDetails(documentId, serviceType = 'RA') {
   }
 }
 
-export { createSignRequest, checkSignStatus, getDocumentDetails, generateRandomIRN };
+/**
+ * Fetch the completed signed PDF from Leegality using the v3.1 endpoint.
+ * The response body is the raw PDF binary (arraybuffer).
+ *
+ * IMPORTANT: This endpoint uses /api/v3.1/ (NOT v3.0 like the other calls).
+ *
+ * @param {string} documentId - The Leegality documentId (NOT the MongoDB _id)
+ * @param {string} serviceType - 'RA' | 'IA'  (selects correct auth token)
+ * @returns {Promise<{success:boolean, buffer?:Buffer, error?:string}>}
+ */
+async function fetchSignedDocument(documentId, serviceType = 'RA') {
+  const { authToken } = getLeegalityConfig(serviceType);
+
+  if (!documentId) {
+    return { success: false, error: 'documentId is required', httpStatus: 400 };
+  }
+
+  // v3.1 base URL — derived from the configured v3.0 base by replacing the version segment
+  const v31Base = (process.env.LEEGALITY_API_BASE || 'https://app1.leegality.com/api/v3.0')
+    .replace(/\/v3\.\d+\/?$/, '/v3.1');
+
+  const url = `${v31Base}/document/fetchDocument`;
+
+  makeLog('Fetching signed PDF from Leegality', 'INFO', { documentId, serviceType, url });
+
+  try {
+    const response = await axios.get(url, {
+      params: {
+        documentId,
+        documentDownloadType: 'DOCUMENT',
+      },
+      headers: {
+        'X-Auth-Token': authToken,
+        Accept: 'application/pdf',
+      },
+      responseType: 'arraybuffer', // Raw binary PDF bytes
+      timeout: 60_000, // 60s — signed PDFs can be large
+    });
+
+    // The response body IS the PDF bytes
+    const buffer = Buffer.from(response.data);
+
+    if (!buffer || buffer.length === 0) {
+      return { success: false, error: 'Leegality returned an empty PDF', httpStatus: 502 };
+    }
+
+    makeLog('Signed PDF fetched successfully', 'INFO', {
+      documentId,
+      bytes: buffer.length,
+    });
+
+    return { success: true, buffer };
+  } catch (err) {
+    const status = err.response?.status;
+    let errorMessage = err.message;
+
+    // Leegality returns JSON error bodies even for arraybuffer requests
+    if (err.response?.data) {
+      try {
+        const decoded = Buffer.from(err.response.data).toString('utf-8');
+        const parsed = JSON.parse(decoded);
+        errorMessage = parsed?.messages?.[0] || parsed?.error || decoded;
+      } catch {
+        // Not JSON — use the raw message
+      }
+    }
+
+    makeLog('Error fetching signed PDF', 'ERROR', {
+      documentId,
+      status,
+      error: errorMessage,
+    });
+
+    return {
+      success: false,
+      error: errorMessage,
+      httpStatus: status || 500,
+    };
+  }
+}
+
+export { createSignRequest, checkSignStatus, getDocumentDetails, fetchSignedDocument, generateRandomIRN };

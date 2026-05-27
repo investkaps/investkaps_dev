@@ -17,6 +17,14 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  /**
+   * `userReady` is true only after the backend user record (including `role`)
+   * has been successfully merged into `currentUser`. Consumers like Dashboard
+   * should gate their initial API calls on this flag rather than on just
+   * `!authLoading`, to avoid firing requests with a stale/missing JWT before
+   * the backend sync has completed.
+   */
+  const [userReady, setUserReady] = useState(false);
 
   // Clerk hooks
   const { isLoaded: clerkLoaded, user: clerkUser } = useUser();
@@ -110,6 +118,27 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Wait for Clerk to issue a valid JWT before making any backend call.
+   * Clerk's `getToken()` can return null during the hydration window even
+   * when `isSignedIn` is already true, so we retry with back-off.
+   */
+  const getReadyToken = async (retries = 5, delayMs = 300) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const token = typeof getClerkToken === 'function' ? await getClerkToken() : null;
+        const tokenString = typeof token === 'string' ? token : token?.jwt || null;
+        if (tokenString) return tokenString;
+      } catch (err) {
+        console.warn(`getReadyToken attempt ${i + 1} failed:`, err.message);
+      }
+      if (i < retries - 1) {
+        await new Promise(res => setTimeout(res, delayMs));
+      }
+    }
+    return null;
+  };
+
   // Sync Clerk -> local state and backend
   useEffect(() => {
     let mounted = true;
@@ -126,25 +155,22 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       try {
         const savedToken = localStorage.getItem('clerk_jwt');
-
         if (savedToken && !isTokenValid(savedToken)) {
           clearLocalAuth();
         }
 
-        if (clerkLoaded && clerkUser) {
+        if (clerkLoaded && clerkUser && clerkIsSignedIn) {
           try {
-            // Prefer Clerk hook getToken
-            let token = null;
-            if (typeof getClerkToken === 'function') {
-              token = await getClerkToken();
-            } else if (clerkUser?.getToken) {
-              token = await clerkUser.getToken();
+            // Wait for a valid Clerk JWT before hitting the backend.
+            // During Clerk's hydration window getToken() can return null even
+            // though isSignedIn is already true — retrying avoids false 401s.
+            const tokenString = await getReadyToken();
+            if (!tokenString) {
+              console.warn('⚠️ AUTH: Could not obtain Clerk JWT after retries — aborting backend sync');
+              if (mounted) setLoading(false);
+              return;
             }
-
-            const tokenString = typeof token === 'string' ? token : token?.jwt || null;
-            if (tokenString) {
-              localStorage.setItem('clerk_jwt', tokenString);
-            }
+            localStorage.setItem('clerk_jwt', tokenString);
 
             const user = {
               id: clerkUser.id,
@@ -178,6 +204,7 @@ export const AuthProvider = ({ children }) => {
                   mongoId: response.user?._id,
                   role: role
                 });
+                setUserReady(true);
               }
             } catch (err) {
               // If backend user not found, set the clerk user and create backend record
@@ -192,23 +219,28 @@ export const AuthProvider = ({ children }) => {
                   ...createdUser,
                   role: createdUser.role || prev?.role || 'customer'
                 }));
+                setUserReady(true);
+              } else if (mounted) {
+                // Creation failed — user object is Clerk-only; still mark ready
+                // so the dashboard doesn't hang indefinitely
+                setUserReady(true);
               }
             }
           } catch (err) {
             console.error('❌ AUTH: Error getting token from Clerk user:', err);
             clearLocalAuth();
-            if (mounted) setCurrentUser(null);
+            if (mounted) { setCurrentUser(null); setUserReady(false); }
           }
         } else {
           // Clerk is fully loaded and confirms no active session
           const tokenNow = localStorage.getItem('clerk_jwt');
           if (tokenNow && !isTokenValid(tokenNow)) clearLocalAuth();
-          if (mounted) setCurrentUser(null);
+          if (mounted) { setCurrentUser(null); setUserReady(false); }
         }
       } catch (err) {
         console.error('❌ AUTH: Error in checkAuthStatus:', err);
         clearLocalAuth();
-        if (mounted) setCurrentUser(null);
+        if (mounted) { setCurrentUser(null); setUserReady(false); }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -217,7 +249,7 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
     return () => { mounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clerkLoaded, clerkAuthLoaded, clerkUser]);
+  }, [clerkLoaded, clerkAuthLoaded, clerkIsSignedIn, clerkUser]);
 
   // sendOTP - same as before but guards if already signed in
   const sendOTP = async (email) => {
@@ -279,20 +311,19 @@ export const AuthProvider = ({ children }) => {
           await clerk.setActive({ session: result.createdSessionId });
         }
 
-        // Try to get token via Clerk auth hook
-        try {
-          if (typeof getClerkToken === 'function') {
-            const tokenObj = await getClerkToken();
-            const tokenString = typeof tokenObj === 'string' ? tokenObj : tokenObj?.jwt || null;
-            if (tokenString) localStorage.setItem('clerk_jwt', tokenString);
-          }
-        } catch (err) {
-          console.warn('Could not get token after OTP verification:', err);
+        // Wait for Clerk to issue a valid JWT after setActive — getToken() returns
+        // null for a brief window right after session activation.
+        const tokenString = await getReadyToken();
+        if (tokenString) {
+          localStorage.setItem('clerk_jwt', tokenString);
+        } else {
+          console.warn('⚠️ verifyOTP: no token after setActive — backend sync deferred to checkAuthStatus');
+          sessionStorage.removeItem('auth_email');
+          return { success: true, message: 'Login successful' };
         }
 
-        // Allow Clerk hooks to update clerkUser, but set a basic currentUser if clerkUser isn't available yet
+        // Token is ready — proceed to sync backend user
         try {
-          await new Promise(res => setTimeout(res, 400)); // give Clerk a moment
           const maybeUser = clerkUser || (clerk?.user ?? null);
           if (maybeUser) {
             const userObj = {
@@ -313,10 +344,8 @@ export const AuthProvider = ({ children }) => {
               }));
             }
           } else {
-            // If Clerk hasn't populated user, set minimal info but don't use session email
-            // We'll wait for Clerk to provide the proper email
+            // clerkUser not yet populated — checkAuthStatus will sync once Clerk settles
             setCurrentUser({ id: 'pending', name: 'User' });
-            // Backend create will be attempted when clerkUser becomes available (see checkAuthStatus)
           }
         } catch (err) {
           console.warn('Error updating user state after OTP:', err);
@@ -394,23 +423,20 @@ export const AuthProvider = ({ children }) => {
           await clerk.setActive({ session: completeSignUp.createdSessionId });
         }
 
-        // Attempt to get token and store it
-        try {
-          if (typeof getClerkToken === 'function') {
-            const tokenObj = await getClerkToken();
-            const tokenString = typeof tokenObj === 'string' ? tokenObj : tokenObj?.jwt || null;
-            if (tokenString) localStorage.setItem('clerk_jwt', tokenString);
-          }
-        } catch (err) {
-          console.warn('Could not fetch token after registration:', err);
+        // Wait for Clerk to issue a valid JWT after setActive — getToken() returns
+        // null for a brief window right after session activation.
+        const tokenString = await getReadyToken();
+        if (tokenString) {
+          localStorage.setItem('clerk_jwt', tokenString);
+        } else {
+          console.warn('⚠️ completeRegistration: no token after setActive — backend sync deferred to checkAuthStatus');
+          return { success: true, user: completeSignUp.createdUserId, message: 'Registration completed successfully!' };
         }
 
-        // Wait a short moment and then create backend user if clerkUser is available
+        // Token is ready — proceed to create backend user
         try {
-          await new Promise(res => setTimeout(res, 500));
           const maybeUser = clerkUser || (clerk?.user ?? null);
           if (maybeUser) {
-            // Set current user locally
             const userObj = {
               id: maybeUser.id,
               email: maybeUser.primaryEmailAddress?.emailAddress,
@@ -429,9 +455,8 @@ export const AuthProvider = ({ children }) => {
               }));
             }
           } else {
-            // clerkUser not available yet; checkAuthStatus will create the backend user later
-            console.warn('Clerk user not yet available after registration; will create backend user when Clerk loads');
-            // We only use Clerk email, so we must wait for Clerk to provide it
+            // clerkUser not yet populated — checkAuthStatus will sync once Clerk settles
+            console.warn('Clerk user not yet available after registration; backend sync deferred to checkAuthStatus');
           }
         } catch (err) {
           console.warn('Error creating backend user after registration:', err);
@@ -519,6 +544,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     currentUser,
     loading,
+    userReady,
     error,
     sendOTP,
     verifyOTP,

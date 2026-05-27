@@ -11,9 +11,13 @@ const api = axios.create({
 
 // Attach a fresh Clerk token to every request.
 // window.Clerk.session.getToken() silently refreshes the JWT if it is near
-// expiry, so we never send a stale / expired token.  We fall back to the
-// value cached in localStorage only when the Clerk session object is not yet
-// available (e.g. during the very first render).
+// expiry, so we never send a stale / expired token.
+//
+// PRODUCTION NOTE: After clerk.setActive(), window.Clerk.session is null for
+// ~300-800ms on production (India → US latency). During this window we must NOT
+// fall back to the stale localStorage token blindly — it belongs to the OLD
+// session and will be rejected with 401. Instead, we validate the cached
+// token's expiry before sending it as a fallback.
 api.interceptors.request.use(
   async (config) => {
     try {
@@ -26,11 +30,28 @@ api.interceptors.request.use(
         }
       }
     } catch (err) {
-      console.warn('Could not refresh Clerk token, falling back to cached token:', err);
+      console.warn('Could not refresh Clerk token, will check cached token:', err);
     }
-    // Fallback: use the last-known token stored in localStorage
+    // Fallback: only send the cached token if it is still valid.
+    // A stale/expired token will be rejected with 401 anyway, and sending it
+    // also bypasses any retry logic the caller might have.
     const token = localStorage.getItem('clerk_jwt');
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expiresAt = (payload.exp || 0) * 1000;
+        // Only attach if token has at least 30 seconds remaining
+        if (Date.now() < expiresAt - 30_000) {
+          config.headers.Authorization = `Bearer ${token}`;
+        } else {
+          // Token is expired or about to expire — don't send it
+          localStorage.removeItem('clerk_jwt');
+        }
+      } catch {
+        // Malformed token in localStorage — remove it
+        localStorage.removeItem('clerk_jwt');
+      }
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -828,6 +849,56 @@ export const esignAPI = {
     } catch (err) {
       const { message } = extractError(err);
       console.error('Error bypassing e-sign:', message);
+      throw new Error(message);
+    }
+  },
+
+  /**
+   * Fetch the signed PDF from Leegality and store it in Cloudinary (user action).
+   * Idempotent — safe to call multiple times; returns cached URL after first fetch.
+   * @param {string} mongoDocumentId - The MongoDB _id of the Document record
+   */
+  fetchSignedPdf: async (mongoDocumentId) => {
+    try {
+      const res = await api.post(`/esign/document/${mongoDocumentId}/fetch-pdf`);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching signed PDF:', message);
+      throw new Error(message);
+    }
+  },
+
+  /**
+   * Admin version — fetch signed PDF for any user's document (no ownership check).
+   * @param {string} mongoDocumentId - The MongoDB _id of the Document record
+   */
+  adminFetchSignedPdf: async (mongoDocumentId) => {
+    try {
+      const res = await api.post(`/esign/admin/document/${mongoDocumentId}/fetch-pdf`);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching signed PDF (admin):', message);
+      throw new Error(message);
+    }
+  },
+
+  /**
+   * Admin: list all esign documents across all users.
+   * @param {{ status?: string, serviceType?: string, hasPdf?: boolean }} filters
+   */
+  adminGetAllDocuments: async (filters = {}) => {
+    try {
+      const params = {};
+      if (filters.status)      params.status      = filters.status;
+      if (filters.serviceType) params.serviceType = filters.serviceType;
+      if (filters.hasPdf !== undefined) params.hasPdf = filters.hasPdf;
+      const res = await api.get('/esign/admin/all-documents', { params });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching all esign documents:', message);
       throw new Error(message);
     }
   }

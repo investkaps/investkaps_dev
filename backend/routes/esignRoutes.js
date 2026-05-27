@@ -1,9 +1,37 @@
 import express from 'express';
 const router = express.Router();
-import { createSignRequest, checkSignStatus, getDocumentDetails  } from '../utils/leegality.js';
-import { verifyToken  } from '../middleware/auth.js';
+import { createSignRequest, checkSignStatus, getDocumentDetails, fetchSignedDocument } from '../utils/leegality.js';
+import { verifyToken, requireAdmin } from '../middleware/auth.js';
 import Document from '../model/Document.js';
 import logger from '../utils/logger.js';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configure Cloudinary (uses env vars set in server.js / .env)
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+/** Upload a PDF Buffer to Cloudinary and return the secure URL. */
+async function uploadPdfToCloudinary(buffer, publicId) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: 'raw',
+        folder: 'signed_agreements',
+        public_id: publicId,
+        format: 'pdf',
+        overwrite: false, // Do NOT replace an already-stored PDF
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    stream.end(buffer);
+  });
+}
 
 function base64Preview(b64) {
   if (!b64 || typeof b64 !== 'string') return { length: 0, head: '', tail: '' };
@@ -603,6 +631,195 @@ router.post('/esign/update-status', async (req, res) => {
       success: false, 
       error: 'Internal server error' 
     });
+  }
+});
+
+// GET /api/esign/admin/all-documents
+// Admin: list all esign documents across all users with optional filters.
+// Query params: status, serviceType, hasPdf (true|false)
+router.get('/esign/admin/all-documents', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { status, serviceType, hasPdf } = req.query;
+
+    const filter = {};
+
+    if (status) {
+      // Accept comma-separated statuses e.g. ?status=COMPLETED,SIGNED
+      const statuses = String(status).split(',').map(s => s.trim());
+      filter['esign.status'] = { $in: statuses };
+    }
+
+    if (serviceType && ['RA', 'IA'].includes(String(serviceType).toUpperCase())) {
+      filter.serviceType = String(serviceType).toUpperCase();
+    }
+
+    if (hasPdf === 'true') {
+      filter['esign.signedPdfUrl'] = { $ne: null, $exists: true };
+    } else if (hasPdf === 'false') {
+      filter['esign.signedPdfUrl'] = { $in: [null, undefined] };
+    }
+
+    const documents = await Document.find(filter)
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.json({
+      success: true,
+      count: documents.length,
+      data: documents,
+    });
+  } catch (err) {
+    logger.error('[ADMIN ALL DOCS] Error:', err.message);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+
+// User-triggered: fetch the signed PDF from Leegality and store it in Cloudinary.
+// Idempotent — if already fetched, returns the cached URL without re-fetching.
+router.post('/esign/document/:documentId/fetch-pdf', verifyToken, async (req, res) => {
+  try {
+    const { documentId } = req.params;
+    const userId = req.user?._id || req.user?.id;
+
+    const document = await Document.findOne({ _id: documentId, user: userId });
+    if (!document) {
+      return res.status(404).json({ success: false, error: 'Document not found or access denied' });
+    }
+
+    // Idempotent — already fetched?
+    if (document.esign?.signedPdfUrl) {
+      return res.json({
+        success: true,
+        url: document.esign.signedPdfUrl,
+        alreadyFetched: true,
+        fetchedBy: document.esign.signedPdfFetchedBy,
+      });
+    }
+
+    const esignStatus = String(document.esign?.status || '').toUpperCase();
+    if (esignStatus !== 'COMPLETED') {
+      return res.status(400).json({
+        success: false,
+        error: `Document is not completed yet (status: ${esignStatus}). Only completed documents can be fetched.`,
+      });
+    }
+
+    const leegalityDocId = document.esign?.documentId;
+    if (!leegalityDocId) {
+      return res.status(400).json({ success: false, error: 'No Leegality document ID found on this record' });
+    }
+
+    // Fetch raw PDF bytes from Leegality
+    const fetchResult = await fetchSignedDocument(leegalityDocId, document.serviceType || 'RA');
+    if (!fetchResult.success) {
+      logger.error('[FETCH PDF] Leegality fetch failed:', fetchResult.error);
+      return res.status(fetchResult.httpStatus || 502).json({
+        success: false,
+        error: fetchResult.error || 'Failed to fetch signed document from Leegality',
+      });
+    }
+
+    // Upload PDF to Cloudinary
+    const publicId = `agreement_${document._id}`;
+    let cloudinaryResult;
+    try {
+      cloudinaryResult = await uploadPdfToCloudinary(fetchResult.buffer, publicId);
+    } catch (uploadErr) {
+      logger.error('[FETCH PDF] Cloudinary upload failed:', uploadErr.message);
+      return res.status(500).json({ success: false, error: 'Failed to store document in cloud storage' });
+    }
+
+    // Persist URL on Document record
+    document.esign.signedPdfUrl = cloudinaryResult.secure_url;
+    document.esign.signedPdfFetchedAt = new Date();
+    document.esign.signedPdfFetchedBy = 'user';
+    await document.save();
+
+    logger.info(`[FETCH PDF] Stored signed PDF for document ${document._id}: ${cloudinaryResult.secure_url}`);
+
+    return res.json({
+      success: true,
+      url: cloudinaryResult.secure_url,
+      alreadyFetched: false,
+      fetchedBy: 'user',
+    });
+  } catch (err) {
+    logger.error('[FETCH PDF] Unexpected error:', err.message);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// POST /api/esign/admin/document/:documentId/fetch-pdf
+// Admin-triggered: can fetch the signed PDF for any user's document.
+// Same idempotency and Cloudinary logic — no ownership check.
+router.post('/esign/admin/document/:documentId/fetch-pdf', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { documentId } = req.params;
+
+    const document = await Document.findById(documentId);
+    if (!document) {
+      return res.status(404).json({ success: false, error: 'Document not found' });
+    }
+
+    // Idempotent — already fetched?
+    if (document.esign?.signedPdfUrl) {
+      return res.json({
+        success: true,
+        url: document.esign.signedPdfUrl,
+        alreadyFetched: true,
+        fetchedBy: document.esign.signedPdfFetchedBy,
+      });
+    }
+
+    const esignStatus = String(document.esign?.status || '').toUpperCase();
+    if (esignStatus !== 'COMPLETED') {
+      return res.status(400).json({
+        success: false,
+        error: `Document is not completed yet (status: ${esignStatus}). Only completed documents can be fetched.`,
+      });
+    }
+
+    const leegalityDocId = document.esign?.documentId;
+    if (!leegalityDocId) {
+      return res.status(400).json({ success: false, error: 'No Leegality document ID found on this record' });
+    }
+
+    const fetchResult = await fetchSignedDocument(leegalityDocId, document.serviceType || 'RA');
+    if (!fetchResult.success) {
+      logger.error('[ADMIN FETCH PDF] Leegality fetch failed:', fetchResult.error);
+      return res.status(fetchResult.httpStatus || 502).json({
+        success: false,
+        error: fetchResult.error || 'Failed to fetch signed document from Leegality',
+      });
+    }
+
+    const publicId = `agreement_${document._id}`;
+    let cloudinaryResult;
+    try {
+      cloudinaryResult = await uploadPdfToCloudinary(fetchResult.buffer, publicId);
+    } catch (uploadErr) {
+      logger.error('[ADMIN FETCH PDF] Cloudinary upload failed:', uploadErr.message);
+      return res.status(500).json({ success: false, error: 'Failed to store document in cloud storage' });
+    }
+
+    document.esign.signedPdfUrl = cloudinaryResult.secure_url;
+    document.esign.signedPdfFetchedAt = new Date();
+    document.esign.signedPdfFetchedBy = 'admin';
+    await document.save();
+
+    logger.info(`[ADMIN FETCH PDF] Stored signed PDF for document ${document._id}: ${cloudinaryResult.secure_url}`);
+
+    return res.json({
+      success: true,
+      url: cloudinaryResult.secure_url,
+      alreadyFetched: false,
+      fetchedBy: 'admin',
+    });
+  } catch (err) {
+    logger.error('[ADMIN FETCH PDF] Unexpected error:', err.message);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 

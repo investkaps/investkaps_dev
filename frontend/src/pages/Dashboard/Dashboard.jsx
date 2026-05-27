@@ -18,7 +18,7 @@ import ServiceSelector from '../../components/OnboardingFlow/ServiceSelector';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const { currentUser, logout, loading: authLoading } = useAuth();
+  const { currentUser, logout, loading: authLoading, userReady } = useAuth();
   const { isAdmin } = useRole();
   const navigate = useNavigate();
   const location = useLocation();
@@ -75,10 +75,28 @@ const Dashboard = () => {
     let mounted = true;
 
     const resolveRole = async () => {
-      if (authLoading) return;
+      // Wait until the backend user (with role) is fully synced before making
+      // any API calls. Using authLoading alone is not sufficient — it becomes
+      // false the moment Clerk's hooks finish, but the DB sync may still be
+      // in-flight and currentUser.role may not be set yet.
+      if (authLoading || !userReady) return;
 
       if (!currentUser) {
         if (mounted) setRoleResolved(true);
+        return;
+      }
+
+      // currentUser.role is already set by AuthContext's backend sync.
+      // Only fall through to a live API call if role is somehow missing.
+      if (currentUser.role) {
+        const currentRole = currentUser.role;
+        if (mounted) {
+          setIsAdminUser(currentRole === 'admin');
+          setRoleResolved(true);
+        }
+        if (currentRole === 'admin') {
+          navigate('/admin/dashboard', { replace: true });
+        }
         return;
       }
 
@@ -93,18 +111,6 @@ const Dashboard = () => {
         }
       } catch (err) {
         // Fall through to user-based lookup below.
-      }
-
-      if (currentUser.role) {
-        const currentRole = currentUser.role;
-        if (mounted) {
-          setIsAdminUser(currentRole === 'admin');
-          setRoleResolved(true);
-        }
-        if (currentRole === 'admin') {
-          navigate('/admin/dashboard', { replace: true });
-        }
-        return;
       }
 
       try {
@@ -136,7 +142,7 @@ const Dashboard = () => {
     return () => {
       mounted = false;
     };
-  }, [authLoading, currentUser, navigate]);
+  }, [authLoading, userReady, currentUser, navigate]);
   
   const [steps, setSteps] = useState({
     kyc: { completed: false, active: true, expanded: true },
@@ -341,7 +347,11 @@ const Dashboard = () => {
   const [dashboardReady, setDashboardReady] = useState(false);
 
   useEffect(() => {
-    if (authLoading || !currentUser) return;
+    // Wait for both the loading state AND the backend user sync to complete.
+    // `authLoading` alone is not sufficient — it becomes false as soon as
+    // Clerk's hooks settle, but currentUser.role (and the JWT in localStorage)
+    // may not be set until the DB fetch in AuthContext finishes.
+    if (authLoading || !userReady || !currentUser) return;
     if (initRef.current) return;
     initRef.current = true;
 

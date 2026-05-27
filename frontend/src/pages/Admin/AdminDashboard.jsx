@@ -10,6 +10,7 @@ import StockRecommendationManagement from '../../components/Admin/StockRecommend
 import PaymentApproval from './PaymentApproval';
 import QuestionnaireManagement from './QuestionnaireManagement';
 import QuestionnaireResponses from './QuestionnaireResponses';
+import EsignManagement from './EsignManagement';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -91,6 +92,9 @@ const AdminDashboard = () => {
             <li className={activeTab === 'payment-approval' ? 'active' : ''}>
               <button onClick={() => setActiveTab('payment-approval')}>Payment Approval</button>
             </li>
+            <li className={activeTab === 'documents' ? 'active' : ''}>
+              <button onClick={() => setActiveTab('documents')}>📄 Documents</button>
+            </li>
             <li className={activeTab === 'questionnaire-management' ? 'active' : ''}>
               <button onClick={() => setActiveTab('questionnaire-management')}>Questionnaires</button>
             </li>
@@ -120,6 +124,7 @@ const AdminDashboard = () => {
             {activeTab === 'strategies' && 'Strategy Management'}
             {activeTab === 'recommendations' && 'Stock Recommendations'}
             {activeTab === 'payment-approval' && 'Payment Approval'}
+            {activeTab === 'documents' && '📄 E-Sign Documents'}
             {activeTab === 'questionnaire-management' && 'Questionnaire Management'}
             {activeTab === 'questionnaire-responses' && 'Questionnaire Responses'}
             {activeTab === 'settings' && 'Admin Settings'}
@@ -225,6 +230,8 @@ const AdminDashboard = () => {
         {activeTab === 'recommendations' && <StockRecommendationManagement />}
         
         {activeTab === 'payment-approval' && <PaymentApproval />}
+        
+        {activeTab === 'documents' && <EsignManagement />}
         
         {activeTab === 'questionnaire-management' && <QuestionnaireManagement />}
         

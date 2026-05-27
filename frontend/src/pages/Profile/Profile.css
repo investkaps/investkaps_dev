@@ -449,6 +449,43 @@
   color: #5b3cc4;
 }
 
+.pf-esign-link--download {
+  background: #e6f9f0;
+  color: #0a6640;
+}
+
+/* "Fetch Signed PDF" button — rendered as a styled button, not an anchor */
+.pf-esign-link--fetch {
+  background: #fff8e1;
+  color: #7c5700;
+  border: 1px solid #ffe082;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.pf-esign-link--fetch:hover:not(:disabled) {
+  background: #fff3cd;
+  opacity: 1;
+}
+
+.pf-esign-link--fetch:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Inline spinner for the Fetch button loading state */
+.pf-spinner-inline {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(124, 87, 0, 0.3);
+  border-top-color: #7c5700;
+  border-radius: 50%;
+  animation: pf-spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 0.3rem;
+}
+
 /* ── Responsive ──────────────────────────────────────────── */
 
 @media (max-width: 640px) {

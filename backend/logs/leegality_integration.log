@@ -38,3 +38,5 @@
 {"timestamp":"2026-05-05T08:29:04.071Z","level":"INFO","message":"Document details retrieved","details":{"documentId":"01KQVM066D6ME4PSJ93XFDT19M","status":200,"apiStatus":1}}
 {"timestamp":"2026-05-13T08:27:07.097Z","level":"INFO","message":"Document details retrieved","details":{"documentId":"01KRG6RY6MMCXZE7XEM97DYY2N","status":200,"apiStatus":1}}
 {"timestamp":"2026-05-13T10:55:48.512Z","level":"INFO","message":"Document details retrieved","details":{"documentId":"01KRGFJ8KV58CWTZ3GCFH88B8N","status":200,"apiStatus":1}}
+{"timestamp":"2026-05-27T06:01:19.998Z","level":"INFO","message":"Fetching signed PDF from Leegality","details":{"documentId":"01KRK934TJ2NDZ85A8QSQDQYMY","serviceType":"IA","url":"https://app1.leegality.com/api/v3.1/document/fetchDocument"}}
+{"timestamp":"2026-05-27T06:01:20.391Z","level":"INFO","message":"Signed PDF fetched successfully","details":{"documentId":"01KRK934TJ2NDZ85A8QSQDQYMY","bytes":289318}}

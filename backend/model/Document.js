@@ -102,6 +102,21 @@ const DocumentSchema = new mongoose.Schema({
     createdAt: {
       type: Date,
       default: Date.now
+    },
+    // ── Signed PDF (fetched from Leegality → stored in Cloudinary) ──────────
+    // null = not yet fetched; populated after a successful fetchDocument call.
+    signedPdfUrl: {
+      type: String,
+      default: null
+    },
+    signedPdfFetchedAt: {
+      type: Date,
+      default: null
+    },
+    signedPdfFetchedBy: {
+      type: String,        // 'user' | 'admin'
+      enum: ['user', 'admin', null],
+      default: null
     }
   },
   createdAt: {

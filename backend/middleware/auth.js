@@ -21,9 +21,14 @@ export const verifyToken = async (req, res, next) => {
     }
 
     // Cryptographically verify signature and expiry.
+    // clockSkewInMs: 60s tolerates Cloud Run clock drift and the brief window
+    // right after clerk.setActive() where iat/nbf are in the very near past.
     let payload;
     try {
-      payload = await clerkVerifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY });
+      payload = await clerkVerifyToken(token, {
+        secretKey: process.env.CLERK_SECRET_KEY,
+        clockSkewInMs: 60_000,
+      });
     } catch (err) {
       logger.error(`Token verification failed: ${err.message}`);
       return res.status(401).json({ success: false, error: 'Invalid or expired token' });
@@ -66,8 +71,12 @@ export const extractTokenOnly = async (req, res, next) => {
 
     let payload;
     try {
-      payload = await clerkVerifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY });
-    } catch {
+      payload = await clerkVerifyToken(token, {
+        secretKey: process.env.CLERK_SECRET_KEY,
+        clockSkewInMs: 60_000,
+      });
+    } catch (err) {
+      logger.error(`extractTokenOnly verification failed: ${err.message}`);
       return res.status(401).json({ success: false, error: 'Invalid or expired token' });
     }
 

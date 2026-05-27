@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { setupAPI, userAPI } from '../../services/api';
+import { setupAPI, userAPI, esignAPI } from '../../services/api';
 import './Profile.css';
 
 const Profile = () => {
@@ -9,6 +9,9 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [paymentRequests, setPaymentRequests] = useState([]);
+  // Tracks which document is currently being fetched (by _id) to show spinner
+  const [fetchingDocId, setFetchingDocId] = useState(null);
+  const [fetchError, setFetchError] = useState(null);
 
   useEffect(() => {
     if (!currentUser?.id) return;
@@ -88,6 +91,36 @@ const Profile = () => {
       mounted = false;
     };
   }, [currentUser]);
+
+  /**
+   * One-time fetch: pulls the signed PDF from Leegality → Cloudinary.
+   * On success, patches the local documents state so the UI switches to
+   * View/Download without requiring a full page reload.
+   */
+  const handleFetchPdf = async (docId) => {
+    setFetchingDocId(docId);
+    setFetchError(null);
+    try {
+      const result = await esignAPI.fetchSignedPdf(docId);
+      if (result.success && result.url) {
+        // Patch local state — find the document and update its signedPdfUrl
+        setUserDetails(prev => ({
+          ...prev,
+          documents: (prev.documents || []).map(d =>
+            String(d._id) === String(docId)
+              ? { ...d, esign: { ...d.esign, signedPdfUrl: result.url, signedPdfFetchedBy: result.fetchedBy } }
+              : d
+          )
+        }));
+      } else {
+        setFetchError(result.error || 'Failed to fetch document. Please try again.');
+      }
+    } catch (err) {
+      setFetchError(err.message || 'Failed to fetch document. Please try again.');
+    } finally {
+      setFetchingDocId(null);
+    }
+  };
 
   const fmt = (d) =>
     d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A';
@@ -298,6 +331,12 @@ const Profile = () => {
           <section className="pf-section">
             <h2 className="pf-section-title">E-Signing</h2>
 
+            {fetchError && (
+              <div className="pf-error-msg" style={{ marginBottom: '0.75rem', fontSize: '0.9rem' }}>
+                ⚠ {fetchError}
+              </div>
+            )}
+
             {esignDocs.length === 0 ? (
               <div className="pf-card pf-no-sub">
                 <span className="pf-no-sub-icon">✍️</span>
@@ -309,7 +348,12 @@ const Profile = () => {
                 const statusClass = esignStatusClass(es.currentStatus || es.status);
                 const signedAt = es.signedAt || es.invitees?.find(inv => inv.signedAt)?.signedAt;
                 const completedAt = es.completedAt;
-                const signedFile = es.files?.find(f => f.url);
+                const isCompleted =
+                  ['completed', 'COMPLETED'].includes(es.status) ||
+                  ['completed', 'COMPLETED'].includes(es.currentStatus);
+                const hasPdf = !!es.signedPdfUrl;
+                const isFetching = fetchingDocId === String(doc._id);
+
                 return (
                   <div key={i} className={`pf-card pf-esign-card pf-mb`}>
                     <div className="pf-esign-header">
@@ -318,6 +362,9 @@ const Profile = () => {
                         <div>
                           <strong className="pf-esign-name">{doc.name}</strong>
                           <span className="pf-muted pf-ml" style={{ textTransform: 'capitalize' }}>{doc.type}</span>
+                          {doc.serviceType && (
+                            <span className="pf-badge pf-ml" style={{ fontSize: '0.7rem' }}>{doc.serviceType}</span>
+                          )}
                         </div>
                       </div>
                       <span className={`pf-badge ${statusClass}`}>
@@ -327,26 +374,58 @@ const Profile = () => {
 
                     <div className="pf-grid-2 pf-mt-sm">
                       <Row label="Document Sent"  value={fmt(es.createdAt || doc.createdAt)} />
-                      {signedAt  && <Row label="Signed On"    value={fmt(signedAt)} />}
+                      {signedAt   && <Row label="Signed On"    value={fmt(signedAt)} />}
                       {completedAt && <Row label="Completed On" value={fmt(completedAt)} />}
                       {es.documentId && <Row label="Document ID" value={es.documentId} mono />}
                       {es.irn        && <Row label="IRN"         value={es.irn} mono />}
                     </div>
 
-                    {(signedFile || es.auditTrail?.url) && (
-                      <div className="pf-esign-links">
-                        {signedFile && (
-                          <a href={signedFile.url} target="_blank" rel="noopener noreferrer" className="pf-esign-link pf-esign-link--doc">
-                            ⬇ Download Signed Document
+                    {/* Signed PDF actions */}
+                    <div className="pf-esign-links" style={{ marginTop: '0.875rem' }}>
+                      {hasPdf ? (
+                        // PDF already fetched — show View + Download
+                        <>
+                          <a
+                            href={es.signedPdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="pf-esign-link pf-esign-link--doc"
+                          >
+                            👁 View Signed Agreement
                           </a>
-                        )}
-                        {es.auditTrail?.url && (
-                          <a href={es.auditTrail.url} target="_blank" rel="noopener noreferrer" className="pf-esign-link pf-esign-link--audit">
-                            🔍 View Audit Trail
+                          <a
+                            href={`${es.signedPdfUrl}?fl_attachment=1`}
+                            download
+                            className="pf-esign-link pf-esign-link--download"
+                            style={{ marginLeft: '0.5rem' }}
+                          >
+                            ⬇ Download PDF
                           </a>
-                        )}
-                      </div>
-                    )}
+                          {es.signedPdfFetchedBy === 'admin' && (
+                            <span className="pf-muted" style={{ display: 'block', marginTop: '0.4rem', fontSize: '0.8rem' }}>
+                              Retrieved by admin
+                            </span>
+                          )}
+                        </>
+                      ) : isCompleted ? (
+                        // Completed but PDF not yet fetched — show Fetch button
+                        <button
+                          className="pf-esign-link pf-esign-link--fetch"
+                          onClick={() => handleFetchPdf(doc._id)}
+                          disabled={isFetching}
+                          style={{
+                            cursor: isFetching ? 'not-allowed' : 'pointer',
+                            opacity: isFetching ? 0.7 : 1,
+                          }}
+                        >
+                          {isFetching ? (
+                            <><span className="pf-spinner-inline" /> Fetching…</>
+                          ) : (
+                            '📥 Fetch Signed PDF'
+                          )}
+                        </button>
+                      ) : null}
+                    </div>
                   </div>
                 );
               })
