@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../../services/api';
 import './KycManagement.css';
+import Modal from '../Shared/Modal';
 
 const KycManagement = () => {
   const [kycVerifications, setKycVerifications] = useState([]);
@@ -131,13 +132,12 @@ const KycManagement = () => {
       )}
 
       {selectedKyc && (
-        <div className="admin-modal">
-          <div className="admin-modal-content">
-            <div className="admin-modal-header">
-              <h3>KYC Verification Details</h3>
-              <button className="admin-modal-close" onClick={closeDetails}>×</button>
-            </div>
-            <div className="admin-modal-body">
+        <Modal isOpen={!!selectedKyc} onClose={closeDetails}>
+          <div className="admin-modal-header">
+            <h3>KYC Verification Details</h3>
+            <button className="admin-modal-close" onClick={closeDetails}>×</button>
+          </div>
+          <div className="admin-modal-body">
               <div className="admin-detail-group">
                 <h4>User Information</h4>
                 <div className="admin-detail-row">
@@ -304,8 +304,7 @@ const KycManagement = () => {
             <div className="admin-modal-footer">
               <button className="admin-button" onClick={closeDetails}>Close</button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

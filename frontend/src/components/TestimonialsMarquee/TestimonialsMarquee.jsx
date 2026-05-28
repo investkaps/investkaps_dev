@@ -28,10 +28,15 @@ export function TestimonialsMarquee({
                   testimonial.empty ? (
                     <div key={`${setIndex}-${i}`} className="testimonial-card testimonial-card-empty" />
                   ) : (
-                    <TestimonialCard 
-                      key={`${setIndex}-${i}`}
-                      {...testimonial}
-                    />
+                      <TestimonialCard
+                        key={`${setIndex}-${i}`}
+                        author={{
+                          name: testimonial.name,
+                          avatar: testimonial.avatar || null,
+                          handle: testimonial.occupation || null,
+                        }}
+                        text={testimonial.text}
+                      />
                   )
                 ))
               ))}

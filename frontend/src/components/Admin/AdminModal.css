@@ -1,0 +1,108 @@
+/* Admin Modal Overlay - Backdrop */
+.admin-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* Modal Container */
+.admin-modal-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 10000;
+  width: 90%;
+  max-width: 600px;
+}
+
+.admin-modal-container.medium {
+  max-width: 500px;
+}
+
+.admin-modal-container.large {
+  max-width: 700px;
+}
+
+.admin-modal-container.xlarge {
+  max-width: 900px;
+}
+
+/* Modal Header */
+.admin-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  border-radius: 8px 8px 0 0;
+}
+
+.admin-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Modal Close Button */
+.admin-modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.admin-modal-close-btn:hover {
+  background-color: #e5e7eb;
+  color: #1f2937;
+}
+
+/* Modal Body */
+.admin-modal-body {
+  padding: 24px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .admin-modal-container {
+    width: 95%;
+    max-width: none;
+  }
+
+  .admin-modal-container.large,
+  .admin-modal-container.xlarge {
+    max-width: 100%;
+  }
+
+  .admin-modal-header {
+    padding: 16px 20px;
+  }
+
+  .admin-modal-header h3 {
+    font-size: 16px;
+  }
+
+  .admin-modal-body {
+    padding: 16px;
+    max-height: calc(90vh - 70px);
+  }
+}

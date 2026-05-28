@@ -16,6 +16,7 @@ import OnboardingFlow from '../../components/OnboardingFlow/OnboardingFlow';
 import IAOnboardingFlow from '../../components/OnboardingFlow/IAOnboardingFlow';
 import ServiceSelector from '../../components/OnboardingFlow/ServiceSelector';
 import './Dashboard.css';
+import UserTestimonial from '../../components/UserTestimonial/UserTestimonial';
 
 const Dashboard = () => {
   const { currentUser, logout, loading: authLoading, userReady } = useAuth();
@@ -1247,6 +1248,13 @@ const Dashboard = () => {
         {qrPaymentSubmittedBanner && (
           <div className="payment-request-confirmation">
             We received your payment request. We will verify it within 24 hours.
+          </div>
+        )}
+
+        {/* User testimonial submission (only for non-admin users) */}
+        {!isAdminUser && (
+          <div style={{ marginTop: '1.5rem' }}>
+            <UserTestimonial />
           </div>
         )}
 

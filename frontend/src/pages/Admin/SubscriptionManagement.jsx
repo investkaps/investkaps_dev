@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../../services/api';
+import AdminModal from '../../components/Admin/AdminModal';
 import './AdminDashboard.css';
 
 const SubscriptionManagement = () => {
@@ -7,8 +8,8 @@ const SubscriptionManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
-  const [editingSubscription, setEditingSubscription] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSubscription, setEditingSubscription] = useState(null);
   const [formData, setFormData] = useState({
     packageCode: '',
     name: '',
@@ -29,7 +30,8 @@ const SubscriptionManagement = () => {
     currency: 'INR',
     features: [],
     telegramChatId: '',
-    isActive: true
+    isActive: true,
+    isTrial: false
   });
   const [newFeature, setNewFeature] = useState({ name: '', included: true, description: '' });
   const [strategies, setStrategies] = useState([]);
@@ -39,17 +41,16 @@ const SubscriptionManagement = () => {
     fetchSubscriptions();
     fetchStrategies();
   }, []);
-  
+
   const fetchStrategies = async () => {
     try {
       const response = await adminAPI.getAllStrategies();
       setStrategies(response);
     } catch (err) {
       console.error('Error fetching strategies:', err);
-      setError('Failed to load strategies. Please try again later.');
     }
   };
-
+  
   const fetchSubscriptions = async () => {
     try {
       setLoading(true);
@@ -67,7 +68,6 @@ const SubscriptionManagement = () => {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     
-    // Handle nested properties
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setFormData({
@@ -79,11 +79,9 @@ const SubscriptionManagement = () => {
         }
       });
     } else {
-      // Handle top-level properties
       setFormData({
         ...formData,
-        [name]: type === 'checkbox' ? checked : 
-               name === 'displayOrder' ? Number(value) || 0 : value
+        [name]: type === 'checkbox' ? checked : value
       });
     }
   };
@@ -98,12 +96,10 @@ const SubscriptionManagement = () => {
 
   const addFeature = () => {
     if (!newFeature.name.trim()) return;
-    
     setFormData({
       ...formData,
       features: [...formData.features, { ...newFeature }]
     });
-    
     setNewFeature({ name: '', included: true, description: '' });
   };
 
@@ -126,13 +122,11 @@ const SubscriptionManagement = () => {
     [features[index], features[index + 1]] = [features[index + 1], features[index]];
     setFormData({ ...formData, features });
   };
-  
+
   const handleStrategySelection = (strategyId) => {
     if (selectedStrategies.includes(strategyId)) {
-      // Remove strategy if already selected
       setSelectedStrategies(selectedStrategies.filter(id => id !== strategyId));
     } else {
-      // Add strategy if not selected
       setSelectedStrategies([...selectedStrategies, strategyId]);
     }
   };
@@ -143,11 +137,7 @@ const SubscriptionManagement = () => {
       packageCode: '',
       name: '',
       description: '',
-      pricing: {
-        monthly: '',
-        sixMonth: '',
-        yearly: ''
-      },
+      pricing: { monthly: '', sixMonth: '', yearly: '' },
       tradingOptions: {
         stockOptions: false,
         indexOptions: false,
@@ -192,7 +182,6 @@ const SubscriptionManagement = () => {
       isTrial: subscription.isTrial || false
     });
     
-    // Set selected strategies if they exist
     if (subscription.strategies && Array.isArray(subscription.strategies)) {
       const strategyIds = subscription.strategies.map(strategy => 
         typeof strategy === 'object' ? strategy._id : strategy
@@ -217,14 +206,12 @@ const SubscriptionManagement = () => {
     try {
       setLoading(true);
       
-      // Validate required fields
       if (!formData.packageCode || !formData.name || !formData.description || !formData.pricing) {
         setError('Please provide package code, name, description, and pricing');
         setLoading(false);
         return;
       }
       
-      // First create/update the subscription
       let subscriptionId;
       let response;
       
@@ -236,17 +223,13 @@ const SubscriptionManagement = () => {
         subscriptionId = response.data._id;
       }
       
-      // Then update the strategies if there are any selected (this is optional)
       if (selectedStrategies && selectedStrategies.length > 0) {
-        // First remove any existing strategies
         if (editingSubscription && editingSubscription.strategies && editingSubscription.strategies.length > 0) {
           const existingStrategyIds = editingSubscription.strategies.map(strategy => 
             typeof strategy === 'object' ? strategy._id : strategy
           );
           await adminAPI.removeStrategiesFromSubscription(subscriptionId, existingStrategyIds);
         }
-        
-        // Then add the selected strategies
         await adminAPI.addStrategiesToSubscription(subscriptionId, selectedStrategies);
       }
       
@@ -414,412 +397,409 @@ const SubscriptionManagement = () => {
           </tbody>
         </table>
       </div>
-      
-      {isModalOpen && (
-        <div className="admin-modal">
-          <div className="admin-modal-content">
-            <div className="admin-modal-header">
-              <h3>{editingSubscription ? 'Edit Subscription' : 'Create New Subscription'}</h3>
-              <button className="admin-modal-close" onClick={closeModal}>&times;</button>
+
+      <AdminModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={editingSubscription ? 'Edit Subscription' : 'Create New Subscription'}
+        size="xlarge"
+      >
+        <form onSubmit={handleSubmit} className="admin-form">
+          <div className="admin-form-row">
+            <div className="admin-form-group">
+              <label htmlFor="packageCode">Package Code</label>
+              <input
+                type="text"
+                id="packageCode"
+                name="packageCode"
+                value={formData.packageCode}
+                onChange={handleInputChange}
+                required
+              />
             </div>
-            <form onSubmit={handleSubmit} className="admin-form">
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label htmlFor="packageCode">Package Code</label>
-                  <input
-                    type="text"
-                    id="packageCode"
-                    name="packageCode"
-                    value={formData.packageCode}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                
-                <div className="admin-form-group">
-                  <label htmlFor="name">Name</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              </div>
-              
+            
+            <div className="admin-form-group">
+              <label htmlFor="name">Name</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="admin-form-group">
+            <label htmlFor="description">Description</label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          
+          <div className="admin-form-section">
+            <h4>Pricing Options</h4>
+            <div className="admin-form-row">
               <div className="admin-form-group">
-                <label htmlFor="description">Description</label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
+                <label htmlFor="pricing.monthly">Monthly Price</label>
+                <input
+                  type="number"
+                  id="pricing.monthly"
+                  name="pricing.monthly"
+                  value={formData.pricing.monthly}
                   onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
                   required
                 />
               </div>
               
-              <div className="admin-form-section">
-                <h4>Pricing Options</h4>
-                <div className="admin-form-row">
-                  <div className="admin-form-group">
-                    <label htmlFor="pricing.monthly">Monthly Price</label>
-                    <input
-                      type="number"
-                      id="pricing.monthly"
-                      name="pricing.monthly"
-                      value={formData.pricing.monthly}
-                      onChange={handleInputChange}
-                      min="0"
-                      step="0.01"
-                      required
-                    />
+              <div className="admin-form-group">
+                <label htmlFor="pricing.sixMonth">Six Month Price</label>
+                <input
+                  type="number"
+                  id="pricing.sixMonth"
+                  name="pricing.sixMonth"
+                  value={formData.pricing.sixMonth}
+                  onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+              
+              <div className="admin-form-group">
+                <label htmlFor="pricing.yearly">Yearly Price</label>
+                <input
+                  type="number"
+                  id="pricing.yearly"
+                  name="pricing.yearly"
+                  value={formData.pricing.yearly}
+                  onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="admin-form-group">
+              <label htmlFor="currency">Currency</label>
+              <select
+                id="currency"
+                name="currency"
+                value={formData.currency}
+                onChange={handleInputChange}
+              >
+                <option value="INR">INR</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="admin-form-section">
+            <h4>Trading Options</h4>
+            <div className="admin-trading-options">
+              <label className="admin-checkbox-label">
+                <input
+                  type="checkbox"
+                  name="tradingOptions.stockOptions"
+                  checked={formData.tradingOptions.stockOptions}
+                  onChange={handleInputChange}
+                />
+                Stock Options
+              </label>
+              
+              <label className="admin-checkbox-label">
+                <input
+                  type="checkbox"
+                  name="tradingOptions.indexOptions"
+                  checked={formData.tradingOptions.indexOptions}
+                  onChange={handleInputChange}
+                />
+                Index Options
+              </label>
+              
+              <label className="admin-checkbox-label">
+                <input
+                  type="checkbox"
+                  name="tradingOptions.stockFuture"
+                  checked={formData.tradingOptions.stockFuture}
+                  onChange={handleInputChange}
+                />
+                Stock Future
+              </label>
+              
+              <label className="admin-checkbox-label">
+                <input
+                  type="checkbox"
+                  name="tradingOptions.indexFuture"
+                  checked={formData.tradingOptions.indexFuture}
+                  onChange={handleInputChange}
+                />
+                Index Future
+              </label>
+              
+              <label className="admin-checkbox-label">
+                <input
+                  type="checkbox"
+                  name="tradingOptions.equity"
+                  checked={formData.tradingOptions.equity}
+                  onChange={handleInputChange}
+                />
+                Equity
+              </label>
+              
+              <label className="admin-checkbox-label">
+                <input
+                  type="checkbox"
+                  name="tradingOptions.mcx"
+                  checked={formData.tradingOptions.mcx}
+                  onChange={handleInputChange}
+                />
+                MCX
+              </label>
+            </div>
+          </div>
+          
+          <div className="admin-form-group">
+            <label className="admin-checkbox-label">
+              <input
+                type="checkbox"
+                name="isActive"
+                checked={formData.isActive}
+                onChange={handleInputChange}
+              />
+              Active
+            </label>
+          </div>
+
+          <div className="admin-form-group">
+            <label className="admin-checkbox-label">
+              <input
+                type="checkbox"
+                name="isTrial"
+                checked={formData.isTrial}
+                onChange={handleInputChange}
+              />
+              Trial Plan
+            </label>
+            <small style={{ color: '#6c757d', display: 'block', marginTop: '4px' }}>
+              Trial plans can only be claimed once per user account and cannot be reclaimed.
+            </small>
+          </div>
+
+          <div className="admin-form-group">
+            <label>Telegram Chat ID</label>
+            <input
+              type="text"
+              name="telegramChatId"
+              value={formData.telegramChatId}
+              onChange={handleInputChange}
+              placeholder="e.g., -1001234567890"
+            />
+            <small style={{ color: '#6c757d', display: 'block', marginTop: '4px' }}>
+              Enter the Telegram group/channel chat ID for this subscription's notifications
+            </small>
+          </div>
+          
+          <div className="admin-form-section">
+            <h4>Strategies</h4>
+            {strategies.length > 0 ? (
+              <div className="admin-strategies-list">
+                {strategies.map((strategy) => (
+                  <div key={strategy._id} className="admin-strategy-item">
+                    <label className="admin-checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={selectedStrategies.includes(strategy._id)}
+                        onChange={() => handleStrategySelection(strategy._id)}
+                      />
+                      <strong>{strategy.name}</strong> ({strategy.strategyCode})
+                    </label>
+                    <div className="admin-strategy-description">
+                      {strategy.description}
+                    </div>
+                    <div className="admin-strategy-trading-options">
+                      {Object.entries(strategy.tradingOptions || {}).filter(([_, value]) => value).map(([key]) => (
+                        <span key={key} className="trading-option-badge">
+                          {key.replace(/([A-Z])/g, ' $1').trim()}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  
-                  <div className="admin-form-group">
-                    <label htmlFor="pricing.sixMonth">Six Month Price</label>
-                    <input
-                      type="number"
-                      id="pricing.sixMonth"
-                      name="pricing.sixMonth"
-                      value={formData.pricing.sixMonth}
-                      onChange={handleInputChange}
-                      min="0"
-                      step="0.01"
-                      required
-                    />
+                ))}
+              </div>
+            ) : (
+              <p>No strategies available. Create strategies first.</p>
+            )}
+          </div>
+          
+          <div className="admin-form-section">
+            <h4>Features</h4>
+            
+            <div className="admin-features-list">
+              {formData.features.map((feature, index) => (
+                <div key={index} className="admin-feature-item">
+                  <div className="admin-feature-content">
+                    <span
+                      className={`admin-feature-status ${feature.included ? 'included' : 'excluded'}`}
+                      onClick={() => {
+                        const updatedFeatures = [...formData.features];
+                        updatedFeatures[index].included = !updatedFeatures[index].included;
+                        setFormData({ ...formData, features: updatedFeatures });
+                      }}
+                      title={feature.included ? 'Click to exclude' : 'Click to include'}
+                    >
+                      {feature.included ? '✓' : '✗'}
+                    </span>
+                    <div className="feature-description">
+                      <strong>{feature.name}</strong>
+                      {feature.description && <div style={{ color: '#718096' }}>{feature.description}</div>}
+                    </div>
                   </div>
-                  
-                  <div className="admin-form-group">
-                    <label htmlFor="pricing.yearly">Yearly Price</label>
-                    <input
-                      type="number"
-                      id="pricing.yearly"
-                      name="pricing.yearly"
-                      value={formData.pricing.yearly}
-                      onChange={handleInputChange}
-                      min="0"
-                      step="0.01"
-                      required
-                    />
+
+                  <div className="admin-feature-actions">
+                    <button
+                      type="button"
+                      className="admin-feature-move"
+                      onClick={() => moveFeatureUp(index)}
+                      disabled={index === 0}
+                      title="Move up"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-feature-move"
+                      onClick={() => moveFeatureDown(index)}
+                      disabled={index === formData.features.length - 1}
+                      title="Move down"
+                    >
+                      ↓
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-edit-feature"
+                      onClick={() => {
+                        setNewFeature({
+                          name: feature.name,
+                          description: feature.description || '',
+                          included: feature.included
+                        });
+                        removeFeature(index);
+                      }}
+                      title="Edit this feature"
+                    >
+                      ✎
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-remove-feature"
+                      onClick={() => removeFeature(index)}
+                      title="Remove this feature"
+                    >
+                      &times;
+                    </button>
                   </div>
+                </div>
+              ))}
+              
+              {formData.features.length === 0 && (
+                <div className="admin-no-features">
+                  <p>No features added yet.</p>
+                  <p className="admin-features-hint">Features help customers understand what's included in each subscription plan.</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="admin-add-feature">
+              <h5>Add New Feature</h5>
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label htmlFor="feature-name">Feature Name</label>
+                  <input
+                    id="feature-name"
+                    type="text"
+                    placeholder="e.g., 24/7 Support"
+                    name="name"
+                    value={newFeature.name}
+                    onChange={handleFeatureInputChange}
+                  />
                 </div>
                 
                 <div className="admin-form-group">
-                  <label htmlFor="currency">Currency</label>
-                  <select
-                    id="currency"
-                    name="currency"
-                    value={formData.currency}
-                    onChange={handleInputChange}
-                  >
-                    <option value="INR">INR</option>
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="GBP">GBP</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="admin-form-section">
-                <h4>Trading Options</h4>
-                <div className="admin-trading-options">
-                  <label className="admin-checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="tradingOptions.stockOptions"
-                      checked={formData.tradingOptions.stockOptions}
-                      onChange={handleInputChange}
-                    />
-                    Stock Options
-                  </label>
-                  
-                  <label className="admin-checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="tradingOptions.indexOptions"
-                      checked={formData.tradingOptions.indexOptions}
-                      onChange={handleInputChange}
-                    />
-                    Index Options
-                  </label>
-                  
-                  <label className="admin-checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="tradingOptions.stockFuture"
-                      checked={formData.tradingOptions.stockFuture}
-                      onChange={handleInputChange}
-                    />
-                    Stock Future
-                  </label>
-                  
-                  <label className="admin-checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="tradingOptions.indexFuture"
-                      checked={formData.tradingOptions.indexFuture}
-                      onChange={handleInputChange}
-                    />
-                    Index Future
-                  </label>
-                  
-                  <label className="admin-checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="tradingOptions.equity"
-                      checked={formData.tradingOptions.equity}
-                      onChange={handleInputChange}
-                    />
-                    Equity
-                  </label>
-                  
-                  <label className="admin-checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="tradingOptions.mcx"
-                      checked={formData.tradingOptions.mcx}
-                      onChange={handleInputChange}
-                    />
-                    MCX
-                  </label>
-                </div>
-              </div>
-              
-              
-              <div className="admin-form-group">
-                <label className="admin-checkbox-label">
+                  <label htmlFor="feature-description">Description (optional)</label>
                   <input
-                    type="checkbox"
-                    name="isActive"
-                    checked={formData.isActive}
-                    onChange={handleInputChange}
+                    id="feature-description"
+                    type="text"
+                    placeholder="e.g., Access to support team anytime"
+                    name="description"
+                    value={newFeature.description}
+                    onChange={handleFeatureInputChange}
                   />
-                  Active
-                </label>
-              </div>
-
-              <div className="admin-form-group">
-                <label className="admin-checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="isTrial"
-                    checked={formData.isTrial}
-                    onChange={handleInputChange}
-                  />
-                  Trial Plan
-                </label>
-                <small style={{ color: '#6c757d', display: 'block', marginTop: '4px' }}>
-                  Trial plans can only be claimed once per user account and cannot be reclaimed.
-                </small>
-              </div>
-
-              <div className="admin-form-group">
-                <label>Telegram Chat ID</label>
-                <input
-                  type="text"
-                  name="telegramChatId"
-                  value={formData.telegramChatId}
-                  onChange={handleInputChange}
-                  placeholder="e.g., -1001234567890"
-                />
-                <small style={{ color: '#6c757d', display: 'block', marginTop: '4px' }}>
-                  Enter the Telegram group/channel chat ID for this subscription's notifications
-                </small>
-              </div>
-              
-              <div className="admin-form-section">
-                <h4>Strategies</h4>
-                {strategies.length > 0 ? (
-                  <div className="admin-strategies-list">
-                    {strategies.map((strategy) => (
-                      <div key={strategy._id} className="admin-strategy-item">
-                        <label className="admin-checkbox-label">
-                          <input
-                            type="checkbox"
-                            checked={selectedStrategies.includes(strategy._id)}
-                            onChange={() => handleStrategySelection(strategy._id)}
-                          />
-                          <strong>{strategy.name}</strong> ({strategy.strategyCode})
-                        </label>
-                        <div className="admin-strategy-description">
-                          {strategy.description}
-                        </div>
-                        <div className="admin-strategy-trading-options">
-                          {Object.entries(strategy.tradingOptions || {}).filter(([_, value]) => value).map(([key]) => (
-                            <span key={key} className="trading-option-badge">
-                              {key.replace(/([A-Z])/g, ' $1').trim()}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p>No strategies available. Create strategies first.</p>
-                )}
-              </div>
-              
-              <div className="admin-form-section">
-                <h4>Features</h4>
-                
-                <div className="admin-features-list">
-                  {formData.features.map((feature, index) => (
-                    <div key={index} className="admin-feature-item">
-                      <div className="admin-feature-content">
-                        <span 
-                          className={`admin-feature-status ${feature.included ? 'included' : 'excluded'}`}
-                          onClick={() => {
-                            const updatedFeatures = [...formData.features];
-                            updatedFeatures[index].included = !updatedFeatures[index].included;
-                            setFormData({ ...formData, features: updatedFeatures });
-                          }}
-                          title={feature.included ? 'Click to exclude' : 'Click to include'}
-                        >
-                          {feature.included ? '✓' : '✗'}
-                        </span>
-                        <div>
-                          <strong>{feature.name}</strong>
-                          {feature.description && <p className="feature-description">{feature.description}</p>}
-                        </div>
-                      </div>
-                      <div className="admin-feature-actions">
-                        <button
-                          type="button"
-                          className="admin-feature-move"
-                          onClick={() => moveFeatureUp(index)}
-                          disabled={index === 0}
-                          title="Move up"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          type="button"
-                          className="admin-feature-move"
-                          onClick={() => moveFeatureDown(index)}
-                          disabled={index === formData.features.length - 1}
-                          title="Move down"
-                        >
-                          ↓
-                        </button>
-                        <button 
-                          type="button" 
-                          className="admin-edit-feature" 
-                          onClick={() => {
-                            setNewFeature({
-                              name: feature.name,
-                              description: feature.description || '',
-                              included: feature.included
-                            });
-                            removeFeature(index);
-                          }}
-                          title="Edit this feature"
-                        >
-                          ✎
-                        </button>
-                        <button 
-                          type="button" 
-                          className="admin-remove-feature" 
-                          onClick={() => removeFeature(index)}
-                          title="Remove this feature"
-                        >
-                          &times;
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {formData.features.length === 0 && (
-                    <div className="admin-no-features">
-                      <p>No features added yet.</p>
-                      <p className="admin-features-hint">Features help customers understand what's included in each subscription plan.</p>
-                    </div>
-                  )}
                 </div>
                 
-                <div className="admin-add-feature">
-                  <h5>Add New Feature</h5>
-                  <div className="admin-form-row">
-                    <div className="admin-form-group">
-                      <label htmlFor="feature-name">Feature Name</label>
-                      <input
-                        id="feature-name"
-                        type="text"
-                        placeholder="e.g., 24/7 Support"
-                        name="name"
-                        value={newFeature.name}
-                        onChange={handleFeatureInputChange}
-                      />
-                    </div>
-                    
-                    <div className="admin-form-group">
-                      <label htmlFor="feature-description">Description (optional)</label>
-                      <input
-                        id="feature-description"
-                        type="text"
-                        placeholder="e.g., Access to support team anytime"
-                        name="description"
-                        value={newFeature.description}
-                        onChange={handleFeatureInputChange}
-                      />
-                    </div>
-                    
-                    <div className="admin-form-group admin-checkbox-group">
-                      <label className="admin-checkbox-label">
-                        <input
-                          type="checkbox"
-                          name="included"
-                          checked={newFeature.included}
-                          onChange={handleFeatureInputChange}
-                        />
-                        Included in this plan
-                      </label>
-                    </div>
-                  </div>
-                  
-                  <button 
-                    type="button" 
-                    className="admin-add-feature-btn" 
-                    onClick={addFeature}
-                    disabled={!newFeature.name.trim()}
-                  >
-                    Add Feature
-                  </button>
-                </div>
-                
-                <div className="admin-features-tips">
-                  <h5>Tips for effective features:</h5>
-                  <ul>
-                    <li>Keep feature names concise and clear</li>
-                    <li>Use descriptions to provide additional details</li>
-                    <li>Include both included and excluded features for transparency</li>
-                    <li>List the most important features first</li>
-                  </ul>
+                <div className="admin-form-group admin-checkbox-group">
+                  <label className="admin-checkbox-label">
+                    <input
+                      type="checkbox"
+                      name="included"
+                      checked={newFeature.included}
+                      onChange={handleFeatureInputChange}
+                    />
+                    Included in this plan
+                  </label>
                 </div>
               </div>
               
-              <div className="admin-form-actions">
-                <button 
-                  type="button" 
-                  className="admin-cancel-btn" 
-                  onClick={closeModal}
-                  disabled={loading}
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="admin-submit-btn"
-                  disabled={loading}
-                >
-                  {loading ? 'Saving...' : editingSubscription ? 'Update Subscription' : 'Create Subscription'}
-                </button>
-              </div>
-            </form>
+              <button 
+                type="button" 
+                className="admin-add-feature-btn" 
+                onClick={addFeature}
+                disabled={!newFeature.name.trim()}
+              >
+                Add Feature
+              </button>
+            </div>
+            
+            <div className="admin-features-tips">
+              <h5>Tips for effective features:</h5>
+              <ul>
+                <li>Keep feature names concise and clear</li>
+                <li>Use descriptions to provide additional details</li>
+                <li>Include both included and excluded features for transparency</li>
+                <li>List the most important features first</li>
+              </ul>
+            </div>
           </div>
-        </div>
-      )}
+          
+          <div className="admin-form-actions">
+            <button 
+              type="button" 
+              className="admin-cancel-btn" 
+              onClick={closeModal}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              className="admin-submit-btn"
+              disabled={loading}
+            >
+              {loading ? 'Saving...' : editingSubscription ? 'Update Subscription' : 'Create Subscription'}
+            </button>
+          </div>
+        </form>
+      </AdminModal>
     </div>
   );
 };

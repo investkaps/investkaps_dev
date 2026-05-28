@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminAPI, esignAPI } from '../../services/api';
 import subscriptionAPI from '../../services/subscriptionAPI';
 import './AdminDashboard.css';
+import Modal from '../../components/Shared/Modal';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -214,22 +215,12 @@ const UserManagement = () => {
     <div className="admin-section">
       {/* Delete confirmation modal */}
       {deleteConfirmModal.show && (
-        <>
-          <div
-            style={{
-              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.65)', zIndex: 1100,
-              backdropFilter: 'blur(4px)'
-            }}
-            onClick={closeDeleteConfirm}
-          />
+        <Modal isOpen={deleteConfirmModal.show} onClose={closeDeleteConfirm} contentWrapper={false}>
           <div style={{
-            position: 'fixed', top: '50%', left: '50%',
-            transform: 'translate(-50%, -50%)',
             background: '#1a1a2e', border: '1px solid #dc3545',
             borderRadius: '12px', padding: '2rem',
-            width: '90%', maxWidth: '460px',
-            zIndex: 1101, boxShadow: '0 20px 60px rgba(220,53,69,0.3)'
+            width: '100%', maxWidth: '460px',
+            boxShadow: '0 20px 60px rgba(220,53,69,0.3)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
               <span style={{ fontSize: '1.8rem' }}>⚠️</span>
@@ -285,7 +276,7 @@ const UserManagement = () => {
               </button>
             </div>
           </div>
-        </>
+        </Modal>
       )}
 
       {error && (
@@ -453,36 +444,8 @@ const UserManagement = () => {
       </div>
         
       {selectedUser && (
-        <>
-          <div 
-            className="admin-modal-backdrop" 
-            style={{ 
-              position: 'fixed', 
-              top: 0, 
-              left: 0, 
-              right: 0, 
-              bottom: 0, 
-              backgroundColor: 'rgba(0, 0, 0, 0.5)', 
-              zIndex: 999,
-              backdropFilter: 'blur(4px)'
-            }}
-            onClick={() => setSelectedUser(null)}
-          />
-          <div 
-            className="admin-user-details" 
-            style={{ 
-              position: 'fixed', 
-              top: '50%', 
-              left: '50%', 
-              transform: 'translate(-50%, -50%)',
-              width: '90%',
-              maxWidth: '800px',
-              maxHeight: '90vh', 
-              overflowY: 'auto', 
-              zIndex: 1000,
-              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)'
-            }}
-          >
+        <Modal isOpen={!!selectedUser} onClose={() => setSelectedUser(null)}>
+          <div className="admin-user-details" style={{ width: '100%', maxWidth: '800px' }}>
             <div className="admin-details-header">
               <h3>User Details</h3>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -940,7 +903,7 @@ const UserManagement = () => {
               </div>
             </div>
           </div>
-        </>
+        </Modal>
       )}
     </div>
   );

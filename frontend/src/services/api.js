@@ -233,6 +233,86 @@ export const userAPI = {
   }
 };
 
+export const testimonialsAPI = {
+  getPublic: async () => {
+    try {
+      const res = await api.get('/testimonials');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching public testimonials:', message);
+      throw new Error(message);
+    }
+  },
+
+  getMy: async () => {
+    try {
+      const res = await api.get('/testimonials/my');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching my testimonial:', message);
+      throw new Error(message);
+    }
+  },
+
+  submit: async (payload) => {
+    try {
+      const res = await api.post('/testimonials', payload);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error submitting testimonial:', message);
+      throw new Error(message);
+    }
+  },
+
+  // Admin helpers
+  adminGetAll: async () => {
+    try {
+      const res = await api.get('/testimonials/admin/all');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching admin testimonials:', message);
+      throw new Error(message);
+    }
+  },
+
+  adminCreate: async (payload) => {
+    try {
+      const res = await api.post('/testimonials/admin', payload);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error creating admin testimonial:', message);
+      throw new Error(message);
+    }
+  },
+
+  adminPatch: async (id, payload) => {
+    try {
+      const res = await api.patch(`/testimonials/admin/${id}`, payload);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error patching admin testimonial:', message);
+      throw new Error(message);
+    }
+  },
+
+  adminDelete: async (id) => {
+    try {
+      const res = await api.delete(`/testimonials/admin/${id}`);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error deleting admin testimonial:', message);
+      throw new Error(message);
+    }
+  }
+};
+
 
 export const adminAPI = {
   // Get admin dashboard data
@@ -303,6 +383,34 @@ export const adminAPI = {
     } catch (err) {
       const { message } = extractError(err);
       console.error('Error deleting user:', message);
+      throw new Error(message);
+    }
+  },
+
+  /**
+   * Backfill migration: fixes users who completed RA/IA esigning before
+   * clientTypes.{RA|IA}.isCompleted was introduced.
+   * Idempotent — safe to run multiple times.
+   */
+  patchClientTypes: async () => {
+    try {
+      const res = await api.post('/admin/patch-client-types');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error patching client types:', message);
+      throw new Error(message);
+    }
+  },
+
+  /** Read-only diagnostic: returns users with missing clientTypes flags. */
+  debugClientTypes: async () => {
+    try {
+      const res = await api.get('/admin/debug-client-types');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error debugging client types:', message);
       throw new Error(message);
     }
   },

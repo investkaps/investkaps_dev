@@ -11,7 +11,247 @@ import PaymentApproval from './PaymentApproval';
 import QuestionnaireManagement from './QuestionnaireManagement';
 import QuestionnaireResponses from './QuestionnaireResponses';
 import EsignManagement from './EsignManagement';
+import TestimonialsManagement from '../../components/Admin/TestimonialsManagement';
 import './AdminDashboard.css';
+
+/* ─────────────────────────── Settings / Maintenance tab ─── */
+const SettingsTab = () => {
+  const [patchLoading, setPatchLoading] = useState(false);
+  const [patchResult, setPatchResult]   = useState(null);
+  const [patchError, setPatchError]     = useState(null);
+
+  const [debugLoading, setDebugLoading] = useState(false);
+  const [debugResult, setDebugResult]   = useState(null);
+  const [debugError, setDebugError]     = useState(null);
+
+  const handleDebug = async () => {
+    setDebugLoading(true);
+    setDebugResult(null);
+    setDebugError(null);
+    try {
+      const res = await adminAPI.debugClientTypes();
+      setDebugResult(res);
+    } catch (err) {
+      setDebugError(err.message || 'Debug failed.');
+    } finally {
+      setDebugLoading(false);
+    }
+  };
+
+  const handlePatch = async () => {
+    if (!window.confirm(
+      'This will scan all users with verificationStatus.esign=true and backfill any missing RA/IA client type flags.\n\nIt is safe to run multiple times. Proceed?'
+    )) return;
+
+    setPatchLoading(true);
+    setPatchResult(null);
+    setPatchError(null);
+    try {
+      const res = await adminAPI.patchClientTypes();
+      if (res.success) {
+        setPatchResult(res);
+      } else {
+        setPatchError(res.error || 'Patch failed.');
+      }
+    } catch (err) {
+      setPatchError(err.message || 'Patch failed.');
+    } finally {
+      setPatchLoading(false);
+    }
+  };
+
+  return (
+    <div className="admin-section">
+      <div style={{
+        background: '#fff', borderRadius: '12px',
+        border: '1px solid #e9ecef', padding: '1.75rem',
+        marginBottom: '1.5rem', boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+      }}>
+        <h3 style={{ margin: '0 0 0.4rem', color: '#1e293b', fontSize: '1.05rem' }}>
+          🔧 Database Maintenance
+        </h3>
+        <p style={{ color: '#6c757d', fontSize: '0.875rem', margin: '0 0 1.5rem' }}>
+          One-off migration scripts to correct data inconsistencies.
+        </p>
+
+        {/* ── Patch Client Types ── */}
+        <div style={{
+          border: '1px solid #e9ecef', borderRadius: '10px',
+          padding: '1.25rem 1.5rem', marginBottom: '1rem',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{ flex: 1 }}>
+              <strong style={{ color: '#1e293b', fontSize: '0.95rem' }}>
+                Backfill RA / IA Client Types
+              </strong>
+              <p style={{ color: '#6c757d', fontSize: '0.83rem', margin: '0.35rem 0 0', lineHeight: 1.5 }}>
+                Users who completed onboarding (e-sign verified) before the
+                <code> clientTypes</code> field was introduced will show <strong>None</strong>
+                in the user table. Run <strong>Debug</strong> first to preview issues,
+                then <strong>Run Patch</strong> to fix them.
+                <br /><strong style={{ color: '#856404' }}>Safe to run multiple times — already-correct users are skipped.</strong>
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+              {/* Debug button */}
+              <button
+                onClick={handleDebug}
+                disabled={debugLoading || patchLoading}
+                style={{
+                  padding: '0.55rem 1.1rem', borderRadius: '8px',
+                  background: '#e8f0fe', color: '#3c4fe0',
+                  border: '1px solid #c5d4f8', fontWeight: 700, fontSize: '0.88rem',
+                  cursor: (debugLoading || patchLoading) ? 'not-allowed' : 'pointer',
+                  display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                  opacity: (debugLoading || patchLoading) ? 0.7 : 1,
+                }}
+              >
+                {debugLoading && <span style={{
+                  width: 12, height: 12,
+                  border: '2px solid #c5d4f8', borderTopColor: '#3c4fe0',
+                  borderRadius: '50%', animation: 'spin 0.7s linear infinite',
+                  display: 'inline-block',
+                }} />}
+                {debugLoading ? 'Checking…' : '🔍 Debug'}
+              </button>
+              {/* Patch button */}
+              <button
+                onClick={handlePatch}
+                disabled={patchLoading || debugLoading}
+                style={{
+                  padding: '0.55rem 1.4rem', borderRadius: '8px',
+                  background: (patchLoading || debugLoading) ? '#e9ecef' : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                  color: (patchLoading || debugLoading) ? '#6c757d' : '#fff',
+                  border: 'none', fontWeight: 700, fontSize: '0.88rem',
+                  cursor: (patchLoading || debugLoading) ? 'not-allowed' : 'pointer',
+                  display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                  boxShadow: (patchLoading || debugLoading) ? 'none' : '0 2px 8px rgba(99,102,241,0.3)',
+                }}
+              >
+                {patchLoading && <span style={{
+                  width: 14, height: 14,
+                  border: '2px solid #aaa', borderTopColor: '#6366f1',
+                  borderRadius: '50%', animation: 'spin 0.7s linear infinite',
+                  display: 'inline-block',
+                }} />}
+                {patchLoading ? 'Running…' : '▶ Run Patch'}
+              </button>
+            </div>
+          </div>
+
+          {/* Debug result */}
+          {debugError && (
+            <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: '#f8d7da', color: '#721c24', borderRadius: '8px', fontSize: '0.85rem' }}>
+              ⚠ {debugError}
+            </div>
+          )}
+          {debugResult && (
+            <div style={{ marginTop: '1rem' }}>
+              <div style={{
+                padding: '0.75rem 1rem', borderRadius: '8px', fontSize: '0.88rem', fontWeight: 600,
+                background: debugResult.summary.usersWithIssues > 0 ? '#fff3cd' : '#d4edda',
+                color:      debugResult.summary.usersWithIssues > 0 ? '#856404' : '#155724',
+                marginBottom: debugResult.issues?.length ? '0.75rem' : 0,
+              }}>
+                Found <strong>{debugResult.summary.usersWithIssues}</strong> user(s) with missing flags
+                · <strong>{debugResult.summary.usersOk}</strong> already correct
+                · <strong>{debugResult.summary.totalEsignedUsers}</strong> total e-sign verified
+              </div>
+              {debugResult.issues?.length > 0 && (
+                <div style={{ maxHeight: '260px', overflowY: 'auto', border: '1px solid #f0f0f0', borderRadius: '8px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                    <thead>
+                      <tr style={{ background: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
+                        <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left', color: '#6c757d', fontWeight: 700 }}>Name</th>
+                        <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left', color: '#6c757d', fontWeight: 700 }}>Email</th>
+                        <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left', color: '#6c757d', fontWeight: 700 }}>Issue</th>
+                        <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left', color: '#6c757d', fontWeight: 700 }}>Docs</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {debugResult.issues.map((u, i) => (
+                        <tr key={i} style={{ borderBottom: '1px solid #f4f4f4' }}>
+                          <td style={{ padding: '0.45rem 0.75rem', color: '#2c3e50' }}>{u.name}</td>
+                          <td style={{ padding: '0.45rem 0.75rem', color: '#2c3e50' }}>{u.email}</td>
+                          <td style={{ padding: '0.45rem 0.75rem' }}>
+                            <span style={{ background: '#fff3cd', color: '#856404', padding: '0.15rem 0.5rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600 }}>
+                              {u.issue}
+                            </span>
+                          </td>
+                          <td style={{ padding: '0.45rem 0.75rem', color: '#6c757d', fontSize: '0.78rem' }}>
+                            {u.documents?.length
+                              ? u.documents.map(d => `${d.serviceType||'?'}(${d.status||'?'})`).join(', ')
+                              : 'none'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Patch error */}
+          {patchError && (
+            <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: '#f8d7da', color: '#721c24', borderRadius: '8px', fontSize: '0.85rem' }}>
+              ⚠ {patchError}
+            </div>
+          )}
+
+          {/* Patch result */}
+          {patchResult && (
+            <div style={{ marginTop: '1rem' }}>
+              <div style={{
+                padding: '0.85rem 1rem',
+                background: patchResult.data.usersPatched > 0 ? '#d4edda' : '#e8f4fd',
+                color:      patchResult.data.usersPatched > 0 ? '#155724' : '#004085',
+                borderRadius: '8px', fontSize: '0.88rem', fontWeight: 600,
+                marginBottom: patchResult.data.details?.length ? '0.75rem' : 0,
+              }}>
+                ✓ {patchResult.message}
+                {patchResult.data.errors?.length > 0 && (
+                  <span style={{ color: '#721c24', marginLeft: '0.5rem' }}>
+                    ⚠ {patchResult.data.errors.length} error(s) — check server logs.
+                  </span>
+                )}
+              </div>
+              {patchResult.data.details?.length > 0 && (
+                <div style={{ maxHeight: '240px', overflowY: 'auto', border: '1px solid #f0f0f0', borderRadius: '8px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                    <thead>
+                      <tr style={{ background: '#f8f9fa', borderBottom: '1px solid #dee2e6' }}>
+                        <th style={{ padding: '0.4rem 0.75rem', textAlign: 'left', color: '#6c757d', fontWeight: 700 }}>Email</th>
+                        <th style={{ padding: '0.4rem 0.75rem', textAlign: 'left', color: '#6c757d', fontWeight: 700 }}>Patched Types</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {patchResult.data.details.map((d, i) => (
+                        <tr key={i} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                          <td style={{ padding: '0.4rem 0.75rem', color: '#2c3e50' }}>{d.email}</td>
+                          <td style={{ padding: '0.4rem 0.75rem' }}>
+                            {d.patchedTypes.map(t => (
+                              <span key={t} style={{
+                                background: '#e8f0fe', color: '#3c4fe0',
+                                padding: '0.15rem 0.5rem', borderRadius: '10px',
+                                fontSize: '0.72rem', fontWeight: 700, marginRight: '0.25rem',
+                              }}>{t}</span>
+                            ))}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 const AdminDashboard = () => {
   const { currentUser, logout } = useAuth();
@@ -95,6 +335,9 @@ const AdminDashboard = () => {
             <li className={activeTab === 'documents' ? 'active' : ''}>
               <button onClick={() => setActiveTab('documents')}>📄 Documents</button>
             </li>
+            <li className={activeTab === 'testimonials' ? 'active' : ''}>
+              <button onClick={() => setActiveTab('testimonials')}>Testimonials</button>
+            </li>
             <li className={activeTab === 'questionnaire-management' ? 'active' : ''}>
               <button onClick={() => setActiveTab('questionnaire-management')}>Questionnaires</button>
             </li>
@@ -128,6 +371,7 @@ const AdminDashboard = () => {
             {activeTab === 'questionnaire-management' && 'Questionnaire Management'}
             {activeTab === 'questionnaire-responses' && 'Questionnaire Responses'}
             {activeTab === 'settings' && 'Admin Settings'}
+            {activeTab === 'testimonials' && 'Testimonials'}
           </h1>
           <div className="admin-header-actions">
             <span className="admin-date">{new Date().toLocaleDateString()}</span>
@@ -238,10 +482,10 @@ const AdminDashboard = () => {
         {activeTab === 'questionnaire-responses' && <QuestionnaireResponses />}
         
         {activeTab === 'settings' && (
-          <div className="admin-section">
-            <h2>Admin Settings</h2>
-            <p>Admin settings functionality will be implemented here.</p>
-          </div>
+          <SettingsTab />
+        )}
+        {activeTab === 'testimonials' && (
+          <TestimonialsManagement />
         )}
       </div>
     </div>

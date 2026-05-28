@@ -106,3 +106,19 @@
 2026-05-27 11:26:34 error: Error in getBatchPrices: Failed to fetch batch prices: timeout of 10000ms exceeded
 2026-05-27 11:26:39 error: Error fetching batch LTP: timeout of 10000ms exceeded
 2026-05-27 11:26:39 error: Error in getBatchPrices: Failed to fetch batch prices: timeout of 10000ms exceeded
+2026-05-27 22:31:16 error: Error fetching batch LTP: timeout of 10000ms exceeded
+2026-05-27 22:31:16 error: Error in getBatchPrices: Failed to fetch batch prices: timeout of 10000ms exceeded
+2026-05-28 13:29:34 error: Error fetching batch LTP: timeout of 10000ms exceeded
+2026-05-28 13:29:34 error: Error in getBatchPrices: Failed to fetch batch prices: timeout of 10000ms exceeded
+2026-05-28 13:54:39 error: Error fetching batch LTP: timeout of 10000ms exceeded
+2026-05-28 13:54:39 error: Error in getBatchPrices: Failed to fetch batch prices: timeout of 10000ms exceeded
+2026-05-28 14:00:28 error: [TESTIMONIALS] Admin POST create error:
+2026-05-28 14:00:33 error: [TESTIMONIALS] Admin POST create error:
+2026-05-28 14:06:46 error: [TESTIMONIALS] Admin POST create error:
+2026-05-28 14:08:00 error: [TESTIMONIALS] Admin POST create error:
+2026-05-28 14:09:08 error: Error syncing testimonials indexes:
+2026-05-28 14:09:26 error: Error syncing testimonials indexes:
+2026-05-28 14:09:51 error: Error fixing testimonials indexes:
+2026-05-28 14:10:44 error: Error fixing testimonials indexes:
+2026-05-28 14:11:05 error: Error fixing testimonials indexes:
+2026-05-28 14:12:42 error: Error fixing testimonials index:

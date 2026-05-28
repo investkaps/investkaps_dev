@@ -5,6 +5,7 @@ import stockRecommendationAPI from '../../services/stockRecommendationAPI';
 import PDFReportGenerator from '../PDFReportGenerator/PDFReportGenerator';
 import SymbolAutocomplete from './SymbolAutocomplete';
 import './StockRecommendationManagement.css';
+import Modal from '../Shared/Modal';
 
 // Import the API instance for authenticated requests
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -997,8 +998,8 @@ const StockRecommendationManagement = () => {
       )}
 
       {selectedRecommendation && (
-        <div className="admin-modal">
-          <div className="admin-modal-content recommendation-detail">
+        <Modal isOpen={!!selectedRecommendation} onClose={closeDetails}>
+          <div className="recommendation-detail">
             <div className="admin-modal-header">
               <h3>Recommendation Details</h3>
               <button className="admin-modal-close" onClick={closeDetails}>×</button>
@@ -1119,7 +1120,7 @@ const StockRecommendationManagement = () => {
               <button className="admin-button" onClick={closeDetails}>Close</button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* PDF Report Generator Modal */}

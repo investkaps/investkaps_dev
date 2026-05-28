@@ -29,9 +29,35 @@ import newsletterRoutes from './routes/newsletterRoutes.js';
 import symbolRoutes from './routes/symbolRoutes.js';
 import ltpRoutes from './routes/ltpRoutes.js';
 import questionnaireRoutes from './routes/questionnaireRoutes.js';
+import testimonialRoutes from './routes/testimonialRoutes.js';
+import Testimonial from './model/Testimonial.js';
 
 // Connect to MongoDB
 connectDB();
+
+// Fix testimonials index on startup (drop old incorrect index, recreate correct one with partial filter)
+setTimeout(async () => {
+  try {
+    // Try to drop the old index
+    try {
+      await Testimonial.collection.dropIndex('user_1');
+      logger.info('Dropped old testimonials index');
+    } catch (dropErr) {
+      if (!dropErr.message.includes('index not found')) {
+        logger.warn('Could not drop index:', dropErr.message);
+      }
+    }
+    
+    // Create the correct index with partial filter
+    await Testimonial.collection.createIndex(
+      { user: 1 },
+      { unique: true, sparse: true, partialFilterExpression: { user: { $ne: null } } }
+    );
+    logger.info('✅ Testimonials index fixed with partial filter');
+  } catch (err) {
+    logger.error('Error fixing testimonials index:', err.message);
+  }
+}, 3000);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -119,6 +145,7 @@ app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/symbols', symbolRoutes);
 app.use('/api/ltp', ltpRoutes);
 app.use('/api/questionnaire', questionnaireRoutes);
+app.use('/api/testimonials', testimonialRoutes);
 
 // ─── Ensure directories exist ───
 for (const dir of ['uploads', 'logs']) {

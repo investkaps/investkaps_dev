@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../../services/api';
+import AdminModal from '../../components/Admin/AdminModal';
 import './AdminDashboard.css';
 
 const StrategyManagement = () => {
@@ -202,42 +203,39 @@ const StrategyManagement = () => {
       )}
       
       {showSubscriptions && (
-        <div className="admin-subscriptions-modal">
-          <div className="admin-modal-content">
-            <div className="admin-modal-header">
-              <h3>Subscriptions Using This Strategy</h3>
-              <button className="admin-modal-close" onClick={() => setShowSubscriptions(false)}>&times;</button>
-            </div>
-            <div className="admin-modal-body">
-              {subscriptionsWithStrategy.length > 0 ? (
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>Package Code</th>
-                      <th>Name</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {subscriptionsWithStrategy.map((subscription) => (
-                      <tr key={subscription._id}>
-                        <td>{subscription.packageCode}</td>
-                        <td>{subscription.name}</td>
-                        <td>
-                          <span className={`status-badge ${subscription.isActive ? 'active' : 'inactive'}`}>
-                            {subscription.isActive ? 'Active' : 'Inactive'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <p>No subscriptions are using this strategy.</p>
-              )}
-            </div>
-          </div>
-        </div>
+        <AdminModal 
+          isOpen={showSubscriptions} 
+          onClose={() => setShowSubscriptions(false)}
+          title="Subscriptions Using This Strategy"
+          size="large"
+        >
+          {subscriptionsWithStrategy.length > 0 ? (
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Package Code</th>
+                  <th>Name</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {subscriptionsWithStrategy.map((subscription) => (
+                  <tr key={subscription._id}>
+                    <td>{subscription.packageCode}</td>
+                    <td>{subscription.name}</td>
+                    <td>
+                      <span className={`status-badge ${subscription.isActive ? 'active' : 'inactive'}`}>
+                        {subscription.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>No subscriptions are using this strategy.</p>
+          )}
+        </AdminModal>
       )}
       
       <div className="admin-table-container">
@@ -311,149 +309,146 @@ const StrategyManagement = () => {
         </table>
       </div>
       
-      {isModalOpen && (
-        <div className="admin-modal">
-          <div className="admin-modal-content">
-            <div className="admin-modal-header">
-              <h3>{editingStrategy ? 'Edit Strategy' : 'Create New Strategy'}</h3>
-              <button className="admin-modal-close" onClick={closeModal}>&times;</button>
+      <AdminModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        title={editingStrategy ? 'Edit Strategy' : 'Create New Strategy'}
+        size="large"
+      >
+        <form onSubmit={handleSubmit} className="admin-form">
+          <div className="admin-form-row">
+            <div className="admin-form-group">
+              <label htmlFor="strategyCode">Strategy Code</label>
+              <input
+                type="text"
+                id="strategyCode"
+                name="strategyCode"
+                value={formData.strategyCode}
+                onChange={handleInputChange}
+                required
+              />
             </div>
-            <form onSubmit={handleSubmit} className="admin-form">
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label htmlFor="strategyCode">Strategy Code</label>
-                  <input
-                    type="text"
-                    id="strategyCode"
-                    name="strategyCode"
-                    value={formData.strategyCode}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                
-                <div className="admin-form-group">
-                  <label htmlFor="name">Name</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="admin-form-group">
-                <label htmlFor="description">Description</label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              
-              <div className="admin-form-section">
-                <h4>Trading Options</h4>
-                <div className="admin-trading-options">
-                  <label className="admin-checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="tradingOptions.stockOptions"
-                      checked={formData.tradingOptions.stockOptions}
-                      onChange={handleInputChange}
-                    />
-                    Stock Options
-                  </label>
-                  
-                  <label className="admin-checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="tradingOptions.indexOptions"
-                      checked={formData.tradingOptions.indexOptions}
-                      onChange={handleInputChange}
-                    />
-                    Index Options
-                  </label>
-                  
-                  <label className="admin-checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="tradingOptions.stockFuture"
-                      checked={formData.tradingOptions.stockFuture}
-                      onChange={handleInputChange}
-                    />
-                    Stock Future
-                  </label>
-                  
-                  <label className="admin-checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="tradingOptions.indexFuture"
-                      checked={formData.tradingOptions.indexFuture}
-                      onChange={handleInputChange}
-                    />
-                    Index Future
-                  </label>
-                  
-                  <label className="admin-checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="tradingOptions.equity"
-                      checked={formData.tradingOptions.equity}
-                      onChange={handleInputChange}
-                    />
-                    Equity
-                  </label>
-                  
-                  <label className="admin-checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="tradingOptions.mcx"
-                      checked={formData.tradingOptions.mcx}
-                      onChange={handleInputChange}
-                    />
-                    MCX
-                  </label>
-                </div>
-              </div>
-              
-              <div className="admin-form-group">
-                <label className="admin-checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="isActive"
-                    checked={formData.isActive}
-                    onChange={handleInputChange}
-                  />
-                  Active
-                </label>
-              </div>
-              
-              <div className="admin-form-actions">
-                <button 
-                  type="button" 
-                  className="admin-cancel-btn" 
-                  onClick={closeModal}
-                  disabled={loading}
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="admin-submit-btn"
-                  disabled={loading}
-                >
-                  {loading ? 'Saving...' : editingStrategy ? 'Update Strategy' : 'Create Strategy'}
-                </button>
-              </div>
-            </form>
+            
+            <div className="admin-form-group">
+              <label htmlFor="name">Name</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
           </div>
-        </div>
-      )}
+          
+          <div className="admin-form-group">
+            <label htmlFor="description">Description</label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          
+          <div className="admin-form-section">
+            <h4>Trading Options</h4>
+            <div className="admin-trading-options">
+              <label className="admin-checkbox-label">
+                <input
+                  type="checkbox"
+                  name="tradingOptions.stockOptions"
+                  checked={formData.tradingOptions.stockOptions}
+                  onChange={handleInputChange}
+                />
+                Stock Options
+              </label>
+              
+              <label className="admin-checkbox-label">
+                <input
+                  type="checkbox"
+                  name="tradingOptions.indexOptions"
+                  checked={formData.tradingOptions.indexOptions}
+                  onChange={handleInputChange}
+                />
+                Index Options
+              </label>
+              
+              <label className="admin-checkbox-label">
+                <input
+                  type="checkbox"
+                  name="tradingOptions.stockFuture"
+                  checked={formData.tradingOptions.stockFuture}
+                  onChange={handleInputChange}
+                />
+                Stock Future
+              </label>
+              
+              <label className="admin-checkbox-label">
+                <input
+                  type="checkbox"
+                  name="tradingOptions.indexFuture"
+                  checked={formData.tradingOptions.indexFuture}
+                  onChange={handleInputChange}
+                />
+                Index Future
+              </label>
+              
+              <label className="admin-checkbox-label">
+                <input
+                  type="checkbox"
+                  name="tradingOptions.equity"
+                  checked={formData.tradingOptions.equity}
+                  onChange={handleInputChange}
+                />
+                Equity
+              </label>
+              
+              <label className="admin-checkbox-label">
+                <input
+                  type="checkbox"
+                  name="tradingOptions.mcx"
+                  checked={formData.tradingOptions.mcx}
+                  onChange={handleInputChange}
+                />
+                MCX
+              </label>
+            </div>
+          </div>
+          
+          <div className="admin-form-group">
+            <label className="admin-checkbox-label">
+              <input
+                type="checkbox"
+                name="isActive"
+                checked={formData.isActive}
+                onChange={handleInputChange}
+              />
+              Active
+            </label>
+          </div>
+          
+          <div className="admin-form-actions">
+            <button 
+              type="button" 
+              className="admin-cancel-btn" 
+              onClick={closeModal}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              className="admin-submit-btn"
+              disabled={loading}
+            >
+              {loading ? 'Saving...' : editingStrategy ? 'Update Strategy' : 'Create Strategy'}
+            </button>
+          </div>
+        </form>
+      </AdminModal>
     </div>
   );
 };

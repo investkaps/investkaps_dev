@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Modal from '../../components/Shared/Modal';
 import './AdminDashboard.css';
 
 const PaymentApproval = () => {
@@ -255,36 +256,8 @@ const PaymentApproval = () => {
 
       {/* Payment Request Details Modal */}
       {selectedRequest && (
-        <>
-          <div 
-            className="admin-modal-backdrop" 
-            style={{ 
-              position: 'fixed', 
-              top: 0, 
-              left: 0, 
-              right: 0, 
-              bottom: 0, 
-              backgroundColor: 'rgba(0, 0, 0, 0.5)', 
-              zIndex: 999,
-              backdropFilter: 'blur(4px)'
-            }}
-            onClick={() => setSelectedRequest(null)}
-          />
-          <div 
-            className="admin-user-details" 
-            style={{ 
-              position: 'fixed', 
-              top: '50%', 
-              left: '50%', 
-              transform: 'translate(-50%, -50%)',
-              width: '90%',
-              maxWidth: '800px',
-              maxHeight: '90vh', 
-              overflowY: 'auto', 
-              zIndex: 1000,
-              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)'
-            }}
-          >
+        <Modal isOpen={!!selectedRequest} onClose={() => setSelectedRequest(null)}>
+          <div className="admin-user-details" style={{ width: '100%', maxWidth: '800px' }}>
             <div className="admin-details-header">
               <h3>Payment Request Details</h3>
               <button 
@@ -508,7 +481,7 @@ const PaymentApproval = () => {
               )}
             </div>
           </div>
-        </>
+        </Modal>
       )}
     </div>
   );
