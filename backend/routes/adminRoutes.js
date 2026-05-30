@@ -6,7 +6,14 @@ import User from '../model/User.js';
 import KycVerification from '../model/KycVerification.js';
 import Document from '../model/Document.js';
 import UserSubscription from '../model/UserSubscription.js';
+import { sendEmail } from '../utils/emailService.js';
 import * as adminRoleController from '../controllers/adminRoleController.js';
+import { sendOnboardingReminderToUser } from '../services/onboardingReminderService.js';
+import {
+  getMailTypeOptions,
+  buildMailPreviewPath,
+  sendAdminMail
+} from '../services/adminMailService.js';
 
 /**
  * @route   GET /api/admin/dashboard
@@ -375,6 +382,176 @@ router.delete('/users/:id', verifyToken, checkRole('admin'), async (req, res) =>
   } catch (error) {
     console.error('Error deleting user:', error);
     return res.status(500).json({ success: false, error: 'Server error while deleting user.' });
+  }
+});
+
+/**
+ * @route   POST /api/admin/users/:id/test-email
+ * @desc    Send a test email to the selected user
+ * @access  Private (Admin only)
+ */
+router.post('/users/:id/test-email', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const serviceType = String(req.body.serviceType || req.query.serviceType || 'RA').toUpperCase() === 'IA' ? 'IA' : 'RA';
+    const user = await User.findById(req.params.id).select('name email');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    if (!user.email) {
+      return res.status(400).json({
+        success: false,
+        error: 'User does not have an email address'
+      });
+    }
+
+    const appName = 'InvestKaps';
+    const html = `
+      <h2 style="margin:0 0 12px;color:#1e293b;font-size:20px;">Test Email from Admin Panel</h2>
+      <p style="margin:0 0 12px;color:#334155;font-size:14px;line-height:1.6;">
+        Hello ${user.name || 'there'},
+      </p>
+      <p style="margin:0 0 12px;color:#334155;font-size:14px;line-height:1.6;">
+        This is a test email sent from the admin panel to verify that the email delivery system is working correctly.
+      </p>
+      <p style="margin:0;color:#64748b;font-size:13px;line-height:1.6;">
+        If you received this message, the mail setup for ${appName} is working.
+      </p>
+    `;
+
+    await sendEmail({
+      to: user.email,
+      subject: `Test Email from ${appName} Admin Panel`,
+      html,
+      serviceType
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: `Test email sent to ${user.email} using ${serviceType} mail`
+    });
+  } catch (error) {
+    console.error('Error sending test email:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Server error while sending test email'
+    });
+  }
+});
+
+/**
+ * @route   POST /api/admin/users/:id/onboarding-reminder
+ * @desc    Send a manual onboarding reminder to the selected user
+ * @access  Private (Admin only)
+ */
+router.post('/users/:id/onboarding-reminder', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const serviceType = String(req.body.serviceType || req.query.serviceType || 'RA').toUpperCase() === 'IA' ? 'IA' : 'RA';
+    const user = await User.findById(req.params.id).select('name email verificationStatus kycStatus.isVerified profile.phoneVerified clientTypes role');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    if (!user.email) {
+      return res.status(400).json({
+        success: false,
+        error: 'User does not have an email address'
+      });
+    }
+
+    const result = await sendOnboardingReminderToUser(user, serviceType, { force: true });
+
+    if (result.skipped) {
+      return res.status(200).json({
+        success: true,
+        message: `No pending ${serviceType} onboarding steps found for ${user.email}`,
+        pendingSteps: result.pendingSteps,
+        skipped: true
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `${serviceType} onboarding reminder sent to ${user.email}`,
+      pendingSteps: result.pendingSteps,
+      skipped: false
+    });
+  } catch (error) {
+    console.error('Error sending onboarding reminder:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Server error while sending onboarding reminder'
+    });
+  }
+});
+
+/**
+ * @route   GET /api/admin/mail-types
+ * @desc    Get all admin mail types
+ * @access  Private (Admin only)
+ */
+router.get('/mail-types', verifyToken, checkRole('admin'), async (_req, res) => {
+  try {
+    return res.status(200).json({
+      success: true,
+      data: getMailTypeOptions().map((option) => ({
+        ...option,
+        path: buildMailPreviewPath()
+      }))
+    });
+  } catch (error) {
+    console.error('Error fetching mail types:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Server error'
+    });
+  }
+});
+
+/**
+ * @route   POST /api/admin/mail/send
+ * @desc    Send any supported mail template to a selected user
+ * @access  Private (Admin only)
+ */
+router.post('/mail/send', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const { userId, mailType, serviceType } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID is required'
+      });
+    }
+
+    if (!mailType) {
+      return res.status(400).json({
+        success: false,
+        error: 'Mail type is required'
+      });
+    }
+
+    const result = await sendAdminMail({ userId, mailType, serviceType });
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error sending admin mail:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Server error while sending mail'
+    });
   }
 });
 

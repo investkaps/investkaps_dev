@@ -44,21 +44,42 @@ const tradingOptionsSchema = new mongoose.Schema({
   }
 });
 
+const planOptionSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  months: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 12
+  },
+  price: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  description: {
+    type: String,
+    trim: true,
+    default: ''
+  }
+}, { _id: true });
+
 // Pricing options schema
 const pricingSchema = new mongoose.Schema({
   monthly: {
     type: Number,
-    required: true,
     min: 0
   },
   sixMonth: {
     type: Number,
-    required: true,
     min: 0
   },
   yearly: {
     type: Number,
-    required: true,
     min: 0
   }
 });
@@ -85,9 +106,13 @@ const subscriptionSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  planOptions: {
+    type: [planOptionSchema],
+    default: []
+  },
   pricing: {
     type: pricingSchema,
-    required: true
+    default: undefined
   },
   tradingOptions: {
     type: tradingOptionsSchema,

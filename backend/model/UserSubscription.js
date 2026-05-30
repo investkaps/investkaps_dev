@@ -93,8 +93,21 @@ const userSubscriptionSchema = new mongoose.Schema({
   },
   duration: {
     type: String,
-    enum: ['monthly', 'sixMonth', 'yearly'],
-    required: true
+    required: true,
+    trim: true
+  },
+  durationMonths: {
+    type: Number,
+    required: true,
+    min: 1
+  },
+  planOptionId: {
+    type: String,
+    default: null
+  },
+  planOptionName: {
+    type: String,
+    default: null
   },
   createdAt: {
     type: Date,

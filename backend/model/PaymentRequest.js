@@ -22,8 +22,18 @@ const paymentRequestSchema = new mongoose.Schema({
   },
   duration: {
     type: String,
-    enum: ['monthly', 'sixMonth', 'yearly'],
-    required: false
+    required: false,
+    trim: true
+  },
+  durationMonths: {
+    type: Number,
+    required: false,
+    min: 1
+  },
+  planOptionId: {
+    type: String,
+    required: false,
+    default: null
   },
   amount: {
     type: Number,

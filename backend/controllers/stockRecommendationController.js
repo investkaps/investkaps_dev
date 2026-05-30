@@ -8,6 +8,7 @@ import { uploadPDF, deletePDF  } from '../config/cloudinary.js';
 import { sendRecommendationToTelegram, sendUpdatedRecommendationToTelegram  } from '../services/telegramService.js';
 import { sendRecommendationToWhatsApp  } from '../services/whatsappService.js';
 import { sendNewRecommendationEmail, sendUpdatedRecommendationEmail } from '../utils/emailService.js';
+import { isEmailUnsubscribed } from '../services/emailPreferenceService.js';
 import Subscription from '../model/Subscription.js';
 
 /**
@@ -107,11 +108,17 @@ const createRecommendation = async (req, res) => {
 
       // Send email notifications to subscribed users
       try {
-        const usersWithEmail = userSubscriptions
-          .map(us => us.user)
-          .filter(u => u?.email);
-        for (const u of usersWithEmail) {
-          await sendNewRecommendationEmail(u, recommendation);
+        for (const us of userSubscriptions) {
+          const u = us.user;
+          if (!u?.email) continue;
+
+          if (await isEmailUnsubscribed(u.email)) {
+            logger.info(`Skipping stock recommendation email for unsubscribed user ${u.email}`);
+            continue;
+          }
+
+          const serviceType = us.serviceType || us.subscription?.serviceType || 'RA';
+          await sendNewRecommendationEmail(u, recommendation, serviceType);
           logger.info(`New-recommendation email sent to ${u.email}: ${recommendation.stockSymbol}`);
         }
       } catch (emailError) {
@@ -335,9 +342,12 @@ async function sendUpdateNotifications(recommendation) {
       status: 'active'
     }).populate('user', 'name email');
 
-    const usersWithEmail = userSubscriptions.map(us => us.user).filter(u => u?.email);
-    for (const u of usersWithEmail) {
-      await sendUpdatedRecommendationEmail(u, recommendation);
+    for (const us of userSubscriptions) {
+      const u = us.user;
+      if (!u?.email) continue;
+
+      const serviceType = us.serviceType || us.subscription?.serviceType || 'RA';
+      await sendUpdatedRecommendationEmail(u, recommendation, serviceType);
       logger.info(`Update-recommendation email sent to ${u.email}: ${recommendation.stockSymbol}`);
     }
   } catch (err) {
@@ -515,6 +525,7 @@ const sendRecommendationToUsers = async (recommendationId) => {
     
     // Filter users whose subscriptions include the target strategies
     const userIds = new Set();
+    const userServiceTypes = new Map();
     activeUserSubscriptions.forEach(userSub => {
       if (userSub.subscription && userSub.subscription.strategies) {
         const hasMatchingStrategy = userSub.subscription.strategies.some(strategy =>
@@ -522,6 +533,9 @@ const sendRecommendationToUsers = async (recommendationId) => {
         );
         if (hasMatchingStrategy) {
           userIds.add(userSub.user.toString());
+          if (!userServiceTypes.has(userSub.user.toString())) {
+            userServiceTypes.set(userSub.user.toString(), userSub.serviceType || userSub.subscription.serviceType || 'RA');
+          }
         }
       }
     });
@@ -534,7 +548,7 @@ const sendRecommendationToUsers = async (recommendationId) => {
     for (const user of users) {
       try {
         // Send notification
-        await notificationService.sendRecommendationNotification(user, recommendation);
+        await notificationService.sendRecommendationNotification(user, recommendation, userServiceTypes.get(user._id.toString()) || 'RA');
         
         // Track sent status
         recommendation.sentTo.push({

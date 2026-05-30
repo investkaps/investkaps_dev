@@ -12,6 +12,7 @@ import cron from 'node-cron';
 import connectDB from './config/db.js';
 import logger from './utils/logger.js';
 import * as subscriptionService from './controllers/subscriptionService.js';
+import { sendWeeklyOnboardingReminders } from './services/onboardingReminderService.js';
 import { globalLimiter } from './middleware/rateLimiter.js';
 
 // Route imports
@@ -26,38 +27,14 @@ import stockRecommendationRoutes from './routes/stockRecommendtionRoutes.js';
 import phoneRoutes from './routes/phoneRoutes.js';
 import paymentRequestRoutes from './routes/paymentRequestRoutes.js';
 import newsletterRoutes from './routes/newsletterRoutes.js';
+import emailPreferenceRoutes from './routes/emailPreferenceRoutes.js';
 import symbolRoutes from './routes/symbolRoutes.js';
 import ltpRoutes from './routes/ltpRoutes.js';
 import questionnaireRoutes from './routes/questionnaireRoutes.js';
 import testimonialRoutes from './routes/testimonialRoutes.js';
-import Testimonial from './model/Testimonial.js';
 
 // Connect to MongoDB
 connectDB();
-
-// Fix testimonials index on startup (drop old incorrect index, recreate correct one with partial filter)
-setTimeout(async () => {
-  try {
-    // Try to drop the old index
-    try {
-      await Testimonial.collection.dropIndex('user_1');
-      logger.info('Dropped old testimonials index');
-    } catch (dropErr) {
-      if (!dropErr.message.includes('index not found')) {
-        logger.warn('Could not drop index:', dropErr.message);
-      }
-    }
-    
-    // Create the correct index with partial filter
-    await Testimonial.collection.createIndex(
-      { user: 1 },
-      { unique: true, sparse: true, partialFilterExpression: { user: { $ne: null } } }
-    );
-    logger.info('✅ Testimonials index fixed with partial filter');
-  } catch (err) {
-    logger.error('Error fixing testimonials index:', err.message);
-  }
-}, 3000);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -142,6 +119,7 @@ app.use('/api/strategies', strategyRoutes);
 app.use('/api/recommendations', stockRecommendationRoutes);
 app.use('/api/payment-requests', paymentRequestRoutes);
 app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/email', emailPreferenceRoutes);
 app.use('/api/symbols', symbolRoutes);
 app.use('/api/ltp', ltpRoutes);
 app.use('/api/questionnaire', questionnaireRoutes);
@@ -176,6 +154,17 @@ app.listen(PORT, () => {
       logger.info(`Sent reminders for ${notifiedCount} expiring subscriptions`);
     } catch (error) {
       logger.error('Error in expiration reminders scheduled task:', error);
+    }
+  });
+
+  // Send onboarding reminders every Monday at 9:30 AM
+  cron.schedule('30 9 * * 1', async () => {
+    try {
+      logger.info('Running scheduled task: Send onboarding reminders');
+      const result = await sendWeeklyOnboardingReminders();
+      logger.info('Onboarding reminders completed', result);
+    } catch (error) {
+      logger.error('Error in onboarding reminders scheduled task:', error);
     }
   });
 });

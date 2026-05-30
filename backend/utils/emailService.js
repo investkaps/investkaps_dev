@@ -1,43 +1,122 @@
 import nodemailer from 'nodemailer';
 import logger from './logger.js';
+import { getUnsubscribeFooterHtml, isEmailUnsubscribed } from '../services/emailPreferenceService.js';
 
 // Create a transporter (lazy initialization)
-let transporter = null;
+const transporters = new Map();
 
-const getTransporter = () => {
-  if (!transporter) {
-    // Use IA-specific credentials if available, otherwise fall back to generic credentials
-    const host = process.env.SMTP_HOST_IA || process.env.EMAIL_HOST || 'smtp.gmail.com';
-    const port = Number(process.env.SMTP_PORT_IA || process.env.EMAIL_PORT) || 587;
-    const secure = process.env.EMAIL_SECURE_IA === 'true' || process.env.EMAIL_SECURE === 'true';
-    const user = process.env.SMTP_USER_IA || process.env.EMAIL_USER;
-    const pass = process.env.SMTP_PASS_IA || process.env.EMAIL_PASSWORD;
+const SERVICE_TYPES = ['RA', 'IA'];
 
-    transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure,
-      auth: {
-        user,
-        pass
-      }
-    });
+const normalizeServiceType = (serviceType) => {
+  const normalized = String(serviceType || 'RA').toUpperCase();
+  return SERVICE_TYPES.includes(normalized) ? normalized : 'RA';
+};
+
+const normalizeEnvValue = (value) => {
+  if (typeof value !== 'string') return value;
+
+  const trimmed = value.trim();
+  const unquoted = trimmed.replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1');
+  return unquoted.trim();
+};
+
+const getMailProfile = (serviceType = 'RA') => {
+  const normalizedServiceType = normalizeServiceType(serviceType);
+
+  if (normalizedServiceType === 'IA') {
+    return {
+      serviceType: normalizedServiceType,
+      host: normalizeEnvValue(process.env.SMTP_HOST_IA || process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com'),
+      port: Number(normalizeEnvValue(process.env.SMTP_PORT_IA || process.env.SMTP_PORT || process.env.EMAIL_PORT)) || 587,
+      secure: normalizeEnvValue(process.env.EMAIL_SECURE_IA) === 'true' || normalizeEnvValue(process.env.EMAIL_SECURE) === 'true',
+      user: normalizeEnvValue(process.env.SMTP_USER_IA || process.env.SMTP_USER || process.env.EMAIL_USER),
+      pass: normalizeEnvValue(process.env.SMTP_PASS_IA || process.env.SMTP_PASS || process.env.EMAIL_PASSWORD),
+      from: normalizeEnvValue(process.env.SMTP_FROM_IA || process.env.EMAIL_FROM || 'InvestKaps IA <noreply@investkaps.com>')
+    };
   }
-  return transporter;
+
+  return {
+    serviceType: normalizedServiceType,
+    host: normalizeEnvValue(process.env.EMAIL_HOST || process.env.SMTP_HOST || 'smtp.gmail.com'),
+    port: Number(normalizeEnvValue(process.env.EMAIL_PORT || process.env.SMTP_PORT)) || 587,
+    secure: normalizeEnvValue(process.env.EMAIL_SECURE) === 'true' || normalizeEnvValue(process.env.EMAIL_SECURE_IA) === 'true',
+    user: normalizeEnvValue(process.env.EMAIL_USER || process.env.SMTP_USER || process.env.SMTP_USER_IA),
+    pass: normalizeEnvValue(process.env.EMAIL_PASSWORD || process.env.SMTP_PASS || process.env.SMTP_PASS_IA),
+    from: normalizeEnvValue(process.env.EMAIL_FROM || process.env.SMTP_FROM_IA || 'InvestKaps <noreply@investkaps.com>')
+  };
+};
+
+const getDefaultCc = (serviceType = 'RA') => {
+  const normalizedServiceType = normalizeServiceType(serviceType);
+
+  if (normalizedServiceType === 'IA') {
+    return normalizeEnvValue(process.env.SMTP_USER_IA || process.env.EMAIL_USER);
+  }
+
+  return normalizeEnvValue(process.env.EMAIL_USER || process.env.SMTP_USER_IA);
+};
+
+const getTransporter = (serviceType = 'RA') => {
+  const normalizedServiceType = normalizeServiceType(serviceType);
+
+  if (!transporters.has(normalizedServiceType)) {
+    const mailProfile = getMailProfile(normalizedServiceType);
+
+    transporters.set(normalizedServiceType, nodemailer.createTransport({
+      host: mailProfile.host,
+      port: mailProfile.port,
+      secure: mailProfile.secure,
+      auth: {
+        user: mailProfile.user,
+        pass: mailProfile.pass
+      }
+    }));
+  }
+
+  return transporters.get(normalizedServiceType);
 };
 
 // Send email function
 const sendEmail = async (options) => {
   try {
-    // Default from address - use IA-specific if available
-    const from = process.env.SMTP_FROM_IA || process.env.EMAIL_FROM || 'InvestKaps <noreply@investkaps.com>';
+    const serviceType = normalizeServiceType(options.serviceType);
+    const mailProfile = getMailProfile(serviceType);
+    const recipientEmail = String(options.to || '').trim().toLowerCase();
+
+    if (recipientEmail && !options.allowUnsubscribed) {
+      const unsubscribed = await isEmailUnsubscribed(recipientEmail);
+      if (unsubscribed) {
+        throw new Error('Recipient has unsubscribed from InvestKaps emails');
+      }
+    }
+
+    const from = normalizeEnvValue(options.from || mailProfile.from);
+    const unsubscribeFooter = recipientEmail
+      ? getUnsubscribeFooterHtml({ email: recipientEmail, serviceType })
+      : '';
+
+    const html = String(options.html || '');
+    const htmlWithFooter = html.includes('data-email-unsubscribe-footer-slot="true"')
+      ? html.replace('<div data-email-unsubscribe-footer-slot="true"></div>', unsubscribeFooter)
+      : html.includes('</body>')
+        ? html.replace('</body>', `${unsubscribeFooter}</body>`)
+        : `${html}${unsubscribeFooter}`;
     
     const mailOptions = {
       from,
       to: options.to,
       subject: options.subject,
-      html: options.html
+      html: htmlWithFooter
     };
+
+    if (options.cc) {
+      mailOptions.cc = options.cc;
+    } else {
+      const defaultCc = getDefaultCc(serviceType);
+      if (defaultCc) {
+        mailOptions.cc = defaultCc;
+      }
+    }
     
     // Add CC if provided
     if (options.cc) {
@@ -54,7 +133,7 @@ const sendEmail = async (options) => {
       mailOptions.attachments = options.attachments;
     }
     
-    const transporterInstance = getTransporter();
+    const transporterInstance = getTransporter(serviceType);
     const info = await transporterInstance.sendMail(mailOptions);
     logger.info(`Email sent: ${info.messageId}`);
     return info;
@@ -87,14 +166,7 @@ const wrap = (body) => `
           </td>
         </tr>
         <!-- Body -->
-        <tr><td style="padding:32px 36px;">${body}</td></tr>
-        <!-- Footer -->
-        <tr>
-          <td style="background:#f8fafc;padding:20px 36px;border-top:1px solid #e2e8f0;text-align:center;">
-            <p style="margin:0;font-size:12px;color:#94a3b8;">© ${new Date().getFullYear()} InvestKaps. All rights reserved.</p>
-            <p style="margin:6px 0 0;font-size:11px;color:#cbd5e1;">This email was sent to you because you have an account with InvestKaps.</p>
-          </td>
-        </tr>
+        <tr><td style="padding:32px 36px;">${body}<div data-email-unsubscribe-footer-slot="true"></div></td></tr>
       </table>
     </td></tr>
   </table>
@@ -110,7 +182,8 @@ const btn = (text, url) =>
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. Payment request RECEIVED  (sent to user on submission)
 // ─────────────────────────────────────────────────────────────────────────────
-const sendPaymentRequestReceivedEmail = async (user, paymentRequest) => {
+const sendPaymentRequestReceivedEmail = async (user, paymentRequest, options = {}) => {
+  const serviceType = normalizeServiceType(paymentRequest?.serviceType);
   const html = wrap(`
     <h2 style="margin:0 0 6px;color:#1e293b;font-size:20px;">Payment Request Received</h2>
     <p style="margin:0 0 20px;color:#64748b;font-size:14px;">Hi ${user.name || user.email}, we've received your payment request and it is currently under review.</p>
@@ -134,14 +207,17 @@ const sendPaymentRequestReceivedEmail = async (user, paymentRequest) => {
   return sendEmail({
     to: user.email,
     subject: '✅ Payment Request Received — InvestKaps',
-    html
+    html,
+    serviceType,
+    allowUnsubscribed: options.allowUnsubscribed
   });
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. Payment request APPROVED  (sent to user)
 // ─────────────────────────────────────────────────────────────────────────────
-const sendPaymentApprovedEmail = async (user, paymentRequest, userSubscription) => {
+const sendPaymentApprovedEmail = async (user, paymentRequest, userSubscription, options = {}) => {
+  const serviceType = normalizeServiceType(userSubscription?.serviceType || paymentRequest?.serviceType);
   const endDate = userSubscription?.endDate
     ? new Date(userSubscription.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
     : 'N/A';
@@ -170,14 +246,17 @@ const sendPaymentApprovedEmail = async (user, paymentRequest, userSubscription) 
   return sendEmail({
     to: user.email,
     subject: '🎉 Payment Approved — Your Subscription is Active!',
-    html
+    html,
+    serviceType,
+    allowUnsubscribed: options.allowUnsubscribed
   });
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 3. Payment request REJECTED  (sent to user)
 // ─────────────────────────────────────────────────────────────────────────────
-const sendPaymentRejectedEmail = async (user, paymentRequest) => {
+const sendPaymentRejectedEmail = async (user, paymentRequest, options = {}) => {
+  const serviceType = normalizeServiceType(paymentRequest?.serviceType);
   const html = wrap(`
     <h2 style="margin:0 0 6px;color:#1e293b;font-size:20px;">Payment Request Update</h2>
     <p style="margin:0 0 20px;color:#64748b;font-size:14px;">Hi ${user.name || user.email}, unfortunately your payment request could not be verified.</p>
@@ -202,14 +281,17 @@ const sendPaymentRejectedEmail = async (user, paymentRequest) => {
   return sendEmail({
     to: user.email,
     subject: '⚠️ Payment Request Update — InvestKaps',
-    html
+    html,
+    serviceType,
+    allowUnsubscribed: options.allowUnsubscribed
   });
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 4. NEW stock recommendation  (bulk — one per subscribed user)
 // ─────────────────────────────────────────────────────────────────────────────
-const sendNewRecommendationEmail = async (user, recommendation) => {
+const sendNewRecommendationEmail = async (user, recommendation, serviceType = 'RA', options = {}) => {
+  const normalizedServiceType = normalizeServiceType(serviceType);
   const typeColor = recommendation.recommendationType === 'buy'
     ? { text: '#15803d', bg: '#dcfce7' }
     : recommendation.recommendationType === 'sell'
@@ -258,14 +340,17 @@ const sendNewRecommendationEmail = async (user, recommendation) => {
   return sendEmail({
     to: user.email,
     subject: `📈 New Recommendation: ${recommendation.stockSymbol} — InvestKaps`,
-    html
+    html,
+    serviceType: normalizedServiceType,
+    allowUnsubscribed: options.allowUnsubscribed
   });
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 5. UPDATED stock recommendation  (bulk — one per subscribed user)
 // ─────────────────────────────────────────────────────────────────────────────
-const sendUpdatedRecommendationEmail = async (user, recommendation) => {
+const sendUpdatedRecommendationEmail = async (user, recommendation, serviceType = 'RA', options = {}) => {
+  const normalizedServiceType = normalizeServiceType(serviceType);
   const typeColor = recommendation.recommendationType === 'buy'
     ? { text: '#15803d', bg: '#dcfce7' }
     : recommendation.recommendationType === 'sell'
@@ -313,7 +398,42 @@ const sendUpdatedRecommendationEmail = async (user, recommendation) => {
   return sendEmail({
     to: user.email,
     subject: `🔄 Updated Recommendation: ${recommendation.stockSymbol} — InvestKaps`,
-    html
+    html,
+    serviceType: normalizedServiceType,
+    allowUnsubscribed: options.allowUnsubscribed
+  });
+};
+
+const sendOnboardingReminderEmail = async (user, serviceType = 'RA', pendingSteps = [], options = {}) => {
+  const normalizedServiceType = normalizeServiceType(serviceType);
+  const serviceLabel = normalizedServiceType === 'IA' ? 'IA' : 'RA';
+  const dashboardUrl = `${process.env.FRONTEND_URL || 'https://investkaps.com'}/dashboard`;
+  const stepsList = pendingSteps.length
+    ? pendingSteps.map(step => `<li style="margin-bottom:8px;">${step}</li>`).join('')
+    : '<li style="margin-bottom:8px;">Complete your pending onboarding steps</li>';
+
+  const html = wrap(`
+    <h2 style="margin:0 0 6px;color:#1e293b;font-size:20px;">${serviceLabel} Onboarding Reminder</h2>
+    <p style="margin:0 0 16px;color:#64748b;font-size:14px;line-height:1.6;">Hi ${user.name || user.email}, we noticed that your ${serviceLabel} onboarding is still incomplete.</p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:20px;">
+      <tr><td style="padding:18px 22px;">
+        <p style="margin:0 0 8px;font-size:13px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Pending Steps</p>
+        <ul style="margin:0;padding-left:20px;color:#1e293b;font-size:14px;line-height:1.7;">${stepsList}</ul>
+      </td></tr>
+    </table>
+
+    <p style="margin:0 0 12px;color:#334155;font-size:14px;line-height:1.7;">Please complete the remaining steps from your dashboard using the button below.</p>
+    <p style="margin:0 0 12px;color:#334155;font-size:14px;line-height:1.7;">If you have already completed these steps, kindly ignore this email.</p>
+    ${btn('Open Dashboard', dashboardUrl)}
+  `);
+
+  return sendEmail({
+    to: user.email,
+    subject: `${serviceLabel} Onboarding Reminder — InvestKaps`,
+    html,
+    serviceType: normalizedServiceType,
+    allowUnsubscribed: options.allowUnsubscribed
   });
 };
 
@@ -323,5 +443,6 @@ export {
   sendPaymentApprovedEmail,
   sendPaymentRejectedEmail,
   sendNewRecommendationEmail,
-  sendUpdatedRecommendationEmail
+  sendUpdatedRecommendationEmail,
+  sendOnboardingReminderEmail
 };

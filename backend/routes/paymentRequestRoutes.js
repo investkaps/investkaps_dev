@@ -30,10 +30,39 @@ const upload = multer({
   }
 });
 
+const LEGACY_PLAN_MONTHS = {
+  monthly: 1,
+  sixMonth: 6,
+  yearly: 12
+};
+
+const getDurationMonths = ({ duration, durationMonths, planOption }) => {
+  const fromPayload = Number(durationMonths);
+  if (Number.isFinite(fromPayload) && fromPayload > 0) {
+    return fromPayload;
+  }
+
+  if (planOption?.months) {
+    return Number(planOption.months);
+  }
+
+  return LEGACY_PLAN_MONTHS[duration] || 1;
+};
+
+const getDurationLabel = ({ planName, duration, planOption }) => {
+  if (planOption?.name) return planOption.name;
+  if (planName) return planName;
+  if (duration && !LEGACY_PLAN_MONTHS[duration]) return duration;
+  if (duration && LEGACY_PLAN_MONTHS[duration]) {
+    return duration === 'monthly' ? 'Monthly' : duration === 'sixMonth' ? '6 Months' : 'Yearly';
+  }
+  return 'Monthly';
+};
+
 // Submit payment request
 router.post('/submit', upload.single('transactionImage'), async (req, res) => {
   try {
-    const { senderName, transactionId, planId, planName, duration, amount, userId, serviceType = 'RA', paymentMethod = 'qr' } = req.body;
+    const { senderName, transactionId, planId, planName, duration, durationMonths, planOptionId, amount, userId, serviceType = 'RA', paymentMethod = 'qr' } = req.body;
 
     // For IA payments, planId and duration are not required
     const isIaPayment = serviceType === 'IA';
@@ -45,9 +74,9 @@ router.post('/submit', upload.single('transactionImage'), async (req, res) => {
       });
     }
 
-    // For RA payments, validate plan and duration
+    // For RA payments, validate plan and plan option metadata
     if (!isIaPayment) {
-      if (!planId || !duration) {
+      if (!planId || (!duration && !durationMonths)) {
         return res.status(400).json({
           success: false,
           message: 'Plan ID and duration are required for RA payments'
@@ -73,12 +102,52 @@ router.post('/submit', upload.single('transactionImage'), async (req, res) => {
 
     // Check if plan exists (only for RA)
     let plan = null;
+    let planOption = null;
     if (!isIaPayment) {
       plan = await Subscription.findById(planId);
       if (!plan) {
         return res.status(404).json({
           success: false,
           message: 'Plan not found'
+        });
+      }
+
+      const availablePlanOptions = Array.isArray(plan.planOptions) && plan.planOptions.length > 0
+        ? plan.planOptions
+        : [];
+
+      if (planOptionId) {
+        planOption = availablePlanOptions.find(option => String(option._id) === String(planOptionId)) || null;
+      }
+
+      if (!planOption && duration) {
+        const legacyMatch = {
+          monthly: { name: 'Monthly', months: 1, price: plan.pricing?.monthly },
+          sixMonth: { name: '6 Months', months: 6, price: plan.pricing?.sixMonth },
+          yearly: { name: 'Yearly', months: 12, price: plan.pricing?.yearly }
+        }[duration];
+        if (legacyMatch) {
+          planOption = legacyMatch;
+        }
+      }
+
+      if (!planOption && availablePlanOptions.length > 0) {
+        planOption = availablePlanOptions[0];
+      }
+
+      if (!planOption) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid plan option'
+        });
+      }
+
+      const submittedAmount = Number(amount);
+      const expectedAmount = Number(planOption.price);
+      if (!Number.isFinite(submittedAmount) || submittedAmount !== expectedAmount) {
+        return res.status(400).json({
+          success: false,
+          message: 'Submitted amount does not match the selected plan option'
         });
       }
     }
@@ -91,8 +160,10 @@ router.post('/submit', upload.single('transactionImage'), async (req, res) => {
       user: user._id,
       serviceType,
       plan: !isIaPayment ? planId : undefined,
+      planOptionId: !isIaPayment ? (planOptionId || planOption?._id?.toString?.() || null) : undefined,
       planName: planName || (plan ? plan.name : undefined),
-      duration: !isIaPayment ? duration : undefined,
+      duration: !isIaPayment ? getDurationLabel({ planName, duration, planOption }) : undefined,
+      durationMonths: !isIaPayment ? getDurationMonths({ duration, durationMonths, planOption }) : undefined,
       amount: parseFloat(amount),
       senderName,
       transactionId,
@@ -214,23 +285,17 @@ router.post('/approve/:id', verifyToken, checkRole('admin'), async (req, res) =>
       const startDate = new Date();
       let endDate = new Date();
 
-      switch (paymentRequest.duration) {
-        case 'monthly':
-          endDate.setMonth(endDate.getMonth() + 1);
-          break;
-        case 'sixMonth':
-          endDate.setMonth(endDate.getMonth() + 6);
-          break;
-        case 'yearly':
-          endDate.setFullYear(endDate.getFullYear() + 1);
-          break;
-      }
+      const durationMonths = Number(paymentRequest.durationMonths) || LEGACY_PLAN_MONTHS[paymentRequest.duration] || 1;
+      endDate.setMonth(endDate.getMonth() + durationMonths);
 
       // Create user subscription
       userSubscription = new UserSubscription({
         user: paymentRequest.user._id,
         subscription: paymentRequest.plan._id,
         duration: paymentRequest.duration,
+        durationMonths: Number(paymentRequest.durationMonths) || LEGACY_PLAN_MONTHS[paymentRequest.duration] || 1,
+        planOptionId: paymentRequest.planOptionId || null,
+        planOptionName: paymentRequest.duration,
         startDate,
         endDate,
         price: paymentRequest.amount,

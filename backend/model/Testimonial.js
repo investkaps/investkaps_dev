@@ -73,10 +73,12 @@ const TestimonialSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Only one testimonial per user (enforced at application layer too)
-// Use partial index to only enforce uniqueness when user is not null
-// This allows multiple admin-created testimonials (where user: null)
-TestimonialSchema.index({ user: 1 }, { unique: true, sparse: true, partialFilterExpression: { user: { $ne: null } } });
+// Only one testimonial per logged-in user.
+// Admin-created testimonials are excluded by source so admins can create unlimited entries.
+TestimonialSchema.index(
+  { user: 1 },
+  { unique: true, partialFilterExpression: { source: 'user' } }
+);
 
 // Fast home-page query
 TestimonialSchema.index({ showOnHome: 1, status: 1, displayOrder: 1 });

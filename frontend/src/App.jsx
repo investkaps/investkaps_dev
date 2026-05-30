@@ -28,6 +28,7 @@ import LegalCenter from './pages/LegalCenter/LegalCenter';
 import AuditReport from './pages/AuditReport/AuditReport';
 import AuditReport2 from './pages/AuditReport2/AuditReport2';
 import Subscribe from './pages/Subscribe/Subscribe';
+import Unsubscribe from './pages/Unsubscribe/Unsubscribe';
 
 // Scroll to top on every route change
 const ScrollToTop = () => {
@@ -155,6 +156,7 @@ function App() {
                     <Route path="/audit-report" element={<AuditReport />} />
                     <Route path="/audit-report-2" element={<AuditReport2 />} />
                     <Route path="/subscribe" element={<Subscribe />} />
+                    <Route path="/unsubscribe" element={<Unsubscribe />} />
 
                     {/* Protected routes */}
                     <Route

@@ -20,19 +20,18 @@ const Pricing = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [selectedDuration, setSelectedDuration] = useState('monthly');
+  const [selectedPlanOption, setSelectedPlanOption] = useState(null);
   const [showDurationModal, setShowDurationModal] = useState(false);
   const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [activeSubscriptions, setActiveSubscriptions] = useState([]);
   const anyModalOpen = showDurationModal || showPaymentMethodModal || showQRModal;
 
-  // ---- Duration options shown in the modal
-  const durationOptions = [
-    { key: 'monthly', label: 'Monthly', description: 'Pay month-to-month' },
-    { key: 'sixMonth', label: '6 Months', description: 'Save up to 10%' },
-    { key: 'yearly', label: 'Yearly', description: 'Best value, save up to 20%' }
-  ];
+  const LEGACY_DURATION_MAP = {
+    monthly: { months: 1, label: 'Monthly' },
+    sixMonth: { months: 6, label: '6 Months' },
+    yearly: { months: 12, label: 'Yearly' }
+  };
 
   const focusableSelector = [
     'button:not([disabled])',
@@ -59,6 +58,41 @@ const Pricing = () => {
     const focusableElements = getFocusableElements(dialogElement);
     const target = focusableElements[0] || dialogElement;
     target.focus();
+  };
+
+  const formatMonths = (months) => `${months} month${months === 1 ? '' : 's'}`;
+
+  const getPlanOptions = (plan) => {
+    if (Array.isArray(plan?.planOptions) && plan.planOptions.length > 0) {
+      return plan.planOptions.map((option, index) => ({
+        _id: option._id || `${plan._id}-option-${index}`,
+        name: option.name || `Plan ${index + 1}`,
+        months: Math.min(12, Math.max(1, Number(option.months) || 1)),
+        price: Number(option.price) || 0,
+        description: option.description || ''
+      }));
+    }
+
+    return Object.entries(LEGACY_DURATION_MAP)
+      .map(([key, option]) => {
+        const legacyPrice = Number(plan?.pricing?.[key]);
+        if (!Number.isFinite(legacyPrice)) return null;
+        return {
+          _id: `${plan._id}-${key}`,
+          legacyKey: key,
+          name: option.label,
+          months: option.months,
+          price: legacyPrice,
+          description: key === 'monthly' ? 'Pay month-to-month' : key === 'sixMonth' ? 'Save with a 6 month plan' : 'Best value for long-term subscribers'
+        };
+      })
+      .filter(Boolean);
+  };
+
+  const getCurrentPrice = (plan, duration = 'monthly') => {
+    const planOptions = getPlanOptions(plan);
+    const match = planOptions.find((option) => option.legacyKey === duration || option.months === LEGACY_DURATION_MAP[duration]?.months);
+    return match?.price || planOptions[0]?.price || plan?.pricing?.[duration] || 0;
   };
 
   const handleDialogKeyDown = (event, dialogElement, onEscape) => {
@@ -146,6 +180,7 @@ const Pricing = () => {
     
     setShowDurationModal(false);
     setSelectedPlan(null);
+    setSelectedPlanOption(null);
     fetchSubscriptions();
     if (currentUser) {
       fetchActiveSubscriptions();
@@ -176,21 +211,19 @@ const Pricing = () => {
     };
   }, [anyModalOpen, showDurationModal, showPaymentMethodModal]);
 
-  // ---- Helpers
-  const getCurrentPrice = (plan, duration = 'monthly') =>
-    plan?.pricing?.[duration] || 0;
-
   const handleSelectPlan = (plan, event) => {
     // Allow multiple subscriptions - users can purchase any plan
     lastTriggerRef.current = event?.currentTarget || null;
     setSelectedPlan(plan);
-    setSelectedDuration('monthly');
+    const planOptions = getPlanOptions(plan);
+    setSelectedPlanOption(planOptions[0] || null);
     setShowDurationModal(true);
   };
 
   const closeDurationModal = () => {
     setShowDurationModal(false);
     setSelectedPlan(null);
+    setSelectedPlanOption(null);
   };
 
   // ---- Show payment method selection
@@ -201,23 +234,26 @@ const Pricing = () => {
 
   // ---- Handle QR payment success
   const handleQRPaymentSuccess = (paymentRequestData) => {
+    const completedPlanName = selectedPlan?.name;
+    const completedPlanOptionName = selectedPlanOption?.name;
     setShowQRModal(false);
     setSelectedPlan(null);
+    setSelectedPlanOption(null);
     
     // Navigate to dashboard with notification about the pending payment
     navigate('/dashboard', {
       replace: true,
       state: { 
         paymentSubmitted: true, 
-        planName: selectedPlan?.name,
-        planDuration: selectedDuration
+        planName: completedPlanName,
+        planDuration: completedPlanOptionName
       }
     });
   };
 
   // ---- Create order & open Razorpay
   const createOrder = async () => {
-    if (!selectedPlan) return;
+    if (!selectedPlan || !selectedPlanOption) return;
 
     setShowPaymentMethodModal(false);
     setError('');
@@ -226,8 +262,8 @@ const Pricing = () => {
     try {
       await loadRazorpayScript();
 
-      const price = Number(getCurrentPrice(selectedPlan, selectedDuration));
-      if (!price) throw new Error(`No price found for ${selectedDuration} duration.`);
+      const price = Number(selectedPlanOption.price);
+      if (!price) throw new Error('No price found for the selected plan option.');
 
       if (!selectedPlan._id) throw new Error('Invalid subscription plan selected.');
 
@@ -235,7 +271,8 @@ const Pricing = () => {
         price,
         selectedPlan.currency || 'INR',
         selectedPlan._id,
-        selectedDuration
+        selectedPlanOption._id,
+        selectedPlanOption.name
       );
 
       // ---- RAZORPAY FIX #1: add/remove a class on <body> to keep layout clean
@@ -328,7 +365,9 @@ const Pricing = () => {
         razorpay_payment_id: paymentResponse.razorpay_payment_id,
         razorpay_signature: paymentResponse.razorpay_signature,
         planId: selectedPlan._id,
-        duration: selectedDuration
+        duration: selectedPlanOption?.name,
+        durationMonths: selectedPlanOption?.months,
+        planOptionId: selectedPlanOption?._id
       };
       await subscriptionAPI.verifyPayment(payload);
       // Navigate directly to dashboard – avoids the /payment-success page that can
@@ -461,7 +500,7 @@ const Pricing = () => {
       </div>
 
       {/* Duration Modal */}
-      {showDurationModal && selectedPlan && (
+      {showDurationModal && selectedPlan && selectedPlanOption && (
         <div className="duration-modal-overlay" role="presentation">
           <div
             className="duration-modal"
@@ -475,9 +514,9 @@ const Pricing = () => {
           >
             <div className="duration-modal-header">
               <div>
-                <h2 id="duration-modal-title">Select Duration for {selectedPlan.name}</h2>
+                <h2 id="duration-modal-title">Select Plan for {selectedPlan.name}</h2>
                 <p id="duration-modal-description" className="modal-description">
-                  Choose the subscription length that best matches your trading horizon.
+                  Choose the subscription plan that best matches your trading horizon.
                 </p>
               </div>
               <button className="duration-close-btn" onClick={closeDurationModal} aria-label="Close modal">
@@ -486,43 +525,28 @@ const Pricing = () => {
             </div>
 
             <div className="duration-options">
-              {durationOptions.map((opt) => {
-                const price = getCurrentPrice(selectedPlan, opt.key);
-                const monthlyPrice = getCurrentPrice(selectedPlan, 'monthly');
-                let savings = '';
-                
-                if (opt.key === 'sixMonth' && monthlyPrice) {
-                  const discount = Math.round((1 - (price / 6) / monthlyPrice) * 100);
-                  if (discount > 0) savings = `SAVE ${discount}%`;
-                } else if (opt.key === 'yearly' && monthlyPrice) {
-                  const discount = Math.round((1 - (price / 12) / monthlyPrice) * 100);
-                  if (discount > 0) savings = `SAVE ${discount}%`;
-                }
-                
-                return (
-                  <label 
-                    key={opt.key} 
-                    className={`duration-option ${selectedDuration === opt.key ? 'active' : ''}`}
-                    data-savings={savings}
-                  >
-                    <input
-                      type="radio"
-                      name="duration"
-                      value={opt.key}
-                      checked={selectedDuration === opt.key}
-                      onChange={() => setSelectedDuration(opt.key)}
-                    />
-                    <div className="duration-content">
-                      <div className="duration-label">{opt.label}</div>
-                      <div className="duration-desc">{opt.description}</div>
-                      <div className="duration-price">
-                        {selectedPlan.currency || '₹'}
-                        {price}
-                      </div>
+              {getPlanOptions(selectedPlan).map((option) => (
+                <label
+                  key={option._id}
+                  className={`duration-option ${selectedPlanOption?._id === option._id ? 'active' : ''}`}
+                >
+                  <input
+                    type="radio"
+                    name="planOption"
+                    value={option._id}
+                    checked={selectedPlanOption?._id === option._id}
+                    onChange={() => setSelectedPlanOption(option)}
+                  />
+                  <div className="duration-content">
+                    <div className="duration-label">{option.name}</div>
+                    <div className="duration-desc">{option.description || `${formatMonths(option.months)} subscription`}</div>
+                    <div className="duration-price">
+                      {selectedPlan.currency || '₹'}
+                      {option.price}
                     </div>
-                  </label>
-                );
-              })}
+                  </div>
+                </label>
+              ))}
             </div>
 
             <div className="duration-actions">
@@ -586,14 +610,15 @@ const Pricing = () => {
       )}
 
       {/* QR Payment Modal */}
-      {showQRModal && selectedPlan && (
+      {showQRModal && selectedPlan && selectedPlanOption && (
         <QRPaymentModal
           plan={selectedPlan}
-          duration={selectedDuration}
-          price={getCurrentPrice(selectedPlan, selectedDuration)}
+          planOption={selectedPlanOption}
+          price={selectedPlanOption?.price}
           onClose={() => {
             setShowQRModal(false);
             setSelectedPlan(null);
+            setSelectedPlanOption(null);
           }}
           onSuccess={handleQRPaymentSuccess}
           currentUser={currentUser}

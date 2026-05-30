@@ -73,12 +73,13 @@ const subscriptionAPI = {
   // ===== PAYMENT =====
   
   // Create a payment order
-  createOrder: async (amount, currency, subscriptionId, duration) => {
+  createOrder: async (amount, currency, subscriptionId, planOptionId, duration) => {
     try {
       const res = await api.post('/subscriptions/payment/order', {
         amount,
         currency,
         subscriptionId,
+        planOptionId,
         duration
       });
       return res.data;

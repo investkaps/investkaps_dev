@@ -1,24 +1,55 @@
 import nodemailer from 'nodemailer';
 import logger from './logger.js';
 
+const SERVICE_TYPES = ['RA', 'IA'];
+
+const normalizeServiceType = (serviceType) => {
+  const normalized = String(serviceType || 'RA').toUpperCase();
+  return SERVICE_TYPES.includes(normalized) ? normalized : 'RA';
+};
+
+const normalizeEnvValue = (value) => {
+  if (typeof value !== 'string') return value;
+  return value.trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1').trim();
+};
+
 /**
  * Email transporter configuration (lazy initialization)
  */
-let transporter = null;
+const transporters = new Map();
 
-const getTransporter = () => {
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      secure: process.env.EMAIL_SECURE === 'true',
+const getTransporter = (serviceType = 'RA') => {
+  const normalizedServiceType = normalizeServiceType(serviceType);
+
+  if (!transporters.has(normalizedServiceType)) {
+    const host = normalizedServiceType === 'IA'
+      ? normalizeEnvValue(process.env.SMTP_HOST_IA || process.env.EMAIL_HOST)
+      : normalizeEnvValue(process.env.EMAIL_HOST || process.env.SMTP_HOST_IA);
+    const port = Number(normalizedServiceType === 'IA'
+      ? normalizeEnvValue(process.env.SMTP_PORT_IA || process.env.EMAIL_PORT)
+      : normalizeEnvValue(process.env.EMAIL_PORT || process.env.SMTP_PORT_IA)) || 587;
+    const secure = normalizedServiceType === 'IA'
+      ? normalizeEnvValue(process.env.EMAIL_SECURE_IA) === 'true' || normalizeEnvValue(process.env.EMAIL_SECURE) === 'true'
+      : normalizeEnvValue(process.env.EMAIL_SECURE) === 'true' || normalizeEnvValue(process.env.EMAIL_SECURE_IA) === 'true';
+    const user = normalizedServiceType === 'IA'
+      ? normalizeEnvValue(process.env.SMTP_USER_IA || process.env.EMAIL_USER)
+      : normalizeEnvValue(process.env.EMAIL_USER || process.env.SMTP_USER_IA);
+    const pass = normalizedServiceType === 'IA'
+      ? normalizeEnvValue(process.env.SMTP_PASS_IA || process.env.EMAIL_PASSWORD)
+      : normalizeEnvValue(process.env.EMAIL_PASSWORD || process.env.SMTP_PASS_IA);
+
+    transporters.set(normalizedServiceType, nodemailer.createTransport({
+      host,
+      port,
+      secure,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
+        user,
+        pass
       }
-    });
+    }));
   }
-  return transporter;
+
+  return transporters.get(normalizedServiceType);
 };
 
 /**
@@ -28,14 +59,26 @@ const getTransporter = () => {
  */
 const sendEmail = async (options) => {
   try {
+    const serviceType = normalizeServiceType(options.serviceType);
+    const defaultCc = serviceType === 'IA'
+      ? normalizeEnvValue(process.env.SMTP_USER_IA || process.env.EMAIL_USER)
+      : normalizeEnvValue(process.env.EMAIL_USER || process.env.SMTP_USER_IA);
     const mailOptions = {
-      from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
+      from: serviceType === 'IA'
+        ? normalizeEnvValue(process.env.SMTP_FROM_IA || process.env.EMAIL_FROM || `${process.env.EMAIL_FROM_NAME || 'InvestKaps IA'} <${process.env.SMTP_USER_IA || process.env.EMAIL_USER}>`)
+        : `${normalizeEnvValue(process.env.EMAIL_FROM_NAME || 'InvestKaps')} <${normalizeEnvValue(process.env.EMAIL_FROM || process.env.SMTP_USER_IA || process.env.EMAIL_USER)}>`,
       to: options.to,
       subject: options.subject,
       html: options.html
     };
 
-    const transporterInstance = getTransporter();
+    if (options.cc) {
+      mailOptions.cc = options.cc;
+    } else if (defaultCc) {
+      mailOptions.cc = defaultCc;
+    }
+
+    const transporterInstance = getTransporter(serviceType);
     const info = await transporterInstance.sendMail(mailOptions);
     logger.info(`Email sent: ${info.messageId}`);
     return info;
@@ -51,8 +94,9 @@ const sendEmail = async (options) => {
  * @param {Object} recommendation - Stock recommendation object
  * @returns {Promise}
  */
-const sendStockRecommendation = async (user, recommendation) => {
+const sendStockRecommendation = async (user, recommendation, serviceType = 'RA', options = {}) => {
   try {
+    const normalizedServiceType = normalizeServiceType(serviceType);
     const recommendationTypeFormatted =
       recommendation.recommendationType.charAt(0).toUpperCase() +
       recommendation.recommendationType.slice(1);
@@ -137,7 +181,9 @@ const sendStockRecommendation = async (user, recommendation) => {
     await sendEmail({
       to: user.email,
       subject: `Stock Recommendation: ${recommendation.stockSymbol} - ${recommendationTypeFormatted}`,
-      html
+      html,
+      serviceType: normalizedServiceType,
+      allowUnsubscribed: options.allowUnsubscribed
     });
 
     return true;
@@ -153,8 +199,9 @@ const sendStockRecommendation = async (user, recommendation) => {
  * @param {Object} subscription - User subscription object
  * @returns {Promise}
  */
-const sendExpirationReminder = async (user, subscription) => {
+const sendExpirationReminder = async (user, subscription, serviceType = 'RA', options = {}) => {
   try {
+    const normalizedServiceType = normalizeServiceType(serviceType);
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background-color: #0b73ff; padding: 20px; text-align: center;">
@@ -192,7 +239,9 @@ const sendExpirationReminder = async (user, subscription) => {
     await sendEmail({
       to: user.email,
       subject: 'Your InvestKaps Subscription is Expiring Soon',
-      html
+      html,
+      serviceType: normalizedServiceType,
+      allowUnsubscribed: options.allowUnsubscribed
     });
 
     return true;
@@ -209,11 +258,13 @@ const sendExpirationReminder = async (user, subscription) => {
 export {
   sendEmail,
   sendStockRecommendation,
+  sendStockRecommendation as sendRecommendationNotification,
   sendExpirationReminder
 };
 
 export default {
   sendEmail,
   sendStockRecommendation,
+  sendRecommendationNotification: sendStockRecommendation,
   sendExpirationReminder
 };

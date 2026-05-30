@@ -387,6 +387,50 @@ export const adminAPI = {
     }
   },
 
+  sendTestEmailToUser: async (id, serviceType = 'RA') => {
+    try {
+      const res = await api.post(`/admin/users/${id}/test-email`, { serviceType });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error sending test email to user:', message);
+      throw new Error(message);
+    }
+  },
+
+  sendOnboardingReminderToUser: async (id, serviceType = 'RA') => {
+    try {
+      const res = await api.post(`/admin/users/${id}/onboarding-reminder`, { serviceType });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error sending onboarding reminder to user:', message);
+      throw new Error(message);
+    }
+  },
+
+  getMailTypes: async () => {
+    try {
+      const res = await api.get('/admin/mail-types');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching mail types:', message);
+      throw new Error(message);
+    }
+  },
+
+  sendAdminMail: async ({ userId, mailType, serviceType = 'RA' }) => {
+    try {
+      const res = await api.post('/admin/mail/send', { userId, mailType, serviceType });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error sending admin mail:', message);
+      throw new Error(message);
+    }
+  },
+
   /**
    * Backfill migration: fixes users who completed RA/IA esigning before
    * clientTypes.{RA|IA}.isCompleted was introduced.
@@ -1078,12 +1122,13 @@ export const subscriptionAPI = {
   },
 
   // Payment functions
-  createOrder: async (amount, currency = 'INR', subscriptionId, duration) => {
+  createOrder: async (amount, currency = 'INR', subscriptionId, planOptionId, duration) => {
     try {
       const res = await api.post('/subscriptions/payment/order', { 
         amount, 
         currency, 
         subscriptionId, 
+        planOptionId,
         duration 
       });
       return res.data;

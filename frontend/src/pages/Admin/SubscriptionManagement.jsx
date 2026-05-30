@@ -14,11 +14,6 @@ const SubscriptionManagement = () => {
     packageCode: '',
     name: '',
     description: '',
-    pricing: {
-      monthly: '',
-      sixMonth: '',
-      yearly: ''
-    },
     tradingOptions: {
       stockOptions: false,
       indexOptions: false,
@@ -34,6 +29,7 @@ const SubscriptionManagement = () => {
     isTrial: false
   });
   const [newFeature, setNewFeature] = useState({ name: '', included: true, description: '' });
+  const [planOptions, setPlanOptions] = useState([{ name: '', months: 1, price: '', description: '' }]);
   const [strategies, setStrategies] = useState([]);
   const [selectedStrategies, setSelectedStrategies] = useState([]);
 
@@ -123,6 +119,33 @@ const SubscriptionManagement = () => {
     setFormData({ ...formData, features });
   };
 
+  const normalizeLegacyPlanOptions = (pricing = {}) => {
+    const legacyPlans = [
+      { name: 'Monthly', months: 1, price: pricing.monthly },
+      { name: '6 Months', months: 6, price: pricing.sixMonth },
+      { name: 'Yearly', months: 12, price: pricing.yearly }
+    ];
+
+    return legacyPlans.filter((plan) => plan.price !== undefined && plan.price !== null);
+  };
+
+  const handlePlanOptionChange = (index, field, value) => {
+    const updated = [...planOptions];
+    updated[index] = {
+      ...updated[index],
+      [field]: field === 'months' ? Math.max(1, Math.min(12, Number(value) || 1)) : value
+    };
+    setPlanOptions(updated);
+  };
+
+  const addPlanOption = () => {
+    setPlanOptions((current) => [...current, { name: '', months: 1, price: '', description: '' }]);
+  };
+
+  const removePlanOption = (index) => {
+    setPlanOptions((current) => current.filter((_, optionIndex) => optionIndex !== index));
+  };
+
   const handleStrategySelection = (strategyId) => {
     if (selectedStrategies.includes(strategyId)) {
       setSelectedStrategies(selectedStrategies.filter(id => id !== strategyId));
@@ -137,7 +160,6 @@ const SubscriptionManagement = () => {
       packageCode: '',
       name: '',
       description: '',
-      pricing: { monthly: '', sixMonth: '', yearly: '' },
       tradingOptions: {
         stockOptions: false,
         indexOptions: false,
@@ -152,6 +174,7 @@ const SubscriptionManagement = () => {
       isActive: true,
       isTrial: false
     });
+    setPlanOptions([{ name: '', months: 1, price: '', description: '' }]);
     setSelectedStrategies([]);
     setIsModalOpen(true);
   };
@@ -162,11 +185,6 @@ const SubscriptionManagement = () => {
       packageCode: subscription.packageCode,
       name: subscription.name,
       description: subscription.description,
-      pricing: {
-        monthly: subscription.pricing?.monthly || 0,
-        sixMonth: subscription.pricing?.sixMonth || 0,
-        yearly: subscription.pricing?.yearly || 0
-      },
       tradingOptions: {
         stockOptions: subscription.tradingOptions?.stockOptions || false,
         indexOptions: subscription.tradingOptions?.indexOptions || false,
@@ -181,6 +199,18 @@ const SubscriptionManagement = () => {
       isActive: subscription.isActive,
       isTrial: subscription.isTrial || false
     });
+
+    const existingPlanOptions = Array.isArray(subscription.planOptions) && subscription.planOptions.length > 0
+      ? subscription.planOptions.map((option) => ({
+          _id: option._id,
+          name: option.name || '',
+          months: option.months || 1,
+          price: option.price ?? '',
+          description: option.description || ''
+        }))
+      : normalizeLegacyPlanOptions(subscription.pricing);
+
+    setPlanOptions(existingPlanOptions.length > 0 ? existingPlanOptions : [{ name: '', months: 1, price: '', description: '' }]);
     
     if (subscription.strategies && Array.isArray(subscription.strategies)) {
       const strategyIds = subscription.strategies.map(strategy => 
@@ -205,21 +235,44 @@ const SubscriptionManagement = () => {
     
     try {
       setLoading(true);
-      
-      if (!formData.packageCode || !formData.name || !formData.description || !formData.pricing) {
-        setError('Please provide package code, name, description, and pricing');
+
+      const normalizedPlanOptions = planOptions
+        .map((option) => ({
+          ...(option._id ? { _id: option._id } : {}),
+          name: String(option.name || '').trim(),
+          months: Number(option.months) || 0,
+          price: String(option.price).trim(),
+          description: String(option.description || '').trim()
+        }))
+        .filter((option) => option.name && option.months >= 1 && option.months <= 12 && option.price !== '');
+
+      const submissionPlanOptions = normalizedPlanOptions.map((option) => ({
+        ...(option._id ? { _id: option._id } : {}),
+        name: option.name,
+        months: option.months,
+        price: Number(option.price),
+        description: option.description
+      }));
+
+      if (!formData.packageCode || !formData.name || !formData.description || submissionPlanOptions.length === 0) {
+        setError('Please provide package code, name, description, and at least one plan option');
         setLoading(false);
         return;
       }
+
+      const payload = {
+        ...formData,
+        planOptions: submissionPlanOptions
+      };
       
       let subscriptionId;
       let response;
       
       if (editingSubscription) {
-        response = await adminAPI.updateSubscription(editingSubscription._id, formData);
+        response = await adminAPI.updateSubscription(editingSubscription._id, payload);
         subscriptionId = editingSubscription._id;
       } else {
-        response = await adminAPI.createSubscription(formData);
+        response = await adminAPI.createSubscription(payload);
         subscriptionId = response.data._id;
       }
       
@@ -314,7 +367,7 @@ const SubscriptionManagement = () => {
             <tr>
               <th>Package Code</th>
               <th>Name</th>
-              <th>Pricing (Monthly/6M/Yearly)</th>
+              <th>Plans</th>
               <th>Trading Options</th>
               <th>Features</th>
               <th>Strategies</th>
@@ -328,9 +381,14 @@ const SubscriptionManagement = () => {
                 <td>{subscription.packageCode}</td>
                 <td>{subscription.name}</td>
                 <td>
-                  {subscription.currency} {subscription.pricing?.monthly || 0} / 
-                  {subscription.currency} {subscription.pricing?.sixMonth || 0} / 
-                  {subscription.currency} {subscription.pricing?.yearly || 0}
+                  {(Array.isArray(subscription.planOptions) && subscription.planOptions.length > 0
+                    ? subscription.planOptions
+                    : normalizeLegacyPlanOptions(subscription.pricing)
+                  ).map((plan, index) => (
+                    <div key={plan._id || `${subscription._id}-${index}`} style={{ marginBottom: 4 }}>
+                      <strong>{plan.name}</strong> - {plan.months} month{plan.months > 1 ? 's' : ''} - {subscription.currency} {plan.price}
+                    </div>
+                  ))}
                 </td>
                 <td>
                   {Object.entries(subscription.tradingOptions || {}).filter(([_, value]) => value).map(([key]) => (
@@ -443,52 +501,86 @@ const SubscriptionManagement = () => {
           </div>
           
           <div className="admin-form-section">
-            <h4>Pricing Options</h4>
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label htmlFor="pricing.monthly">Monthly Price</label>
-                <input
-                  type="number"
-                  id="pricing.monthly"
-                  name="pricing.monthly"
-                  value={formData.pricing.monthly}
-                  onChange={handleInputChange}
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </div>
-              
-              <div className="admin-form-group">
-                <label htmlFor="pricing.sixMonth">Six Month Price</label>
-                <input
-                  type="number"
-                  id="pricing.sixMonth"
-                  name="pricing.sixMonth"
-                  value={formData.pricing.sixMonth}
-                  onChange={handleInputChange}
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </div>
-              
-              <div className="admin-form-group">
-                <label htmlFor="pricing.yearly">Yearly Price</label>
-                <input
-                  type="number"
-                  id="pricing.yearly"
-                  name="pricing.yearly"
-                  value={formData.pricing.yearly}
-                  onChange={handleInputChange}
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </div>
+            <h4>Plan Options</h4>
+            <p style={{ color: '#6b7280', marginTop: '-4px' }}>
+              Add any number of duration plans from 1 to 12 months. Each plan can have its own label and price.
+            </p>
+
+            <div className="admin-plan-options-list">
+              {planOptions.map((plan, index) => (
+                <div key={plan._id || index} className="admin-plan-option-item">
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label htmlFor={`plan-name-${index}`}>Plan Name</label>
+                      <input
+                        id={`plan-name-${index}`}
+                        type="text"
+                        value={plan.name}
+                        onChange={(event) => handlePlanOptionChange(index, 'name', event.target.value)}
+                        placeholder="Monthly, Quarterly, Half Yearly"
+                        required
+                      />
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label htmlFor={`plan-months-${index}`}>Months</label>
+                      <input
+                        id={`plan-months-${index}`}
+                        type="number"
+                        min="1"
+                        max="12"
+                        value={plan.months}
+                        onChange={(event) => handlePlanOptionChange(index, 'months', event.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label htmlFor={`plan-price-${index}`}>Price</label>
+                      <input
+                        id={`plan-price-${index}`}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={plan.price}
+                        onChange={(event) => handlePlanOptionChange(index, 'price', event.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="admin-form-row">
+                    <div className="admin-form-group" style={{ flex: 1 }}>
+                      <label htmlFor={`plan-description-${index}`}>Description</label>
+                      <input
+                        id={`plan-description-${index}`}
+                        type="text"
+                        value={plan.description}
+                        onChange={(event) => handlePlanOptionChange(index, 'description', event.target.value)}
+                        placeholder="Optional note for this plan"
+                      />
+                    </div>
+
+                    <div className="admin-form-group" style={{ minWidth: 120, alignSelf: 'flex-end' }}>
+                      <button
+                        type="button"
+                        className="admin-delete-btn"
+                        onClick={() => removePlanOption(index)}
+                        disabled={planOptions.length === 1}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            
-            <div className="admin-form-group">
+
+            <button type="button" className="admin-add-btn" onClick={addPlanOption} style={{ marginTop: 12 }}>
+              Add Another Plan
+            </button>
+
+            <div className="admin-form-group" style={{ marginTop: 20 }}>
               <label htmlFor="currency">Currency</label>
               <select
                 id="currency"

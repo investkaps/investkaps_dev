@@ -1,0 +1,96 @@
+.unsubscribe-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1.25rem;
+  background:
+    radial-gradient(circle at top, rgba(11, 115, 255, 0.12), transparent 30%),
+    linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+}
+
+.unsubscribe-card {
+  width: min(100%, 560px);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+  text-align: center;
+  backdrop-filter: blur(14px);
+}
+
+.unsubscribe-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: #0b73ff;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 1.1rem;
+}
+
+.unsubscribe-card h1 {
+  margin: 0 0 0.75rem;
+  color: #172033;
+  font-size: clamp(1.75rem, 3vw, 2.35rem);
+  line-height: 1.1;
+}
+
+.unsubscribe-card p {
+  margin: 0;
+  color: #526176;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.unsubscribe-actions {
+  display: flex;
+  gap: 0.85rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.6rem;
+}
+
+.unsubscribe-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+  padding: 0.85rem 1.2rem;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.unsubscribe-link:hover {
+  transform: translateY(-1px);
+}
+
+.unsubscribe-link.primary {
+  background: #0b73ff;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(11, 115, 255, 0.24);
+}
+
+.unsubscribe-link.secondary {
+  background: #e9eff8;
+  color: #24364f;
+}
+
+@media (max-width: 640px) {
+  .unsubscribe-card {
+    padding: 1.75rem 1.25rem;
+    border-radius: 20px;
+  }
+
+  .unsubscribe-link {
+    width: 100%;
+  }
+}

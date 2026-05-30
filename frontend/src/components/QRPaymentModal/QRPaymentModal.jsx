@@ -3,7 +3,7 @@ import { FaTimes as FaClose } from 'react-icons/fa';
 import { isValidName, isValidTransactionId, isValidFileSize, isValidImageType, sanitizeInput } from '../../utils/validators';
 import './QRPaymentModal.css';
 
-const QRPaymentModal = ({ plan, duration, price, onClose, currentUser, onSuccess }) => {
+const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSuccess }) => {
   const [formData, setFormData] = useState({
     senderName: '',
     transactionId: '',
@@ -134,7 +134,9 @@ const QRPaymentModal = ({ plan, duration, price, onClose, currentUser, onSuccess
       formDataToSend.append('transactionImage', formData.transactionImage);
       formDataToSend.append('planId', plan._id);
       formDataToSend.append('planName', plan.name);
-      formDataToSend.append('duration', duration);
+      formDataToSend.append('planOptionId', planOption?._id || '');
+      formDataToSend.append('duration', planOption?.name || '');
+      formDataToSend.append('durationMonths', String(planOption?.months || ''));
       formDataToSend.append('amount', price);
       formDataToSend.append('userId', currentUser.id);
 
@@ -227,7 +229,7 @@ const QRPaymentModal = ({ plan, duration, price, onClose, currentUser, onSuccess
               </div>
               <div className="info-row">
                 <span className="label">Duration:</span>
-                <span className="value">{duration === 'sixMonth' ? '6 Months' : duration}</span>
+                <span className="value">{planOption ? `${planOption.name} (${planOption.months} months)` : 'Selected plan'}</span>
               </div>
               <div className="info-row">
                 <span className="label">Amount:</span>

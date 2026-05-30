@@ -1,28 +1,8 @@
-import nodemailer from 'nodemailer';
 import logger from './logger.js';
+import { sendEmail } from './emailService.js';
 
 const SITE_URL  = process.env.FRONTEND_URL || 'https://investkaps.com';
 const CONTACT_URL = `${SITE_URL}/contact`;
-
-// ── Transporter ────────────────────────────────────────────────────────────────
-const createTransporter = () => {
-  // Use IA-specific credentials if available, otherwise fall back to generic credentials
-  const port = Number(process.env.SMTP_PORT_IA || process.env.SMTP_PORT || process.env.EMAIL_PORT) || 587;
-  const host = process.env.SMTP_HOST_IA || process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com';
-  const user = process.env.SMTP_USER_IA || process.env.SMTP_USER || process.env.EMAIL_USER;
-  const pass = process.env.SMTP_PASS_IA || process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
-  const secure = process.env.EMAIL_SECURE_IA === 'true' || (port === 465);
-
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure, // Use SSL for port 465, TLS/STARTTLS for 587
-    auth: {
-      user,
-      pass,
-    },
-  });
-};
 
 // ── Colour helper (positional, matches frontend palette) ───────────────────────
 const PALETTE = ['#22c55e', '#84cc16', '#f59e0b', '#f97316', '#ef4444', '#dc2626'];
@@ -42,17 +22,17 @@ export const sendQuestionnaireResultsEmail = async (
   userEmail,
   userName,
   questionnaireData,
-  responseData
+  responseData,
+  options = {}
 ) => {
   try {
-    const transporter = createTransporter();
     const html = buildEmail(userName, questionnaireData, responseData);
-
-    const info = await transporter.sendMail({
-      from:    process.env.SMTP_FROM_IA || `"InvestKaps IA" <${process.env.SMTP_USER || process.env.SMTP_USER_IA}>`,
-      to:      userEmail,
+    const info = await sendEmail({
+      to: userEmail,
       subject: 'Your Risk Profile — InvestKaps Investment Advisor',
       html,
+      serviceType: 'IA',
+      allowUnsubscribed: options.allowUnsubscribed
     });
 
     logger.info(`Questionnaire results email sent to ${userEmail}: ${info.messageId}`);

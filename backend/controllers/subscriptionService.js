@@ -31,20 +31,91 @@ const getRazorpayInstance = () => {
   return razorpay;
 };
 
-// Helper function to calculate end date based on duration
-const calculateEndDate = (startDate, duration) => {
+const LEGACY_PLAN_MAP = {
+  monthly: { name: 'Monthly', months: 1 },
+  sixMonth: { name: '6 Months', months: 6 },
+  yearly: { name: 'Yearly', months: 12 }
+};
+
+const clampMonths = (value) => {
+  const months = Number(value);
+  if (!Number.isFinite(months)) return null;
+  return Math.min(12, Math.max(1, Math.floor(months)));
+};
+
+const calculateEndDate = (startDate, months) => {
   const start = new Date(startDate);
-  
-  switch (duration) {
-    case 'monthly':
-      return new Date(start.setMonth(start.getMonth() + 1));
-    case 'sixMonth':
-      return new Date(start.setMonth(start.getMonth() + 6));
-    case 'yearly':
-      return new Date(start.setFullYear(start.getFullYear() + 1));
-    default:
-      return new Date(start.setMonth(start.getMonth() + 1)); // Default to monthly
+  const normalizedMonths = clampMonths(months) || 1;
+  return new Date(start.setMonth(start.getMonth() + normalizedMonths));
+};
+
+const normalizePlanOption = (planOption, index = 0) => {
+  const months = clampMonths(planOption?.months);
+  const price = Number(planOption?.price);
+
+  return {
+    _id: planOption?._id ? String(planOption._id) : undefined,
+    name: String(planOption?.name || planOption?.label || `Plan ${index + 1}`).trim(),
+    months: months || 1,
+    price: Number.isFinite(price) ? price : 0,
+    description: String(planOption?.description || '').trim(),
+    isDefault: !!planOption?.isDefault
+  };
+};
+
+const getPlanOptions = (subscription) => {
+  if (Array.isArray(subscription?.planOptions) && subscription.planOptions.length > 0) {
+    return subscription.planOptions.map((planOption, index) => normalizePlanOption(planOption, index));
   }
+
+  const pricing = subscription?.pricing || {};
+  return Object.entries(LEGACY_PLAN_MAP)
+    .map(([legacyKey, legacyPlan]) => {
+      const price = Number(pricing[legacyKey]);
+      if (!Number.isFinite(price)) return null;
+      return {
+        _id: `${subscription?._id || 'legacy'}-${legacyKey}`,
+        name: legacyPlan.name,
+        months: legacyPlan.months,
+        price,
+        description: '',
+        legacyKey
+      };
+    })
+    .filter(Boolean);
+};
+
+const getSelectedPlanOption = (subscription, { planOptionId, duration } = {}) => {
+  const options = getPlanOptions(subscription);
+
+  if (planOptionId) {
+    const byId = options.find((option) => String(option._id || option.id || option.planOptionId) === String(planOptionId));
+    if (byId) return byId;
+  }
+
+  if (duration && LEGACY_PLAN_MAP[duration]) {
+    const legacyMatch = options.find((option) => option.legacyKey === duration || option.months === LEGACY_PLAN_MAP[duration].months);
+    if (legacyMatch) return legacyMatch;
+    return {
+      _id: `${subscription?._id || 'legacy'}-${duration}`,
+      name: LEGACY_PLAN_MAP[duration].name,
+      months: LEGACY_PLAN_MAP[duration].months,
+      price: Number(subscription?.pricing?.[duration]) || 0,
+      legacyKey: duration
+    };
+  }
+
+  return options[0] || null;
+};
+
+const formatPlanDuration = (planOption) => {
+  if (!planOption) return '1 month';
+  if (planOption.legacyKey && LEGACY_PLAN_MAP[planOption.legacyKey]) {
+    return LEGACY_PLAN_MAP[planOption.legacyKey].name;
+  }
+  if (planOption.name) return planOption.name;
+  const months = clampMonths(planOption.months) || 1;
+  return `${months} month${months === 1 ? '' : 's'}`;
 };
 
 const SERVICE_TYPES = ['RA', 'IA'];
@@ -90,7 +161,7 @@ export const getAllSubscriptions = async (req, res) => {
     }
 
     const subscriptions = await Subscription.find(filter)
-      .sort({ displayOrder: 1, price: 1 });
+      .sort({ displayOrder: 1, name: 1 });
     
     res.status(200).json({
       success: true,
@@ -117,7 +188,7 @@ export const getAllSubscriptionsAdmin = async (req, res) => {
 
     const subscriptions = await Subscription.find(filter)
       .populate('strategies')
-      .sort({ displayOrder: 1, price: 1 });
+      .sort({ displayOrder: 1, name: 1 });
     
     res.status(200).json({
       success: true,
@@ -168,6 +239,7 @@ export const createSubscription = async (req, res) => {
       name,
       description,
       pricing,
+      planOptions,
       tradingOptions,
       currency,
       features,
@@ -177,11 +249,17 @@ export const createSubscription = async (req, res) => {
       displayOrder
     } = req.body;
 
+    const normalizedPlanOptions = Array.isArray(planOptions)
+      ? planOptions.map((option, index) => normalizePlanOption(option, index)).filter((option) => option.name && option.months && option.price >= 0)
+      : [];
+
+    const hasLegacyPricing = pricing && Object.values(pricing).some((value) => Number(value) >= 0);
+
     // Validate required fields
-    if (!packageCode || !name || !description || !pricing) {
+    if (!packageCode || !name || !description || (!hasLegacyPricing && normalizedPlanOptions.length === 0)) {
       return res.status(400).json({
         success: false,
-        error: 'Please provide packageCode, name, description, and pricing'
+        error: 'Please provide packageCode, name, description, and at least one pricing plan'
       });
     }
 
@@ -193,6 +271,7 @@ export const createSubscription = async (req, res) => {
       packageCode,
       name,
       description,
+      planOptions: normalizedPlanOptions,
       pricing,
       tradingOptions: tradingOptions || {},
       currency: currency || 'INR',
@@ -226,6 +305,7 @@ export const updateSubscription = async (req, res) => {
       name,
       description,
       pricing,
+      planOptions,
       tradingOptions,
       currency,
       features,
@@ -247,6 +327,9 @@ export const updateSubscription = async (req, res) => {
     }
 
     const normalizedServiceType = serviceType ? normalizeServiceType(serviceType) : normalizeServiceType(subscription.serviceType);
+    const normalizedPlanOptions = Array.isArray(planOptions)
+      ? planOptions.map((option, index) => normalizePlanOption(option, index)).filter((option) => option.name && option.months && option.price >= 0)
+      : subscription.planOptions;
 
     // Update fields
     const updateData = {
@@ -254,6 +337,7 @@ export const updateSubscription = async (req, res) => {
       packageCode: packageCode || subscription.packageCode,
       name: name || subscription.name,
       description: description || subscription.description,
+      planOptions: normalizedPlanOptions,
       pricing: pricing || subscription.pricing,
       tradingOptions: tradingOptions || subscription.tradingOptions,
       currency: currency || subscription.currency,
@@ -576,14 +660,14 @@ export const createOrder = async (req, res) => {
       });
     }
 
-    const { amount, currency, subscriptionId, duration } = req.body;
+    const { amount, currency, subscriptionId, duration, planOptionId } = req.body;
     const userId = req.user.id;
     
     // Validate required fields
-    if (!amount || !subscriptionId || !duration) {
+    if (!amount || !subscriptionId) {
       return res.status(400).json({
         success: false,
-        error: 'Please provide amount, subscriptionId, and duration'
+        error: 'Please provide amount and subscriptionId'
       });
     }
     
@@ -605,12 +689,21 @@ export const createOrder = async (req, res) => {
       });
     }
     
-    // Verify the amount matches the subscription price for the selected duration
-    const expectedAmount = subscription.pricing[duration];
-    if (!expectedAmount || expectedAmount !== Number(amount)) {
+    const selectedPlanOption = getSelectedPlanOption(subscription, { planOptionId, duration });
+
+    if (!selectedPlanOption) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid amount for the selected subscription and duration'
+        error: 'Invalid plan option selected'
+      });
+    }
+
+    // Verify the amount matches the subscription price for the selected plan option
+    const expectedAmount = Number(selectedPlanOption.price);
+    if (!Number.isFinite(expectedAmount) || expectedAmount !== Number(amount)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid amount for the selected subscription plan'
       });
     }
     
@@ -626,7 +719,9 @@ export const createOrder = async (req, res) => {
       notes: {
         userId,
         subscriptionId,
-        duration,
+        duration: selectedPlanOption.name,
+        planOptionId: String(selectedPlanOption._id || planOptionId || ''),
+        durationMonths: selectedPlanOption.months,
         serviceType: subscriptionServiceType
       }
     };
@@ -665,7 +760,7 @@ export const verifyPayment = async (req, res) => {
       });
     }
     
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId, duration } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId, duration, planOptionId } = req.body;
     const userId = req.user.id;
     
     // Verify signature
@@ -738,12 +833,20 @@ export const verifyPayment = async (req, res) => {
     // Allow multiple subscriptions - no need to cancel existing ones
     // Users can now have multiple active subscriptions simultaneously
     
+    const selectedPlanOption = getSelectedPlanOption(subscription, { planOptionId, duration });
+
+    if (!selectedPlanOption) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid plan option selected'
+      });
+    }
+
     // Calculate start and end dates
     const startDate = new Date();
-    const endDate = calculateEndDate(startDate, duration);
+    const endDate = calculateEndDate(startDate, selectedPlanOption.months);
     
-    // Get price based on duration
-    const price = subscription.pricing[duration] || 0;
+    const price = Number(selectedPlanOption.price) || 0;
     
     // Create new user subscription
     const newUserSubscription = new UserSubscription({
@@ -752,7 +855,10 @@ export const verifyPayment = async (req, res) => {
       serviceType: subscriptionServiceType,
       startDate,
       endDate,
-      duration,
+      duration: selectedPlanOption.name,
+      durationMonths: selectedPlanOption.months,
+      planOptionId: String(selectedPlanOption._id || planOptionId || ''),
+      planOptionName: selectedPlanOption.name,
       price,
       currency: subscription.currency || 'INR',
       paymentId: razorpay_payment_id,
@@ -767,6 +873,7 @@ export const verifyPayment = async (req, res) => {
       const emailData = {
         to: user.email,
         subject: 'Subscription Confirmation - InvestKaps',
+        serviceType: subscriptionServiceType,
         text: `Thank you for subscribing to ${subscription.name}. Your subscription is now active and will expire on ${moment(endDate).format('MMMM Do, YYYY')}.`,
         html: `
           <h2>Subscription Confirmation</h2>
@@ -775,7 +882,8 @@ export const verifyPayment = async (req, res) => {
           <p>Your subscription details:</p>
           <ul>
             <li><strong>Plan:</strong> ${subscription.name}</li>
-            <li><strong>Duration:</strong> ${duration === 'monthly' ? 'Monthly' : duration === 'sixMonth' ? '6 Months' : 'Yearly'}</li>
+            <li><strong>Duration:</strong> ${formatPlanDuration(selectedPlanOption)}</li>
+            <li><strong>Months:</strong> ${selectedPlanOption.months}</li>
             <li><strong>Start Date:</strong> ${moment(startDate).format('MMMM Do, YYYY')}</li>
             <li><strong>Expiry Date:</strong> ${moment(endDate).format('MMMM Do, YYYY')}</li>
             <li><strong>Amount Paid:</strong> ${subscription.currency || '₹'} ${price}</li>
@@ -851,9 +959,14 @@ export const createTestSubscription = async (req, res) => {
     const subscription = eligibleSubscriptions[Math.floor(Math.random() * eligibleSubscriptions.length)];
     const subscriptionServiceType = normalizeServiceType(subscription.serviceType);
     
-    // Random duration
-    const durations = ['monthly', 'sixMonth', 'yearly'];
-    const duration = durations[Math.floor(Math.random() * durations.length)];
+    const planOptions = getPlanOptions(subscription);
+    if (planOptions.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'No duration plan options are available for this subscription.'
+      });
+    }
+    const selectedPlanOption = planOptions[Math.floor(Math.random() * planOptions.length)];
     
     // Check if user already has an active subscription
     const existingSubscription = await UserSubscription.findOne({
@@ -869,10 +982,9 @@ export const createTestSubscription = async (req, res) => {
     
     // Calculate start and end dates
     const startDate = new Date();
-    const endDate = calculateEndDate(startDate, duration);
+    const endDate = calculateEndDate(startDate, selectedPlanOption.months);
     
-    // Get price based on duration
-    const price = subscription.pricing[duration] || 0;
+    const price = Number(selectedPlanOption.price) || 0;
     
     // Generate random test payment IDs
     const testPaymentId = `test_pay_${Date.now()}_${Math.random().toString(36).substring(7)}`;
@@ -885,7 +997,9 @@ export const createTestSubscription = async (req, res) => {
       serviceType: subscriptionServiceType,
       startDate,
       endDate,
-      duration,
+      duration: selectedPlanOption.name,
+      durationMonths: selectedPlanOption.months,
+      planOptionName: selectedPlanOption.name,
       price,
       currency: subscription.currency || 'INR',
       paymentId: testPaymentId,
@@ -901,7 +1015,7 @@ export const createTestSubscription = async (req, res) => {
     
     await newUserSubscription.save();
     
-    logger.info(`Test subscription created for user ${userId}: ${subscription.name} (${duration})`);
+    logger.info(`Test subscription created for user ${userId}: ${subscription.name} (${selectedPlanOption.name})`);
     
     res.status(200).json({
       success: true,
@@ -909,7 +1023,8 @@ export const createTestSubscription = async (req, res) => {
       data: {
         subscriptionId: newUserSubscription._id,
         planName: subscription.name,
-        duration,
+        duration: selectedPlanOption.name,
+        durationMonths: selectedPlanOption.months,
         startDate,
         endDate,
         price,
@@ -1170,6 +1285,7 @@ export const checkExpiredSubscriptions = async () => {
         const emailData = {
           to: subscription.user.email,
           subject: 'Your Subscription Has Expired - InvestKaps',
+          serviceType: normalizeServiceType(subscription.subscription?.serviceType || subscription.serviceType),
           text: `Your subscription to ${subscription.subscription.name} has expired. Please renew to continue enjoying our services.`,
           html: `
             <h2>Subscription Expired</h2>
@@ -1229,6 +1345,7 @@ export const sendExpirationReminders = async () => {
         const emailData = {
           to: subscription.user.email,
           subject: 'Your Subscription is Expiring Soon - InvestKaps',
+          serviceType: normalizeServiceType(subscription.subscription?.serviceType || subscription.serviceType),
           text: `Your subscription to ${subscription.subscription.name} will expire in ${daysRemaining} days. Please renew to avoid interruption.`,
           html: `
             <h2>Subscription Expiring Soon</h2>
