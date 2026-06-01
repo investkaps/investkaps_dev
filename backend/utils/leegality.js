@@ -1,6 +1,4 @@
 import axios from 'axios';
-import fs from 'fs';
-import path from 'path';
 
 function getLeegalityConfig(serviceType = 'RA') {
   const normalizedServiceType = String(serviceType).toUpperCase();
@@ -18,17 +16,9 @@ function getLeegalityConfig(serviceType = 'RA') {
   };
 }
 
-function asyncLog(entry) {
-  try {
-    const logfile = path.join(process.cwd(), 'logs', 'leegality_integration.log');
-    const dir = path.dirname(logfile);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.appendFile(logfile, JSON.stringify(entry) + '\n', (err) => {
-      if (err) console.error('[LeegalityLogger] write error', err);
-    });
-  } catch (err) {
-    console.error('[LeegalityLogger] error preparing log', err);
-  }
+function asyncLog(/* entry */) {
+  // No-op: file-based logging removed — keep console output only
+  return;
 }
 
 function makeLog(message, level = 'INFO', details = {}) {
@@ -375,4 +365,4 @@ async function fetchSignedDocument(documentId, serviceType = 'RA') {
   }
 }
 
-export { createSignRequest, checkSignStatus, getDocumentDetails, fetchSignedDocument, generateRandomIRN };
+export { createSignRequest, checkSignStatus, getDocumentDetails, fetchSignedDocument, generateRandomIRN };

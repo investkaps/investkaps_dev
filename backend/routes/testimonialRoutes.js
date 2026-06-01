@@ -80,7 +80,7 @@ router.post('/', verifyToken, async (req, res) => {
 
     // ── Already submitted? ──
     const existing = await Testimonial.findOne({ user: userId });
-    if (existing) {
+    if (existing && existing.status !== 'rejected') {
       return res.status(409).json({
         success: false,
         error: 'You have already submitted a testimonial. Submissions cannot be edited.',
@@ -144,15 +144,27 @@ router.post('/', verifyToken, async (req, res) => {
       });
     }
 
-    // ── Create ──
-    const testimonial = await Testimonial.create({
-      source: 'user',
-      user: userId,
-      name: name.trim(),
-      occupation: occupation.trim(),
-      text: text.trim(),
-      requestedShowOnHome: requestedShowOnHome,
-    });
+    // ── Create or Resubmit (if previously rejected) ──
+    let testimonial;
+    if (existing && existing.status === 'rejected') {
+      // allow user to resubmit by updating the existing record
+      existing.name = name.trim();
+      existing.occupation = occupation.trim();
+      existing.text = text.trim();
+      existing.status = 'pending';
+      existing.rejectionReason = null;
+      existing.requestedShowOnHome = requestedShowOnHome;
+      testimonial = await existing.save();
+    } else {
+      testimonial = await Testimonial.create({
+        source: 'user',
+        user: userId,
+        name: name.trim(),
+        occupation: occupation.trim(),
+        text: text.trim(),
+        requestedShowOnHome: requestedShowOnHome,
+      });
+    }
 
     logger.info(`[TESTIMONIALS] User ${userId} submitted testimonial ${testimonial._id}`);
 
@@ -237,6 +249,14 @@ router.patch('/admin/:id', verifyToken, requireAdmin, async (req, res) => {
 
     const update = {};
     if (status    !== undefined && ['pending', 'approved', 'rejected'].includes(status)) update.status      = status;
+    // If admin provides rejectionReason when rejecting, store it.
+    if (status === 'rejected' && typeof req.body.rejectionReason === 'string') {
+      update.rejectionReason = req.body.rejectionReason.trim() || null;
+    }
+    // Clear rejectionReason when moving to non-rejected status
+    if (status && status !== 'rejected') {
+      update.rejectionReason = null;
+    }
     if (showOnHome !== undefined) update.showOnHome    = !!showOnHome;
     if (displayOrder !== undefined && typeof displayOrder === 'number')                   update.displayOrder = displayOrder;
     if (name?.trim())       update.name       = name.trim();

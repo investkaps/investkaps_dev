@@ -69,6 +69,13 @@ const TestimonialSchema = new mongoose.Schema(
       type: Number,
       default: 9999,
     },
+    // Optional reason provided by admin when rejecting a user's testimonial
+    rejectionReason: {
+      type: String,
+      default: null,
+      trim: true,
+      maxlength: 1000,
+    },
   },
   { timestamps: true }
 );

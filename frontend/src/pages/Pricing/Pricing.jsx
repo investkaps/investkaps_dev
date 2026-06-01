@@ -83,7 +83,7 @@ const Pricing = () => {
           name: option.label,
           months: option.months,
           price: legacyPrice,
-          description: key === 'monthly' ? 'Pay month-to-month' : key === 'sixMonth' ? 'Save with a 6 month plan' : 'Best value for long-term subscribers'
+          description: key === 'monthly' ? 'Pay month-to-month' : key === 'sixMonth' ? '6 month plan' : 'Best value for long-term subscribers'
         };
       })
       .filter(Boolean);

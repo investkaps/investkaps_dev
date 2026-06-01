@@ -8,6 +8,7 @@ export default function UserTestimonial() {
   const [existing, setExisting] = useState(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({ name: '', occupation: '', text: '' });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -82,12 +83,50 @@ export default function UserTestimonial() {
       {loading ? (
         <p>Loading...</p>
       ) : existing ? (
-        <div className="existing-testimonial">
-          <h4>{existing.name}</h4>
-          <p className="occupation">{existing.occupation}</p>
-          <p className="text">{existing.text}</p>
-          <p className="note">You have already submitted a testimonial. It cannot be edited.</p>
-        </div>
+        (existing.status === 'rejected') ? (
+          <div className="existing-testimonial">
+            <h4>{existing.name}</h4>
+            <p className="occupation">{existing.occupation}</p>
+            <p className="text">{existing.text}</p>
+            <p className="error">Your testimonial was rejected by admin: {existing.rejectionReason || 'No reason provided.'}</p>
+            {editMode ? (
+              <form className="testimonial-form" onSubmit={handleSubmit}>
+                <label>
+                  <span>Name</span>
+                  <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                </label>
+                <label>
+                  <span>Occupation</span>
+                  <input type="text" value={form.occupation} onChange={(e) => setForm({ ...form, occupation: e.target.value })} />
+                </label>
+                <label>
+                  <span>Testimonial</span>
+                  <textarea value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} rows={6} />
+                </label>
+                {error && <p className="error">{error}</p>}
+                {success && <p className="success">{success}</p>}
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="button" className="submit-btn" onClick={() => setEditMode(false)}>Cancel</button>
+                  <button type="submit" disabled={submitting} className="submit-btn">{submitting ? 'Submitting…' : 'Resubmit'}</button>
+                </div>
+              </form>
+            ) : (
+              <div>
+                <button className="submit-btn" onClick={() => {
+                  setForm({ name: existing.name || '', occupation: existing.occupation || '', text: existing.text || '' });
+                  setEditMode(true);
+                }}>Edit & Resubmit</button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="existing-testimonial">
+            <h4>{existing.name}</h4>
+            <p className="occupation">{existing.occupation}</p>
+            <p className="text">{existing.text}</p>
+            <p className="note">You have already submitted a testimonial. It cannot be edited.</p>
+          </div>
+        )
       ) : (
         <form className="testimonial-form" onSubmit={handleSubmit}>
           <p className="hint">Note: You cannot edit or replace your testimonial after submitting.</p>

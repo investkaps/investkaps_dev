@@ -41,3 +41,6 @@
 .tm-table-btn.edit:hover:not(:disabled) { background:#7c3aed; }
 .tm-table-btn.delete { background:#ef4444; color:#fff; }
 .tm-table-btn.delete:hover:not(:disabled) { background:#dc2626; }
+/* Reject button: visible warning style */
+.tm-table-btn.reject { background: #f97316; color: #fff; }
+.tm-table-btn.reject:hover:not(:disabled) { background: #ea580c; }

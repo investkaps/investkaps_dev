@@ -174,6 +174,7 @@ export default function TestimonialsManagement() {
             </div>
             <div className="tm-modal-body">
               <div><strong>Name:</strong> {viewing.name}</div>
+              <div><strong>Email:</strong> {viewing.user?.email || '—'}</div>
               <div><strong>Occupation:</strong> {viewing.occupation}</div>
               <div><strong>Testimonial:</strong> {viewing.text}</div>
               <div><strong>Source:</strong> {viewing.source}</div>
@@ -223,6 +224,7 @@ export default function TestimonialsManagement() {
               <tr style={{ textAlign: 'left', borderBottom: '1px solid #eee' }}>
                 <th style={{ padding: '8px' }}>Name</th>
                 <th style={{ padding: '8px' }}>Occupation</th>
+                <th style={{ padding: '8px' }}>Email</th>
                 <th style={{ padding: '8px' }}>Source</th>
                 <th style={{ padding: '8px' }}>Requested</th>
                 <th style={{ padding: '8px' }}>Show On Home</th>
@@ -234,6 +236,7 @@ export default function TestimonialsManagement() {
                 <tr key={t._id} style={{ borderBottom: '1px solid #f6f6f6' }}>
                   <td style={{ padding: '8px' }}>{t.name}</td>
                   <td style={{ padding: '8px' }}>{t.occupation}</td>
+                  <td style={{ padding: '8px' }}>{t.user?.email || '—'}</td>
                   <td style={{ padding: '8px' }}>{t.source}</td>
                   <td style={{ padding: '8px' }}>{t.requestedShowOnHome ? 'Yes' : '—'}</td>
                   <td style={{ padding: '8px' }}>
@@ -247,6 +250,19 @@ export default function TestimonialsManagement() {
                   <td style={{ padding: '8px' }}>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button className="tm-table-btn view" onClick={() => openView(t)}>View</button>
+                      <button className="tm-table-btn reject" onClick={() => {
+                        const reason = window.prompt('Enter rejection reason to send to user:');
+                        if (!reason) return;
+                        (async () => {
+                          try {
+                            await testimonialsAPI.adminPatch(t._id, { status: 'rejected', rejectionReason: reason });
+                            await fetchAll();
+                            alert('Testimonial rejected and user notified on dashboard.');
+                          } catch (err) {
+                            alert(err.message || 'Failed to reject testimonial');
+                          }
+                        })();
+                      }}>Reject</button>
                       <button className="tm-table-btn edit" onClick={() => startEdit(t)} disabled={savingId === t._id}>Edit</button>
                       <button className="tm-table-btn delete" onClick={() => handleDelete(t._id)} disabled={savingId === t._id}>Delete</button>
                     </div>

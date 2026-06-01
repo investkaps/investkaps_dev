@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import './Home.css';
 import Hero from '../../components/Hero/Hero';
@@ -6,36 +6,43 @@ import CTA from '../../components/CTA/CTA';
 import Features from '../../components/Features/Features';
 import Newsletter from '../../components/Newsletter/Newsletter';
 import { TestimonialsMarquee } from '../../components/TestimonialsMarquee/TestimonialsMarquee';
+import { testimonialsAPI } from '../../services/api';
 
 const Home = () => {
-  const testimonials = [
-    {
-      empty: true
-    },
-    {
-      author: {
-        name: "Upasna Kapur",
-        handle: "Retail Industry Professional",
-      },
-      text: "I do not have much idea of intricacies of financial world and stock markets. Availing services of investkaps has been of immense value addition to returns generated from my investments."
-    },
-    {
-      empty: true
-    },
-    {
-      author: {
-        name: "Hitesh Raghav",
-        handle: "Senior Banker",
-      },
-      text: "I have been a regular subscriber of Investkaps and it has been the most prudent and satisfactory decision for me so far. Consistent delivery of good returns even during the bad market phase is the highlight of the team Investkaps which reflects their research capability and understanding of the market. The accuracy of as high as 70 - 75% of the recommendations coming good without unnecessary deluge of messages, has built required confidence in this financial relation. Highly recommended."
-    },
-    {
-      empty: true
-    },
-    {
-      empty: true
-    }
+  const fallbackTestimonials = [
+    { empty: true },
+    { name: 'Upasna Kapur', occupation: 'Retail Industry Professional', text: 'I do not have much idea of intricacies of financial world and stock markets. Availing services of investkaps has been of immense value addition to returns generated from my investments.' },
+    { empty: true },
+    { name: 'Hitesh Raghav', occupation: 'Senior Banker', text: 'I have been a regular subscriber of Investkaps and it has been the most prudent and satisfactory decision for me so far. Consistent delivery of good returns even during the bad market phase is the highlight of the team Investkaps which reflects their research capability and understanding of the market. The accuracy of as high as 70 - 75% of the recommendations coming good without unnecessary deluge of messages, has built required confidence in this financial relation. Highly recommended.' },
+    { empty: true },
+    { empty: true }
   ];
+
+  const [testimonials, setTestimonials] = useState(fallbackTestimonials);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await testimonialsAPI.getPublic();
+        if (!mounted) return;
+        if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
+          // backend returns flattened testimonials with fields: name, occupation, text, avatar?
+          setTestimonials(res.data.map(t => ({
+            name: t.name,
+            occupation: t.occupation,
+            text: t.text,
+            avatar: t.avatar || null,
+            empty: false
+          })));
+        }
+      } catch (err) {
+        // keep fallback
+        console.warn('Could not load public testimonials:', err);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   // Animation variants for sections
   const sectionVariants = {
