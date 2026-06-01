@@ -11,6 +11,13 @@ import { sendNewRecommendationEmail, sendUpdatedRecommendationEmail } from '../u
 import { isEmailUnsubscribed } from '../services/emailPreferenceService.js';
 import Subscription from '../model/Subscription.js';
 
+const EMAIL_TRIGGER_FIELDS = new Set([
+  'targetPrice',
+  'targetPrice2',
+  'targetPrice3',
+  'stopLoss'
+]);
+
 /**
  * Create a new stock recommendation
  * @route POST /api/recommendations
@@ -228,6 +235,7 @@ const updateRecommendation = async (req, res) => {
     // Check if status is changing from draft to published
     const wasPublished = recommendation.status === 'published';
     const willBePublished = req.body.status === 'published' && !wasPublished;
+    const originalRecommendation = recommendation.toObject();
 
     // Update recommendation
     Object.keys(req.body).forEach(key => {
@@ -240,6 +248,16 @@ const updateRecommendation = async (req, res) => {
     }
 
     await recommendation.save();
+
+    const changedKeys = Object.keys(req.body).filter((key) => {
+      if (key === 'updatedAt') return false;
+      const oldValue = originalRecommendation[key] ?? null;
+      const newValue = recommendation[key] ?? null;
+      return JSON.stringify(oldValue) !== JSON.stringify(newValue);
+    });
+
+    const hasAnyChanges = changedKeys.length > 0;
+    const shouldSendUpdateEmail = changedKeys.some((key) => EMAIL_TRIGGER_FIELDS.has(key));
 
     // If newly published, send notifications
     if (willBePublished) {
@@ -301,11 +319,17 @@ const updateRecommendation = async (req, res) => {
     }
 
     // If already published and being updated, send an update notification to Telegram
-    if (wasPublished && req.body.status === 'published') {
+    if (wasPublished && req.body.status === 'published' && hasAnyChanges) {
       // Fire-and-forget; don't block the response
-      sendUpdateNotifications(recommendation).catch(err =>
+      sendUpdateNotifications(recommendation, { sendEmail: shouldSendUpdateEmail }).catch(err =>
         logger.error('Background update notifications failed:', err)
       );
+
+      if (!shouldSendUpdateEmail) {
+        logger.info(`Skipped update email notifications because TP/SL did not change: ${recommendation.stockSymbol}`);
+      }
+    } else if (wasPublished && req.body.status === 'published' && !hasAnyChanges) {
+      logger.info(`Skipped update notifications because no fields changed: ${recommendation.stockSymbol}`);
     }
 
     res.status(200).json({
@@ -322,8 +346,9 @@ const updateRecommendation = async (req, res) => {
 };
 
 /** Helper: send update notifications when an already-published recommendation changes */
-async function sendUpdateNotifications(recommendation) {
+async function sendUpdateNotifications(recommendation, options = {}) {
   try {
+    const sendEmailNotifications = options.sendEmail !== false;
     const subscriptions = await Subscription.find({
       strategies: { $in: recommendation.targetStrategies }
     });
@@ -337,18 +362,25 @@ async function sendUpdateNotifications(recommendation) {
     }
 
     // Email
-    const userSubscriptions = await UserSubscription.find({
-      subscription: { $in: subscriptionIds },
-      status: 'active'
-    }).populate('user', 'name email');
+    if (sendEmailNotifications) {
+      const userSubscriptions = await UserSubscription.find({
+        subscription: { $in: subscriptionIds },
+        status: 'active'
+      }).populate('user', 'name email');
 
-    for (const us of userSubscriptions) {
-      const u = us.user;
-      if (!u?.email) continue;
+      for (const us of userSubscriptions) {
+        const u = us.user;
+        if (!u?.email) continue;
 
-      const serviceType = us.serviceType || us.subscription?.serviceType || 'RA';
-      await sendUpdatedRecommendationEmail(u, recommendation, serviceType);
-      logger.info(`Update-recommendation email sent to ${u.email}: ${recommendation.stockSymbol}`);
+        if (await isEmailUnsubscribed(u.email)) {
+          logger.info(`Skipping updated recommendation email for unsubscribed user ${u.email}`);
+          continue;
+        }
+
+        const serviceType = us.serviceType || us.subscription?.serviceType || 'RA';
+        await sendUpdatedRecommendationEmail(u, recommendation, serviceType);
+        logger.info(`Update-recommendation email sent to ${u.email}: ${recommendation.stockSymbol}`);
+      }
     }
   } catch (err) {
     logger.error('Failed to send update notifications:', err);
