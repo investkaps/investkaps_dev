@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FaTimes as FaClose } from 'react-icons/fa';
 import { isValidName, isValidTransactionId, isValidFileSize, isValidImageType, sanitizeInput } from '../../utils/validators';
 import './QRPaymentModal.css';
 
-const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSuccess }) => {
+const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSuccess, alreadyUsedReferralCode }) => {
   const [formData, setFormData] = useState({
     senderName: '',
     transactionId: '',
@@ -14,6 +14,47 @@ const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSucce
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const dialogRef = useRef(null);
+
+  // ── Referral code state ──
+  const [referralCode, setReferralCode] = useState('');
+  const [referralStatus, setReferralStatus] = useState(null); // null | 'validating' | 'valid' | 'invalid'
+  const [referralMsg, setReferralMsg]     = useState('');
+  const [referralReferrerName, setReferralReferrerName] = useState('');
+  const referralDebounce = useRef(null);
+
+  const validateReferralCode = useCallback(async (code) => {
+    const trimmed = code.trim().toUpperCase();
+    if (!trimmed) { setReferralStatus(null); setReferralMsg(''); return; }
+    setReferralStatus('validating');
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/referrals/validate/${encodeURIComponent(trimmed)}`
+      );
+      const data = await res.json();
+      if (data.valid) {
+        setReferralStatus('valid');
+        setReferralMsg(data.message);
+        setReferralReferrerName(data.referrerName);
+      } else {
+        setReferralStatus('invalid');
+        setReferralMsg('Invalid referral code.');
+      }
+    } catch {
+      setReferralStatus('invalid');
+      setReferralMsg('Could not validate code. Please try again.');
+    }
+  }, []);
+
+  const handleReferralChange = (e) => {
+    const val = e.target.value;
+    setReferralCode(val);
+    setReferralStatus(null);
+    setReferralMsg('');
+    clearTimeout(referralDebounce.current);
+    if (val.trim().length >= 6) {
+      referralDebounce.current = setTimeout(() => validateReferralCode(val), 600);
+    }
+  };
 
   const focusableSelector = [
     'button:not([disabled])',
@@ -139,6 +180,9 @@ const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSucce
       formDataToSend.append('durationMonths', String(planOption?.months || ''));
       formDataToSend.append('amount', price);
       formDataToSend.append('userId', currentUser.id);
+      // Attach referral code if valid and not already used
+      const finalReferralCode = alreadyUsedReferralCode || (referralStatus === 'valid' ? referralCode.trim().toUpperCase() : '');
+      if (finalReferralCode) formDataToSend.append('referralCode', finalReferralCode);
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/payment-requests/submit`, {
         method: 'POST',
@@ -298,6 +342,44 @@ const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSucce
                 </div>
               )}
             </div>
+
+            {/* ── Referral Code ── */}
+            {alreadyUsedReferralCode ? (
+              <div className="form-group">
+                <label>Referral Code Applied</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    type="text"
+                    value={alreadyUsedReferralCode}
+                    readOnly
+                    style={{ background: '#f0fdf4', color: '#166534', fontWeight: 600, cursor: 'default', border: '1px solid #bbf7d0' }}
+                  />
+                  <span style={{ color: '#16a34a', fontWeight: 700 }}>✓</span>
+                </div>
+                <small style={{ color: '#6b7280' }}>You've already applied a referral code on this account.</small>
+              </div>
+            ) : (
+              <div className="form-group">
+                <label htmlFor="referralCode">Referral Code <span style={{ color: '#9ca3af', fontWeight: 400 }}>(optional)</span></label>
+                <small style={{ color: '#6b7280', display: 'block', marginBottom: '0.4rem' }}>If a friend referred you, enter their code here. You can only use a referral code once.</small>
+                <input
+                  id="referralCode"
+                  type="text"
+                  value={referralCode}
+                  onChange={handleReferralChange}
+                  placeholder="e.g. ABCD1234"
+                  autoComplete="off"
+                  maxLength={10}
+                  style={{
+                    borderColor: referralStatus === 'valid' ? '#16a34a' : referralStatus === 'invalid' ? '#dc2626' : undefined,
+                    background:  referralStatus === 'valid' ? '#f0fdf4' : referralStatus === 'invalid' ? '#fef2f2' : undefined,
+                  }}
+                />
+                {referralStatus === 'validating' && <small style={{ color: '#6b7280' }}>Checking…</small>}
+                {referralStatus === 'valid'      && <small style={{ color: '#16a34a', fontWeight: 600 }}>✓ {referralMsg}</small>}
+                {referralStatus === 'invalid'    && <small style={{ color: '#dc2626', fontWeight: 600 }}>✗ {referralMsg}</small>}
+              </div>
+            )}
 
             <button 
               type="submit" 

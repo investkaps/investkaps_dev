@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import subscriptionAPI from '../../services/subscriptionAPI';
 import userSubscriptionAPI from '../../services/userSubscriptionAPI';
+import { referralAPI } from '../../services/api';
 import { FaArrowRight, FaTimes as FaClose } from 'react-icons/fa';
 import QRPaymentModal from '../../components/QRPaymentModal/QRPaymentModal';
 
@@ -25,6 +26,7 @@ const Pricing = () => {
   const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [activeSubscriptions, setActiveSubscriptions] = useState([]);
+  const [userReferralCode, setUserReferralCode] = useState(null); // code the user already applied
   const anyModalOpen = showDurationModal || showPaymentMethodModal || showQRModal;
 
   const LEGACY_DURATION_MAP = {
@@ -184,6 +186,10 @@ const Pricing = () => {
     fetchSubscriptions();
     if (currentUser) {
       fetchActiveSubscriptions();
+      // Fetch existing referral code usage
+      referralAPI.getMy().then(res => {
+        if (res?.data?.usedCode) setUserReferralCode(res.data.usedCode);
+      }).catch(() => {});
     }
   }, []);
 
@@ -622,6 +628,7 @@ const Pricing = () => {
           }}
           onSuccess={handleQRPaymentSuccess}
           currentUser={currentUser}
+          alreadyUsedReferralCode={userReferralCode}
         />
       )}
     </div>

@@ -2,6 +2,25 @@ import User from '../model/User.js';
 import UserSubscription from '../model/UserSubscription.js';
 
 /**
+ * Generate a unique 8-char uppercase alphanumeric referral code.
+ * Retries up to 5 times if a collision is detected.
+ */
+const generateReferralCode = async () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O, 1/I confusion
+  for (let attempt = 0; attempt < 5; attempt++) {
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    // Check uniqueness
+    const existing = await User.findOne({ 'referral.code': code }).lean();
+    if (!existing) return code;
+  }
+  // Fallback: timestamp-based code (extremely unlikely to be needed)
+  return 'R' + Date.now().toString(36).toUpperCase().slice(-7);
+};
+
+/**
  * Create a new user manually
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
@@ -66,11 +85,13 @@ export const createUser = async (req, res) => {
     }
 
     console.log(' NEW USER CREATING:', normalizedEmail);
+    const referralCode = await generateReferralCode();
     const user = new User({
       clerkId: finalClerkId,
       email: normalizedEmail,
       name: name || email.split('@')[0],
-      isVerified: isVerified || false
+      isVerified: isVerified || false,
+      referral: { code: referralCode },
     });
 
     const savedUser = await user.save();
@@ -126,11 +147,13 @@ export const createOrUpdateUser = async (req, res) => {
       });
     } else {
       // Create new user
+      const referralCode = await generateReferralCode();
       user = new User({
         clerkId: id,
         email: primaryEmail.email_address,
         name: `${first_name || ''} ${last_name || ''}`.trim() || primaryEmail.email_address.split('@')[0],
-        isVerified: primaryEmail.verification?.status === 'verified'
+        isVerified: primaryEmail.verification?.status === 'verified',
+        referral: { code: referralCode },
       });
       
       await user.save();

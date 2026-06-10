@@ -141,6 +141,12 @@ const subscriptionSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // Only ONE plan should have this set to true at any time.
+  // When a referral is rewarded, the referrer gets +1 month on this plan.
+  isReferralPlan: {
+    type: Boolean,
+    default: false
+  },
   displayOrder: {
     type: Number,
     default: 0

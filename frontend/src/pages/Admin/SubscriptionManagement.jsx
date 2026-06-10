@@ -26,7 +26,8 @@ const SubscriptionManagement = () => {
     features: [],
     telegramChatId: '',
     isActive: true,
-    isTrial: false
+    isTrial: false,
+    isReferralPlan: false
   });
   const [newFeature, setNewFeature] = useState({ name: '', included: true, description: '' });
   const [planOptions, setPlanOptions] = useState([{ name: '', months: 1, price: '', description: '' }]);
@@ -172,7 +173,8 @@ const SubscriptionManagement = () => {
       features: [],
       telegramChatId: '',
       isActive: true,
-      isTrial: false
+      isTrial: false,
+      isReferralPlan: false
     });
     setPlanOptions([{ name: '', months: 1, price: '', description: '' }]);
     setSelectedStrategies([]);
@@ -197,7 +199,8 @@ const SubscriptionManagement = () => {
       features: subscription.features || [],
       telegramChatId: subscription.telegramChatId || '',
       isActive: subscription.isActive,
-      isTrial: subscription.isTrial || false
+      isTrial: subscription.isTrial || false,
+      isReferralPlan: subscription.isReferralPlan || false
     });
 
     const existingPlanOptions = Array.isArray(subscription.planOptions) && subscription.planOptions.length > 0
@@ -685,6 +688,23 @@ const SubscriptionManagement = () => {
             </label>
             <small style={{ color: '#6c757d', display: 'block', marginTop: '4px' }}>
               Trial plans can only be claimed once per user account and cannot be reclaimed.
+            </small>
+          </div>
+
+          <div className="admin-form-group">
+            <label className="admin-checkbox-label">
+              <input
+                type="checkbox"
+                name="isReferralPlan"
+                checked={formData.isReferralPlan}
+                onChange={handleInputChange}
+              />
+              <strong>Mark as Referral Plan</strong>
+            </label>
+            <small style={{ color: formData.isReferralPlan ? '#b45309' : '#6c757d', display: 'block', marginTop: '4px' }}>
+              {formData.isReferralPlan
+                ? '⚠️ Only one plan can be the Referral Plan. Saving will unmark any existing Referral Plan.'
+                : 'When a referred user makes a qualifying purchase, the referrer earns +1 month on this plan.'}
             </small>
           </div>
 

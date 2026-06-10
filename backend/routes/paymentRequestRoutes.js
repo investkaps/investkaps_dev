@@ -5,6 +5,7 @@ import PaymentRequest from '../model/PaymentRequest.js';
 import User from '../model/User.js';
 import Subscription from '../model/Subscription.js';
 import UserSubscription from '../model/UserSubscription.js';
+import Referral from '../model/Referral.js';
 import { uploadImage, deleteImage  } from '../config/cloudinary.js';
 import { verifyToken  } from '../middleware/auth.js';
 import { checkRole  } from '../middleware/roleAuth.js';
@@ -62,7 +63,7 @@ const getDurationLabel = ({ planName, duration, planOption }) => {
 // Submit payment request
 router.post('/submit', upload.single('transactionImage'), async (req, res) => {
   try {
-    const { senderName, transactionId, planId, planName, duration, durationMonths, planOptionId, amount, userId, serviceType = 'RA', paymentMethod = 'qr' } = req.body;
+    const { senderName, transactionId, planId, planName, duration, durationMonths, planOptionId, amount, userId, serviceType = 'RA', paymentMethod = 'qr', referralCode } = req.body;
 
     // For IA payments, planId and duration are not required
     const isIaPayment = serviceType === 'IA';
@@ -174,6 +175,39 @@ router.post('/submit', upload.single('transactionImage'), async (req, res) => {
     });
 
     await paymentRequest.save();
+
+    // ── Referral code processing (RA payments only) ──────────────────────────
+    if (serviceType === 'RA' && referralCode) {
+      try {
+        const code = String(referralCode).trim().toUpperCase();
+        const referrer = await User.findOne({ 'referral.code': code }).lean();
+
+        const alreadyReferred = await Referral.findOne({ referred: user._id }).lean();
+        const alreadyUsedCode = user.referral?.usedCode;
+        const isSelfReferral  = referrer && String(referrer._id) === String(user._id);
+
+        if (referrer && !alreadyReferred && !alreadyUsedCode && !isSelfReferral) {
+          // Create pending referral record
+          await Referral.create({
+            referrer: referrer._id,
+            referred: user._id,
+            referralCode: code,
+            status: 'pending',
+          });
+
+          // Mark on the referred user that they used this code
+          await User.updateOne(
+            { _id: user._id },
+            { $set: { 'referral.usedCode': code, 'referral.usedCodeAt': new Date(), 'referral.referredBy': referrer._id } }
+          );
+
+          console.log(`[REFERRAL] Pending referral created: referrer=${referrer._id} referred=${user._id}`);
+        }
+      } catch (refErr) {
+        // Non-blocking — don't fail the payment submit if referral processing errors
+        console.error('[REFERRAL] Error processing referral code on submit:', refErr.message);
+      }
+    }
 
     // Email confirmation to user (fire-and-forget)
     sendPaymentRequestReceivedEmail(user, paymentRequest).catch(err =>
@@ -316,6 +350,77 @@ router.post('/approve/:id', verifyToken, checkRole('admin'), async (req, res) =>
       paymentRequest.userSubscription = userSubscription._id;
     }
     await paymentRequest.save();
+
+    // ── Referral reward (RA payments only) ──────────────────────────────────
+    if (paymentRequest.serviceType === 'RA') {
+      try {
+        const pendingReferral = await Referral.findOne({
+          referred: paymentRequest.user._id,
+          status: 'pending',
+        });
+
+        if (pendingReferral) {
+          const referralPlan = await Subscription.findOne({ isReferralPlan: true }).lean();
+
+          if (referralPlan) {
+            const referrerId = pendingReferral.referrer;
+
+            // Find or create referrer's Referral Plan subscription
+            let referralSub = await UserSubscription.findOne({
+              user: referrerId,
+              subscription: referralPlan._id,
+            });
+
+            const now = new Date();
+            if (!referralSub) {
+              // First referral — create the subscription starting now + 1 month
+              const endDate = new Date(now);
+              endDate.setMonth(endDate.getMonth() + 1);
+
+              referralSub = new UserSubscription({
+                user: referrerId,
+                subscription: referralPlan._id,
+                serviceType: 'RA',
+                status: 'active',
+                startDate: now,
+                endDate,
+                price: 0,
+                duration: 'monthly',
+                paymentMethod: 'manual',
+              });
+              await referralSub.save();
+
+              // Link on the referrer's user doc
+              await User.updateOne(
+                { _id: referrerId },
+                { $set: { 'referral.referralPlanSub': referralSub._id } }
+              );
+            } else {
+              // Subsequent referrals — extend by 1 month
+              const base = referralSub.endDate > now ? referralSub.endDate : now;
+              base.setMonth(base.getMonth() + 1);
+              referralSub.endDate = base;
+              if (referralSub.status !== 'active') referralSub.status = 'active';
+              await referralSub.save();
+            }
+
+            // Mark referral as rewarded
+            pendingReferral.status           = 'rewarded';
+            pendingReferral.rewardedAt        = now;
+            pendingReferral.paymentRequestId  = paymentRequest._id;
+            pendingReferral.referralPlanSubId = referralSub._id;
+            await pendingReferral.save();
+
+            console.log(`[REFERRAL] Rewarded referrer=${referrerId}; plan extended to ${referralSub.endDate}`);
+          } else {
+            console.warn('[REFERRAL] No referral plan found (isReferralPlan=true). Reward skipped.');
+          }
+        }
+      } catch (refErr) {
+        // Non-blocking — approval already saved, just log
+        console.error('[REFERRAL] Error granting referral reward:', refErr.message);
+      }
+    }
 
     // Email the user that their payment was approved (fire-and-forget)
     if (paymentRequest.user?.email) {

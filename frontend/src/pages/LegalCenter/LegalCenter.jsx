@@ -63,7 +63,7 @@ const LegalCenter = () => {
             </div>
 
             <div className="primary-contact-banner">
-              <h2 className="primary-contact-title">We are right here:</h2>
+              <h3 className="primary-contact-title">We are right here:</h3>
               <p className="primary-contact-subtitle">
                 <strong>Primary Contact/Grievances/Principal Officer/Nodal Officer:</strong> Kapil Aggarwal
               </p>
@@ -299,7 +299,7 @@ const LegalCenter = () => {
               www.investkaps.com and the Telegram channel/s.
             </p>
             <div className="legal-note-box">
-              <h4>Important:</h4>
+              <h3>Important:</h3>
               <ul>
                 <li>You agree not to repeat or rebroadcast in any way any of the recommendations made on www.investkaps.com or on the Telegram channel/s for any reason whatsoever.</li>
                 <li>You may not resell, redistribute, broadcast or transfer the information without separately and specifically authorized in writing by www.investkaps.com prior to such use.</li>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { setupAPI, userAPI, esignAPI } from '../../services/api';
+import { setupAPI, userAPI, esignAPI, referralAPI } from '../../services/api';
 import './Profile.css';
 
 const Profile = () => {
@@ -12,6 +12,8 @@ const Profile = () => {
   // Tracks which document is currently being fetched (by _id) to show spinner
   const [fetchingDocId, setFetchingDocId] = useState(null);
   const [fetchError, setFetchError] = useState(null);
+  const [referralInfo, setReferralInfo] = useState(null);
+  const [codeCopied, setCodeCopied] = useState(false);
 
   useEffect(() => {
     if (!currentUser?.id) return;
@@ -87,6 +89,8 @@ const Profile = () => {
 
     fetchUserDetails();
     fetchPaymentRequests();
+    // Fetch referral info
+    referralAPI.getMy().then(res => { if (res?.data) setReferralInfo(res.data); }).catch(() => {});
     return () => {
       mounted = false;
     };
@@ -433,6 +437,106 @@ const Profile = () => {
           </section>
 
         </div>
+
+        {/* ── Referral Section ── */}
+        {referralInfo && (
+          <div className="pf-body">
+
+            {/* My referral code */}
+            <section className="pf-section">
+              <h2 className="pf-section-title">🎁 Referral Program</h2>
+              <div className="pf-card">
+                <div className="pf-row" style={{ alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                  <span className="pf-label">Your Referral Code</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span className="pf-value pf-mono" style={{ fontSize: '1.25rem', letterSpacing: '0.12em', fontWeight: 700, color: 'var(--primary, #0b73ff)' }}>
+                      {referralInfo.myCode || '—'}
+                    </span>
+                    {referralInfo.myCode && (
+                      <button
+                        style={{ padding: '0.3rem 0.75rem', borderRadius: '6px', border: '1px solid var(--primary, #0b73ff)', background: codeCopied ? '#e0f2fe' : 'transparent', color: 'var(--primary, #0b73ff)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
+                        onClick={() => {
+                          navigator.clipboard.writeText(referralInfo.myCode);
+                          setCodeCopied(true);
+                          setTimeout(() => setCodeCopied(false), 2000);
+                        }}
+                      >
+                        {codeCopied ? '✓ Copied!' : 'Copy'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="pf-grid-2" style={{ marginTop: '1rem' }}>
+                  <Row label="Total Referrals"    value={String(referralInfo.totalReferrals || 0)} />
+                  <Row label="Successful Rewards" value={String(referralInfo.totalRewarded || 0)} />
+                </div>
+              </div>
+            </section>
+
+            {/* Who referred them */}
+            {referralInfo.referredBy && (
+              <section className="pf-section">
+                <h2 className="pf-section-title">Referred By</h2>
+                <div className="pf-card">
+                  <Row label="Referrer Name" value={referralInfo.referredBy.name} />
+                  <Row label="Code Applied"  value={referralInfo.usedCode} className="pf-mono" />
+                </div>
+              </section>
+            )}
+
+            {/* Referral plan status */}
+            {referralInfo.referralPlanSub && (
+              <section className="pf-section">
+                <h2 className="pf-section-title">Referral Plan</h2>
+                <div className="pf-card pf-grid-2">
+                  <Row label="Plan Name" value={referralInfo.referralPlanSub.subscription?.name || 'Referral Plan'} />
+                  <Row
+                    label="Status"
+                    value={referralInfo.referralPlanSub.status === 'active' && new Date(referralInfo.referralPlanSub.endDate) > new Date() ? 'Active' : 'Expired'}
+                    className={referralInfo.referralPlanSub.status === 'active' && new Date(referralInfo.referralPlanSub.endDate) > new Date() ? 'ok' : 'rejected'}
+                  />
+                  <Row label="Valid Until" value={fmt(referralInfo.referralPlanSub.endDate)} />
+                  <Row label="Months Earned" value={String(referralInfo.totalRewarded || 0)} />
+                </div>
+              </section>
+            )}
+
+            {/* People they referred */}
+            {referralInfo.referrals?.length > 0 && (
+              <section className="pf-section">
+                <h2 className="pf-section-title">People You Referred</h2>
+                <div className="pf-card">
+                  <div className="pf-table-wrap">
+                    <table className="pf-table">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Status</th>
+                          <th>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {referralInfo.referrals.map(r => (
+                          <tr key={r._id}>
+                            <td>{r.referred?.name || '—'}</td>
+                            <td>
+                              <span className={`pf-badge ${r.status === 'rewarded' ? 'sub-active' : 'pending-badge'}`}>
+                                {r.status === 'rewarded' ? '✓ Rewarded' : '⏳ Pending'}
+                              </span>
+                            </td>
+                            <td>{fmt(r.createdAt)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+            )}
+
+          </div>
+        )}
+
       </div>
     </div>
   );

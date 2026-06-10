@@ -5,7 +5,7 @@ const WhatsAppButton = () => {
   const whatsappLink = 'https://wa.me/message/JBNOO3MKX4P6O1';
 
   return (
-    <div className="whatsapp-float-wrapper">
+    <aside className="whatsapp-float-wrapper" aria-label="WhatsApp Support">
       <a
         href={whatsappLink}
         target="_blank"
@@ -20,7 +20,7 @@ const WhatsAppButton = () => {
         </div>
         <span className="whatsapp-tooltip">Contact us</span>
       </a>
-    </div>
+    </aside>
   );
 };
 

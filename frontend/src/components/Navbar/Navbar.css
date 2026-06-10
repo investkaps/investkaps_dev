@@ -38,15 +38,7 @@
   color: #333;
 }
 
-/* Secondary button is dark by default */
-.btn-secondary {
-  color: #333;
-  border-color: #ddd;
-}
-
-.btn-secondary:hover {
-  background-color: #f8f9fa;
-}
+/* Secondary button uses primary brand color — same as btn-primary */
 
 /* User menu button is light by default */
 .user-menu-button {
@@ -54,29 +46,7 @@
   border-color: #eaeaea;
 }
 
-/* Special styling for home page when not scrolled */
-body.is-home .navbar:not(.scrolled) .btn-secondary {
-  background: var(--primary-color);
-  color: #ffffff;
-  border-color: var(--primary-color);
-}
-
-body.is-home .navbar:not(.scrolled) .btn-secondary:hover {
-  background: var(--primary-hover);
-  color: #ffffff;
-  border-color: var(--primary-hover);
-}
-
-body.is-home .navbar:not(.scrolled) .btn-primary {
-  background: var(--primary-color);
-  color: #ffffff;
-  border: 1px solid var(--primary-color);
-}
-
-body.is-home .navbar:not(.scrolled) .btn-primary:hover {
-  background: var(--primary-hover);
-  color: #ffffff;
-}
+/* Home page unscrolled — buttons inherit base styles, no override needed */
 
 body.is-home .navbar:not(.scrolled) .user-menu-button {
   background-color: rgba(255, 255, 255, 0.1);
@@ -89,19 +59,7 @@ body.is-register .navbar .user-name {
   color: white;
 }
 
-body.is-login .navbar .btn-secondary,
-body.is-register .navbar .btn-secondary {
-  background: var(--primary-color);
-  color: #ffffff;
-  border-color: var(--primary-color);
-}
-
-body.is-login .navbar .btn-secondary:hover,
-body.is-register .navbar .btn-secondary:hover {
-  background: var(--primary-hover);
-  color: #ffffff;
-  border-color: var(--primary-hover);
-}
+/* Login/register page buttons inherit base styles, no override needed */
 
 body.is-login .navbar .user-menu-button,
 body.is-register .navbar .user-menu-button {
@@ -117,7 +75,7 @@ body.is-register .navbar .logo-text {
 /* Make logo blue when scrolled on login/register pages */
 body.is-login .navbar.scrolled .logo-text,
 body.is-register .navbar.scrolled .logo-text {
-  background: linear-gradient(45deg, #3498db, #2c3e50);
+  background: linear-gradient(45deg, #1a6fa8, #2c3e50);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -145,7 +103,7 @@ body.is-register .navbar.scrolled .logo-text {
 .logo-text {
   font-size: 1.8rem;
   font-weight: 700;
-  background: linear-gradient(45deg, #3498db, #2c3e50);
+  background: linear-gradient(45deg, #1a6fa8, #2c3e50);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -183,7 +141,7 @@ body.is-register .navbar.scrolled .logo-text {
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(45deg, #3498db, #2c3e50);
+  background: linear-gradient(45deg, #1a6fa8, #2c3e50);
   transition: width 0.3s ease;
 }
 
@@ -228,7 +186,7 @@ body.is-register .navbar.scrolled .logo-text {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(45deg, #3498db, #2c3e50);
+  background: linear-gradient(45deg, #1a6fa8, #2c3e50);
   color: white;
   display: flex;
   align-items: center;
@@ -395,28 +353,42 @@ body.is-register .navbar.scrolled .logo-text {
 }
 
 .btn-primary {
-  background: var(--primary-color);
+  background: linear-gradient(45deg, #155d8e, #1a6fa8);
   color: #ffffff;
-  border: 1px solid var(--primary-color);
+  border: none;
 }
 
 .btn-primary:hover {
-  background: var(--primary-hover);
+  background: linear-gradient(45deg, #0f4a72, #155d8e);
   color: #ffffff;
   transform: none;
   box-shadow: none;
 }
 
-.btn-secondary {
-  background: var(--primary-color);
+.btn-primary:focus-visible {
+  background: linear-gradient(45deg, #0f4a72, #155d8e);
   color: #ffffff;
-  border: 1px solid var(--primary-color);
+  outline: 3px solid #1a6fa8;
+  outline-offset: 3px;
+}
+
+.btn-secondary {
+  background: linear-gradient(45deg, #155d8e, #1a6fa8);
+  color: #ffffff;
+  border: none;
 }
 
 .btn-secondary:hover {
-  background: var(--primary-hover);
+  background: linear-gradient(45deg, #0f4a72, #155d8e);
   color: #ffffff;
   transform: none;
+}
+
+.btn-secondary:focus-visible {
+  background: linear-gradient(45deg, #0f4a72, #155d8e);
+  color: #ffffff;
+  outline: 3px solid #1a6fa8;
+  outline-offset: 3px;
 }
 
 .btn-primary:disabled,
@@ -428,21 +400,25 @@ body.is-register .navbar.scrolled .logo-text {
   cursor: not-allowed;
 }
 
-/* Override global anchor hover styles for navbar CTA buttons */
+/* Override global anchor color for navbar CTA buttons in all interactive states */
 .navbar .nav-cta a.btn.btn-primary,
 .navbar .nav-cta a.btn.btn-primary:hover,
-.navbar .nav-cta a.btn.btn-primary:focus {
+.navbar .nav-cta a.btn.btn-primary:focus,
+.navbar .nav-cta a.btn.btn-primary:focus-visible,
+.navbar .nav-cta a.btn.btn-primary:active {
   color: #ffffff;
 }
 
 .navbar .nav-cta a.btn.btn-secondary,
 .navbar .nav-cta a.btn.btn-secondary:hover,
-.navbar .nav-cta a.btn.btn-secondary:focus {
+.navbar .nav-cta a.btn.btn-secondary:focus,
+.navbar .nav-cta a.btn.btn-secondary:focus-visible,
+.navbar .nav-cta a.btn.btn-secondary:active {
   color: #ffffff;
 }
 
 .btn-dashboard {
-  background: linear-gradient(45deg, #2c3e50, #3498db);
+  background: linear-gradient(45deg, #155d8e, #1a6fa8);
   color: white;
   border: none;
   margin-right: 12px;
@@ -463,7 +439,7 @@ body.is-register .navbar.scrolled .logo-text {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(45deg, #3498db, #2c3e50);
+  background: linear-gradient(45deg, #0f4a72, #155d8e);
   z-index: -1;
   opacity: 0;
   transition: opacity 0.3s ease;

@@ -150,6 +150,40 @@ const UserSchema = new mongoose.Schema({
       }
     }
   },
+  // ── Referral ──────────────────────────────────────────────────────────────
+  referral: {
+    // Unique 8-char code auto-generated on user creation
+    code: {
+      type: String,
+      uppercase: true,
+      trim: true,
+      sparse: true,
+      index: true,
+    },
+    // The code this user entered (null = never applied one)
+    usedCode: {
+      type: String,
+      uppercase: true,
+      trim: true,
+      default: null,
+    },
+    usedCodeAt: {
+      type: Date,
+      default: null,
+    },
+    // Who referred this user (ObjectId of the referrer's User doc)
+    referredBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    // Link to their active referral plan subscription (if any)
+    referralPlanSub: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'UserSubscription',
+      default: null,
+    },
+  },
   createdAt: {
     type: Date,
     default: Date.now

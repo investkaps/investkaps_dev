@@ -1358,4 +1358,62 @@ export const kycAPI = {
   }
 };
 
+// ─── Referral API ─────────────────────────────────────────────────────────────
+export const referralAPI = {
+  /** Validate a referral code (public — no auth needed) */
+  validate: async (code) => {
+    try {
+      const res = await api.get(`/referrals/validate/${encodeURIComponent(code)}`);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+
+  /** Get the current user's full referral info */
+  getMy: async () => {
+    try {
+      const res = await api.get('/referrals/my');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+
+  /** Admin: all referral records */
+  adminGetAll: async (params = {}) => {
+    try {
+      const res = await api.get('/referrals/admin/all', { params });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+
+  /** Admin: summary stats */
+  adminGetStats: async () => {
+    try {
+      const res = await api.get('/referrals/admin/stats');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+
+  /** Admin: per-user referral summary table */
+  adminGetUsers: async (params = {}) => {
+    try {
+      const res = await api.get('/referrals/admin/users', { params });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+};
+
 export default api;

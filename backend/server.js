@@ -32,6 +32,7 @@ import symbolRoutes from './routes/symbolRoutes.js';
 import ltpRoutes from './routes/ltpRoutes.js';
 import questionnaireRoutes from './routes/questionnaireRoutes.js';
 import testimonialRoutes from './routes/testimonialRoutes.js';
+import referralRoutes from './routes/referralRoutes.js';
 
 // Connect to MongoDB
 connectDB();
@@ -124,9 +125,10 @@ app.use('/api/symbols', symbolRoutes);
 app.use('/api/ltp', ltpRoutes);
 app.use('/api/questionnaire', questionnaireRoutes);
 app.use('/api/testimonials', testimonialRoutes);
+app.use('/api/referrals', referralRoutes);
 
 // ─── Ensure directories exist ───
-for (const dir of ['uploads', 'logs']) {
+for (const dir of ['uploads']) {
   const dirPath = path.join(process.cwd(), dir);
   if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 }
