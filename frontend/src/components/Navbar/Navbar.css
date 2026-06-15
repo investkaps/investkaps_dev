@@ -352,47 +352,47 @@ body.is-register .navbar.scrolled .logo-text {
   margin-left: 1rem;
 }
 
-.btn-primary {
+.navbar .btn-primary {
   background: linear-gradient(45deg, #155d8e, #1a6fa8);
   color: #ffffff;
   border: none;
 }
 
-.btn-primary:hover {
+.navbar .btn-primary:hover {
   background: linear-gradient(45deg, #0f4a72, #155d8e);
   color: #ffffff;
   transform: none;
   box-shadow: none;
 }
 
-.btn-primary:focus-visible {
+.navbar .btn-primary:focus-visible {
   background: linear-gradient(45deg, #0f4a72, #155d8e);
   color: #ffffff;
   outline: 3px solid #1a6fa8;
   outline-offset: 3px;
 }
 
-.btn-secondary {
+.navbar .btn-secondary {
   background: linear-gradient(45deg, #155d8e, #1a6fa8);
   color: #ffffff;
   border: none;
 }
 
-.btn-secondary:hover {
+.navbar .btn-secondary:hover {
   background: linear-gradient(45deg, #0f4a72, #155d8e);
   color: #ffffff;
   transform: none;
 }
 
-.btn-secondary:focus-visible {
+.navbar .btn-secondary:focus-visible {
   background: linear-gradient(45deg, #0f4a72, #155d8e);
   color: #ffffff;
   outline: 3px solid #1a6fa8;
   outline-offset: 3px;
 }
 
-.btn-primary:disabled,
-.btn-secondary:disabled {
+.navbar .btn-primary:disabled,
+.navbar .btn-secondary:disabled {
   background: #757575;
   border-color: #757575;
   color: #ffffff;
