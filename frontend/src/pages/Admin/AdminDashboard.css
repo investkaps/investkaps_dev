@@ -699,8 +699,9 @@
   flex: 1;
   padding: 2rem 2rem 2rem 10rem;
   margin: 0;
-  overflow-y: auto;
+  overflow-y: visible;
   background: #f8fafc;
+  min-height: 100vh;
 }
 
 .admin-header {
@@ -969,6 +970,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   border: 1px solid #e2e8f0;
   overflow: hidden;
+  width: 100%;
 }
 
 .admin-details-header {
@@ -999,7 +1001,6 @@
 
 .admin-details-content {
   padding: 1.5rem;
-  max-height: 700px;
   overflow-y: auto;
 }
 

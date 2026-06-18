@@ -3,6 +3,7 @@ import { adminAPI, esignAPI } from '../../services/api';
 import subscriptionAPI from '../../services/subscriptionAPI';
 import './AdminDashboard.css';
 import Modal from '../../components/Shared/Modal';
+import OnboardingOverride from '../../components/Admin/OnboardingOverride';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -445,7 +446,7 @@ const UserManagement = () => {
         
       {selectedUser && (
         <Modal isOpen={!!selectedUser} onClose={() => setSelectedUser(null)}>
-          <div className="admin-user-details" style={{ width: '100%', maxWidth: '800px' }}>
+          <div className="admin-user-details" style={{ width: '100%' }}>
             <div className="admin-details-header">
               <h3>User Details</h3>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -900,6 +901,18 @@ const UserManagement = () => {
                     <p>No documents available.</p>
                   </div>
                 )}
+              </div>
+
+              <div className="admin-details-section">
+                <OnboardingOverride
+                  userId={selectedUser._id}
+                  userName={selectedUser.name}
+                  kycVerifications={selectedUser.kycVerifications || []}
+                  documents={selectedUser.documents || []}
+                  userSubscriptions={selectedUser.userSubscriptions || []}
+                  currentPhone={selectedUser.profile?.phone || null}
+                  phoneVerified={selectedUser.profile?.phoneVerified || false}
+                />
               </div>
             </div>
           </div>

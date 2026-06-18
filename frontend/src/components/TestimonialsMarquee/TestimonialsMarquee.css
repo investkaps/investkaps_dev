@@ -51,6 +51,7 @@
 
 .testimonials-marquee-track {
   display: flex;
+  flex-direction: row;
   overflow: hidden;
   padding: 0.5rem;
   width: 100%;
@@ -60,7 +61,7 @@
   display: flex;
   flex-direction: row;
   gap: 1rem;
-  animation: marquee 40s linear infinite;
+  animation: marquee 20s ease-in-out infinite alternate;
   flex-shrink: 0;
 }
 
@@ -73,7 +74,7 @@
     transform: translateX(0);
   }
   to {
-    transform: translateX(calc(-100% / 4));
+    transform: translateX(calc(-100% + 100vw - 2rem));
   }
 }
 

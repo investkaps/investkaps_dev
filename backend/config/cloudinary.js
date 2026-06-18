@@ -13,15 +13,15 @@ cloudinary.config({
  * @param {string} filename - Desired filename
  * @returns {Promise<Object>} Upload result with url and public_id
  */
-const uploadPDF = (buffer, filename) => {
+const uploadPDF = (buffer, filename, folder = 'stock-reports') => {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        resource_type: 'raw', // For non-image files like PDFs
-        folder: 'stock-reports', // Organize PDFs in a folder
-        public_id: filename.replace('.pdf', ''), // Remove .pdf extension
+        resource_type: 'raw',
+        folder,
+        public_id: filename.replace('.pdf', ''),
         format: 'pdf',
-        overwrite: true // Replace if exists
+        overwrite: true
       },
       (error, result) => {
         if (error) {

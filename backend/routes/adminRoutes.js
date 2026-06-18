@@ -1,11 +1,13 @@
 import express from 'express';
 const router = express.Router();
+import multer from 'multer';
 import { verifyToken  } from '../middleware/auth.js';
 import { checkRole  } from '../middleware/roleAuth.js';
 import User from '../model/User.js';
 import KycVerification from '../model/KycVerification.js';
 import Document from '../model/Document.js';
 import UserSubscription from '../model/UserSubscription.js';
+import Subscription from '../model/Subscription.js';
 import { sendEmail } from '../utils/emailService.js';
 import * as adminRoleController from '../controllers/adminRoleController.js';
 import { sendOnboardingReminderToUser } from '../services/onboardingReminderService.js';
@@ -14,6 +16,18 @@ import {
   buildMailPreviewPath,
   sendAdminMail
 } from '../services/adminMailService.js';
+import { uploadImage, uploadPDF } from '../config/cloudinary.js';
+import { fetchPanKyc } from '../services/kyc_client.js';
+import { extractCAMSStatus, isKYCVerified } from '../utils/camsStatusMapper.js';
+
+const kycUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    cb(null, allowed.includes(file.mimetype));
+  }
+});
 
 /**
  * @route   GET /api/admin/dashboard
@@ -552,6 +566,337 @@ router.post('/mail/send', verifyToken, checkRole('admin'), async (req, res) => {
       success: false,
       error: error.message || 'Server error while sending mail'
     });
+  }
+});
+
+// ─── Admin Onboarding Overrides ───────────────────────────────────────────────
+
+/**
+ * @route   POST /api/admin/users/:id/override-kyc-upload
+ * @desc    Manually mark PAN KYC complete by uploading an image/document
+ * @access  Private (Admin only)
+ */
+router.post(
+  '/users/:id/override-kyc-upload',
+  verifyToken, checkRole('admin'),
+  kycUpload.single('file'),
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id);
+      if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+      if (!req.file) return res.status(400).json({ success: false, error: 'No file uploaded' });
+
+      const isPdf = req.file.mimetype === 'application/pdf';
+      let cloudinaryUrl;
+      if (isPdf) {
+        const result = await uploadPDF(req.file.buffer, `kyc-admin-${user._id}-${Date.now()}`, 'admin-kyc-uploads');
+        cloudinaryUrl = result.url;
+      } else {
+        const result = await uploadImage(req.file.buffer, 'admin-kyc-uploads');
+        cloudinaryUrl = result.url;
+      }
+
+      const record = new KycVerification({
+        user: user._id,
+        clerkId: user.clerkId,
+        pan: 'ADMIN000000',
+        dob: '01-01-1900',
+        fullName: user.name,
+        kycStatus: 'VERIFIED',
+        camsStatusCode: '07',
+        status: 'success',
+        camsDownloadData: {
+          kycStatus: 'VERIFIED',
+          camsStatusCode: '07',
+          statusDescription: 'Manually verified by admin',
+          fullName: user.name,
+          recordedAt: new Date(),
+          adminUploadUrl: cloudinaryUrl,
+        },
+      });
+      await record.save();
+
+      await User.updateOne({ _id: user._id }, {
+        'kycStatus.isVerified': true,
+        'kycStatus.verifiedAt': new Date(),
+        'kycStatus.latestVerification': record._id,
+        'verificationStatus.panKyc': true,
+      });
+
+      return res.status(200).json({ success: true, message: 'KYC manually verified via document upload', documentUrl: cloudinaryUrl });
+    } catch (err) {
+      console.error('Admin KYC upload error:', err);
+      return res.status(500).json({ success: false, error: 'Server error' });
+    }
+  }
+);
+
+/**
+ * @route   POST /api/admin/users/:id/override-kyc-pan
+ * @desc    Manually verify PAN KYC by calling CAMS API (same as user flow)
+ * @access  Private (Admin only)
+ */
+router.post('/users/:id/override-kyc-pan', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const { pan, dob } = req.body;
+    if (!pan || !dob) return res.status(400).json({ success: false, error: 'pan and dob are required' });
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    const sanitizedPAN = String(pan).toUpperCase().trim();
+    const sanitizedDOB = String(dob).trim();
+
+    let kycRaw, kycData, proxyIsVerified, proxyKycStatus, proxyUserMessage;
+    try {
+      ({ raw: kycRaw, data: kycData, isVerified: proxyIsVerified, kycStatus: proxyKycStatus, userMessage: proxyUserMessage } =
+        await fetchPanKyc(sanitizedPAN, sanitizedDOB));
+    } catch (err) {
+      return res.status(422).json({ success: false, error: err.message || 'KYC API call failed' });
+    }
+
+    if (!proxyIsVerified) {
+      return res.status(200).json({ success: false, isVerified: false, kycStatus: proxyKycStatus, message: proxyUserMessage || 'KYC not verified by CAMS' });
+    }
+
+    const statusMapping = extractCAMSStatus(kycData);
+    const record = new KycVerification({
+      user: user._id,
+      clerkId: user.clerkId,
+      pan: sanitizedPAN,
+      dob: sanitizedDOB,
+      fullName: kycData?.kycData?.[0]?.name || null,
+      kycStatus: statusMapping.status || 'VERIFIED',
+      camsStatusCode: statusMapping.rawCode,
+      status: 'success',
+      rawEc2Response: kycRaw,
+      camsDownloadData: { kycStatus: statusMapping.status, camsStatusCode: statusMapping.rawCode, fullName: kycData?.kycData?.[0]?.name, recordedAt: new Date() },
+    });
+    await record.save();
+
+    await User.updateOne({ _id: user._id }, {
+      'kycStatus.isVerified': true,
+      'kycStatus.verifiedAt': new Date(),
+      'kycStatus.latestVerification': record._id,
+      'verificationStatus.panKyc': true,
+    });
+
+    return res.status(200).json({ success: true, message: 'KYC verified via CAMS API', isVerified: true, fullName: record.fullName });
+  } catch (err) {
+    console.error('Admin KYC PAN error:', err);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+/**
+ * @route   POST /api/admin/users/:id/override-phone
+ * @desc    Set user phone without OTP
+ * @access  Private (Admin only)
+ */
+router.post('/users/:id/override-phone', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ success: false, error: 'phone is required' });
+
+    const cleanPhone = String(phone).trim().replace(/\D/g, '');
+    if (cleanPhone.length < 10) return res.status(400).json({ success: false, error: 'Invalid phone number' });
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    await User.updateOne({ _id: user._id }, {
+      'profile.phone': cleanPhone,
+      'profile.phoneVerified': true,
+      'verificationStatus.phone': true,
+    });
+
+    return res.status(200).json({ success: true, message: 'Phone number set by admin', phone: cleanPhone });
+  } catch (err) {
+    console.error('Admin phone override error:', err);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+/**
+ * @route   POST /api/admin/users/:id/override-esign
+ * @desc    Manually upload signed document and mark e-sign complete
+ * @access  Private (Admin only)
+ */
+router.post(
+  '/users/:id/override-esign',
+  verifyToken, checkRole('admin'),
+  kycUpload.single('file'),
+  async (req, res) => {
+    try {
+      const { serviceType = 'RA' } = req.body;
+      const svcType = serviceType === 'IA' ? 'IA' : 'RA';
+
+      const user = await User.findById(req.params.id);
+      if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+      if (!req.file) return res.status(400).json({ success: false, error: 'No file uploaded' });
+
+      const isPdf = req.file.mimetype === 'application/pdf';
+      let cloudinaryUrl;
+      if (isPdf) {
+        const result = await uploadPDF(req.file.buffer, `esign-admin-${user._id}-${Date.now()}`, 'admin-esign-uploads');
+        cloudinaryUrl = result.url;
+      } else {
+        const result = await uploadImage(req.file.buffer, 'admin-esign-uploads');
+        cloudinaryUrl = result.url;
+      }
+
+      const doc = new Document({
+        user: user._id,
+        name: `${svcType} Agreement (Admin Upload)`,
+        type: 'agreement',
+        serviceType: svcType,
+        fileName: req.file.originalname || 'admin-agreement',
+        filePath: cloudinaryUrl,
+        fileSize: req.file.size,
+        mimeType: req.file.mimetype,
+        esign: {
+          status: 'COMPLETED',
+          currentStatus: 'COMPLETED',
+          signedPdfUrl: cloudinaryUrl,
+          signedPdfFetchedAt: new Date(),
+          signedPdfFetchedBy: 'admin',
+          completedAt: new Date(),
+          signingDetails: { total: 1, signed: 1, rejected: 0, expired: 0, pending: 0 },
+        },
+      });
+      await doc.save();
+
+      const userUpdate = {
+        'verificationStatus.esign': true,
+        [`clientTypes.${svcType}.isCompleted`]: true,
+        [`clientTypes.${svcType}.completedAt`]: new Date(),
+        [`clientTypes.${svcType}.agreementDocumentId`]: doc._id,
+      };
+      await User.updateOne({ _id: user._id }, userUpdate);
+
+      return res.status(200).json({ success: true, message: `${svcType} e-sign manually completed by admin`, documentUrl: cloudinaryUrl, documentId: doc._id });
+    } catch (err) {
+      console.error('Admin esign override error:', err);
+      return res.status(500).json({ success: false, error: 'Server error' });
+    }
+  }
+);
+
+/**
+ * @route   GET /api/admin/subscriptions/list
+ * @desc    Get all available subscription plans for admin assignment
+ * @access  Private (Admin only)
+ */
+router.get('/subscriptions/list', verifyToken, checkRole('admin'), async (_req, res) => {
+  try {
+    const subs = await Subscription.find({ isActive: true }).select('name packageCode serviceType planOptions pricing').sort('displayOrder');
+    return res.status(200).json({ success: true, data: subs });
+  } catch (err) {
+    console.error('Admin subscription list error:', err);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+/**
+ * @route   POST /api/admin/users/:id/assign-plan
+ * @desc    Assign a subscription plan to a user (create new or extend existing)
+ * @access  Private (Admin only)
+ */
+router.post('/users/:id/assign-plan', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const { subscriptionId, planOptionId, durationMonths, startDate, endDate, newEndDate, adjustDays } = req.body;
+
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    // Set a specific new end date on an existing subscription
+    if (newEndDate !== undefined) {
+      const query = { user: user._id, status: 'active', endDate: { $gt: new Date() } };
+      if (subscriptionId) query._id = subscriptionId;
+      const sub = await UserSubscription.findOne(query).sort({ createdAt: -1 });
+      if (!sub) return res.status(404).json({ success: false, error: 'No active subscription found to adjust' });
+      const parsed = new Date(newEndDate);
+      if (isNaN(parsed.getTime())) return res.status(400).json({ success: false, error: 'Invalid date' });
+      const oldEnd = new Date(sub.endDate).toLocaleDateString('en-IN');
+      sub.endDate = parsed;
+      await sub.save();
+      return res.status(200).json({ success: true, message: `End date updated from ${oldEnd} to ${parsed.toLocaleDateString('en-IN')}`, newEndDate: sub.endDate });
+    }
+
+    // Legacy: adjust by number of days
+    if (adjustDays !== undefined) {
+      const query = { user: user._id, status: 'active', endDate: { $gt: new Date() } };
+      if (subscriptionId) query._id = subscriptionId;
+      const activeSub = await UserSubscription.findOne(query).sort({ createdAt: -1 });
+      if (!activeSub) return res.status(404).json({ success: false, error: 'No active subscription found to adjust' });
+      const days = parseInt(adjustDays, 10);
+      if (isNaN(days)) return res.status(400).json({ success: false, error: 'adjustDays must be a number' });
+      activeSub.endDate = new Date(activeSub.endDate.getTime() + days * 24 * 60 * 60 * 1000);
+      await activeSub.save();
+      return res.status(200).json({ success: true, message: `Subscription ${days >= 0 ? 'extended' : 'reduced'} by ${Math.abs(days)} days`, newEndDate: activeSub.endDate });
+    }
+
+    // Assign new plan
+    if (!subscriptionId) return res.status(400).json({ success: false, error: 'subscriptionId is required' });
+
+    const subscription = await Subscription.findById(subscriptionId);
+    if (!subscription) return res.status(404).json({ success: false, error: 'Subscription plan not found' });
+
+    // Resolve plan option
+    let planOption = null;
+    if (planOptionId) {
+      planOption = subscription.planOptions.find(p => p._id.toString() === planOptionId);
+    }
+    const months = parseInt(durationMonths, 10) || planOption?.months || 1;
+    const price = planOption?.price ?? 0;
+
+    const start = startDate ? new Date(startDate) : new Date();
+    let end;
+    if (endDate) {
+      end = new Date(endDate);
+    } else {
+      end = new Date(start);
+      end.setMonth(end.getMonth() + months);
+    }
+
+    // Cancel any existing active subscription for same serviceType
+    await UserSubscription.updateMany(
+      { user: user._id, serviceType: subscription.serviceType, status: 'active' },
+      { status: 'cancelled' }
+    );
+
+    const userSub = new UserSubscription({
+      user: user._id,
+      subscription: subscription._id,
+      serviceType: subscription.serviceType,
+      status: 'active',
+      startDate: start,
+      endDate: end,
+      paymentMethod: 'manual',
+      price,
+      currency: subscription.currency || 'INR',
+      duration: `${months} month${months > 1 ? 's' : ''}`,
+      durationMonths: months,
+      planOptionId: planOption?._id?.toString() || null,
+      planOptionName: planOption?.name || null,
+    });
+    await userSub.save();
+
+    const actualDays = Math.round((end - start) / (1000 * 60 * 60 * 24));
+    const durationLabel = endDate
+      ? `${actualDays} day${actualDays !== 1 ? 's' : ''}`
+      : `${months} month${months !== 1 ? 's' : ''}`;
+
+    return res.status(200).json({
+      success: true,
+      message: `Plan "${subscription.name}" assigned for ${durationLabel} (${start.toLocaleDateString('en-IN')} → ${end.toLocaleDateString('en-IN')})`,
+      subscription: { id: userSub._id, plan: subscription.name, startDate: start, endDate: end, months, days: actualDays }
+    });
+  } catch (err) {
+    console.error('Admin assign plan error:', err);
+    return res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 

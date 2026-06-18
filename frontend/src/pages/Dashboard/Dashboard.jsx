@@ -1055,6 +1055,25 @@ const Dashboard = () => {
     fetchRecommendations();
   }, [currentUser, isSetupComplete, activeSubscription, isAdminUser]);
   
+  // ─── Greeting helper ──────────────────────────────────────────────────────
+  const getGreeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  // ─── Setup-complete box: hide once user has dismissed it ─────────────────
+  const setupDismissKey = `setup_dismissed_${currentUser?.id || currentUser?.email}`;
+  const [setupDismissed, setSetupDismissed] = useState(() => !!localStorage.getItem(setupDismissKey));
+  const dismissSetup = () => {
+    localStorage.setItem(setupDismissKey, '1');
+    setSetupDismissed(true);
+  };
+
+  // ─── Testimonial modal state ──────────────────────────────────────────────
+  const [testimonialModalOpen, setTestimonialModalOpen] = useState(false);
+
   // Block render until all initial checks have resolved
   if (authLoading || !dashboardReady || !roleResolved) {
     return <Loading message="Loading your dashboard…" />;
@@ -1183,12 +1202,15 @@ const Dashboard = () => {
   return (
     <div className="dashboard-page">
       <div className="dashboard-container">
-        <div className="dashboard-header">
-          <div className="welcome-section">
-            <h1>Your Dashboard</h1>
-            <p>Hello, {currentUser?.name || currentUser?.email}!</p>
+
+        {/* Greeting header — no logout button */}
+        <div className="dashboard-greeting">
+          <div>
+            <h1 className="greeting-text">
+              {getGreeting()}, {(currentUser?.name || currentUser?.email || '').split(' ')[0]}!
+            </h1>
+            <p className="greeting-sub">Here's what's happening with your account today.</p>
           </div>
-          <button onClick={handleLogout} className="logout-btn">Logout</button>
         </div>
 
         {/* Payment success banner */}
@@ -1207,54 +1229,24 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* ─── IA Upgrade Prompt ── shown to RA customers without active IA sub ── */}
-        {isRaCustomer && !isAdminUser && (
-          <div className={`ia-upgrade-prompt ${iaServiceLocked ? 'ia-upgrade-locked' : ''}`}>
-            <div className="ia-upgrade-body">
-              <span className="section-eyebrow">Investment Advisor Access</span>
-              <strong>{iaServiceLocked ? 'IA is locked while your RA plan is active' : 'Unlock Investment Advisor Services'}</strong>
-              <p>
-                {iaServiceLocked
-                  ? `You can switch to IA after your current RA subscription ends${activeRaSubscription?.endDate ? ` on ${new Date(activeRaSubscription.endDate).toLocaleDateString()}` : ''}.`
-                  : 'Get personalised advisory, portfolio management, and goal-based planning from our SEBI-registered advisors.'}
-              </p>
-              {iaServiceLocked && activeRaSubscription?.subscription?.name && (
-                <div className="locked-plan-pill">
-                  Current RA plan: {activeRaSubscription.subscription.name}
-                </div>
+        {/* Setup complete box — dismissible, hidden after first dismiss */}
+        {!setupDismissed && (
+          <div className="setup-status-box">
+            <div className="status-icon completed">✓</div>
+            <div className="status-message">
+              {isAdminUser ? (
+                <>
+                  <h3>Admin Privileges</h3>
+                  <p>You have admin privileges. <Link to="/admin" className="admin-link">Visit the Admin Dashboard</Link></p>
+                </>
+              ) : (
+                <>
+                  <h3>Setup Complete</h3>
+                  <p>Your account is fully set up and ready to use all features.</p>
+                </>
               )}
             </div>
-            {!iaServiceLocked && (
-              <button
-                className="ia-upgrade-btn"
-                onClick={() => {
-                  // Mirror existing KYC + phone into IA steps
-                  setIaSteps(prev => ({
-                    ...prev,
-                    kyc:   { ...prev.kyc,   completed: steps.kyc.completed },
-                    phone: { ...prev.phone, completed: steps.phone.completed },
-                  }));
-                  setSelectedServices(new Set(['RA', 'IA']));
-                  setOnboardingPhase('onboarding-ia');
-                }}
-              >
-                Sign Up for IA
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* QR / Manual Payment Request Status */}
-        {qrPaymentSubmittedBanner && (
-          <div className="payment-request-confirmation">
-            We received your payment request. We will verify it within 24 hours.
-          </div>
-        )}
-
-        {/* User testimonial submission (only for non-admin users) */}
-        {!isAdminUser && (
-          <div style={{ marginTop: '1.5rem' }}>
-            <UserTestimonial />
+            <button className="setup-dismiss-btn" onClick={dismissSetup} title="Dismiss">&#x2715;</button>
           </div>
         )}
 
@@ -1283,24 +1275,6 @@ const Dashboard = () => {
             </div>
           </div>
         )}
-
-        {/* Setup complete / Admin status box */}
-        <div className="setup-status-box">
-          <div className="status-icon completed">Ready</div>
-          <div className="status-message">
-            {isAdminUser ? (
-              <>
-                <h3>Admin Privileges</h3>
-                <p>You have admin privileges. <Link to="/admin" className="admin-link">Visit the Admin Dashboard</Link></p>
-              </>
-            ) : (
-              <>
-                <h3>Setup Complete</h3>
-                <p>Your account is fully set up and ready to use all features.</p>
-              </>
-            )}
-          </div>
-        </div>
 
         {/* Current Subscription Plan */}
         {activeSubscription && (
@@ -1417,7 +1391,85 @@ const Dashboard = () => {
             )}
           </div>
         )}
-      </div>
+
+      </div>{/* end dashboard-container */}
+
+      {/* ── IA locked notice — bottom marquee ─────────────────────────────── */}
+      {isRaCustomer && !isAdminUser && iaServiceLocked && (
+        <div className="db-bottom-marquee">
+          <span className="db-marquee-label">NOTICE</span>
+          <div className="db-marquee-track">
+            <span className="db-marquee-content">
+              IA services are currently locked while your RA plan is active
+              {activeRaSubscription?.endDate ? ` — your RA plan expires on ${new Date(activeRaSubscription.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}.
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              IA services are currently locked while your RA plan is active
+              {activeRaSubscription?.endDate ? ` — your RA plan expires on ${new Date(activeRaSubscription.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}.
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* ── IA upgrade CTA (not locked, no active IA) ─────────────────────── */}
+      {isRaCustomer && !isAdminUser && !iaServiceLocked && (
+        <div className="db-bottom-marquee db-bottom-marquee--upgrade">
+          <span className="db-marquee-label">UPGRADE</span>
+          <div className="db-marquee-track">
+            <span className="db-marquee-content">
+              Unlock Investment Advisor services — get personalised advisory, portfolio management and goal-based planning from our SEBI-registered advisors.&nbsp;&nbsp;
+              <button className="db-marquee-cta" onClick={() => {
+                setIaSteps(prev => ({
+                  ...prev,
+                  kyc:   { ...prev.kyc,   completed: steps.kyc.completed },
+                  phone: { ...prev.phone, completed: steps.phone.completed },
+                }));
+                setSelectedServices(new Set(['RA', 'IA']));
+                setOnboardingPhase('onboarding-ia');
+              }}>Sign Up for IA →</button>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              Unlock Investment Advisor services — get personalised advisory, portfolio management and goal-based planning from our SEBI-registered advisors.&nbsp;&nbsp;
+              <button className="db-marquee-cta" onClick={() => {
+                setIaSteps(prev => ({
+                  ...prev,
+                  kyc:   { ...prev.kyc,   completed: steps.kyc.completed },
+                  phone: { ...prev.phone, completed: steps.phone.completed },
+                }));
+                setSelectedServices(new Set(['RA', 'IA']));
+                setOnboardingPhase('onboarding-ia');
+              }}>Sign Up for IA →</button>
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* ── Review CTA chip + modal (non-admin only) ──────────────────────── */}
+      {!isAdminUser && (
+        <>
+          <div className="db-review-chip" onClick={() => setTestimonialModalOpen(true)}>
+            <span className="db-review-chip-icon">★</span>
+            <div>
+              <div className="db-review-chip-title">Loving our service?</div>
+              <div className="db-review-chip-sub">Share your review — we may feature it on our site</div>
+            </div>
+            <span className="db-review-chip-arrow">Leave a review →</span>
+          </div>
+
+          {testimonialModalOpen && (
+            <div className="db-modal-backdrop" onClick={() => setTestimonialModalOpen(false)}>
+              <div className="db-modal-box" onClick={e => e.stopPropagation()}>
+                <div className="db-modal-header">
+                  <h3>Share Your Review</h3>
+                  <button className="db-modal-close" onClick={() => setTestimonialModalOpen(false)}>&#x2715;</button>
+                </div>
+                <div className="db-modal-body">
+                  <UserTestimonial />
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
     </div>
   );
 

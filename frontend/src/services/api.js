@@ -459,6 +459,77 @@ export const adminAPI = {
     }
   },
   
+  // ── Onboarding Override ──────────────────────────────────────────────────────
+
+  overrideKycUpload: async (userId, file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await api.post(`/admin/users/${userId}/override-kyc-upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+
+  overrideKycPan: async (userId, { pan, dob }) => {
+    try {
+      const res = await api.post(`/admin/users/${userId}/override-kyc-pan`, { pan, dob });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+
+  overridePhone: async (userId, phone) => {
+    try {
+      const res = await api.post(`/admin/users/${userId}/override-phone`, { phone });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+
+  overrideEsign: async (userId, file, serviceType = 'RA') => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('serviceType', serviceType);
+      const res = await api.post(`/admin/users/${userId}/override-esign`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+
+  getSubscriptionsList: async () => {
+    try {
+      const res = await api.get('/admin/subscriptions/list');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+
+  assignPlan: async (userId, payload) => {
+    try {
+      const res = await api.post(`/admin/users/${userId}/assign-plan`, payload);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+
   // Get all KYC verifications
   getAllKycVerifications: async () => {
     try {
