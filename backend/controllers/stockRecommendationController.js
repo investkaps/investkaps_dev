@@ -484,12 +484,12 @@ const getUserRecommendations = async (req, res) => {
       status: 'published',
       targetStrategies: { $in: strategyIds }
     };
-    
+
     // Only show recommendations published AFTER the user's subscription started
     if (earliestStartDate) {
       query.publishedAt = { $gte: earliestStartDate };
     }
-    
+
     // Find recommendations targeting these strategies
     const recommendations = await StockRecommendation.find(query)
       .sort({ publishedAt: -1 })

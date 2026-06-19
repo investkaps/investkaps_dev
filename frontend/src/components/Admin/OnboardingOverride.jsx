@@ -301,7 +301,15 @@ const EsignOverride = ({ userId, documents }) => {
 };
 
 // ─── Plan Assignment ───────────────────────────────────────────────────────────
-const PlanAssignment = ({ userId, userSubscriptions }) => {
+const statusColor = (status) => {
+  if (status === 'active') return { bg: '#d4edda', color: '#155724' };
+  if (status === 'cancelled') return { bg: '#fff3cd', color: '#856404' };
+  if (status === 'expired') return { bg: '#f8d7da', color: '#721c24' };
+  return { bg: '#e2e8f0', color: '#334155' };
+};
+
+const PlanAssignment = ({ userId, userSubscriptions: initialSubs }) => {
+  const [subs, setSubs] = useState(initialSubs || []);
   const [plans, setPlans] = useState([]);
   const [plansLoading, setPlansLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState('');
@@ -311,10 +319,12 @@ const PlanAssignment = ({ userId, userSubscriptions }) => {
   const [adjustSubId, setAdjustSubId] = useState('');
   const [adjustDays, setAdjustDays] = useState('');
   const [adjustMode, setAdjustMode] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
   const [result, setResult] = useState(null);
 
-  const activeSubs = userSubscriptions.filter(s => s.status === 'active' && new Date(s.endDate) > new Date());
+  const activeSubs = subs.filter(s => s.status === 'active' && new Date(s.endDate) > new Date());
   const hasActiveSub = activeSubs.length > 0;
 
   useEffect(() => {
@@ -324,7 +334,6 @@ const PlanAssignment = ({ userId, userSubscriptions }) => {
       .finally(() => setPlansLoading(false));
   }, []);
 
-  // When entering adjust mode, auto-select the first active sub and pre-fill its end date
   useEffect(() => {
     if (!adjustMode) return;
     const first = activeSubs[0];
@@ -334,7 +343,6 @@ const PlanAssignment = ({ userId, userSubscriptions }) => {
     }
   }, [adjustMode]);
 
-  // When user picks a different subscription to adjust, update the date field
   const handleAdjustSubChange = (id) => {
     setAdjustSubId(id);
     const sub = activeSubs.find(s => s._id === id);
@@ -343,7 +351,6 @@ const PlanAssignment = ({ userId, userSubscriptions }) => {
   };
 
   const selectedAdjustSub = activeSubs.find(s => s._id === adjustSubId);
-
   const currentPlan = plans.find(p => p._id === selectedPlan);
   const planOptions = currentPlan?.planOptions || [];
 
@@ -361,7 +368,11 @@ const PlanAssignment = ({ userId, userSubscriptions }) => {
         endDate,
       });
       setResult({ ok: res.success, msg: res.message || 'Plan assigned' });
-      if (res.success) { setSelectedPlan(''); setSelectedOption(''); setStartDate(''); setEndDate(''); }
+      if (res.success) {
+        setSelectedPlan(''); setSelectedOption(''); setStartDate(''); setEndDate('');
+        // reflect the new sub in local state
+        if (res.subscription) setSubs(prev => [...prev, { ...res.subscription, status: 'active' }]);
+      }
     } catch (e) { setResult({ ok: false, msg: e.message }); }
     finally { setLoading(false); }
   };
@@ -373,27 +384,144 @@ const PlanAssignment = ({ userId, userSubscriptions }) => {
     try {
       const res = await adminAPI.assignPlan(userId, { newEndDate: adjustDays, subscriptionId: adjustSubId });
       setResult({ ok: res.success, msg: res.message || 'Done' });
+      if (res.success) {
+        setSubs(prev => prev.map(s => s._id === adjustSubId ? { ...s, endDate: adjustDays } : s));
+      }
     } catch (e) { setResult({ ok: false, msg: e.message }); }
     finally { setLoading(false); }
   };
 
+  const handleReassign = async (subId) => {
+    if (!window.confirm('Reactivate this subscription? It will become active again within its original end date.')) return;
+    setActionLoadingId(subId);
+    setResult(null);
+    try {
+      const res = await adminAPI.reassignUserSubscription(userId, subId);
+      setResult({ ok: res.success, msg: res.message || 'Done' });
+      if (res.success) {
+        setSubs(prev => prev.map(s => s._id === subId ? { ...s, status: 'active' } : s));
+      }
+    } catch (e) { setResult({ ok: false, msg: e.message }); }
+    finally { setActionLoadingId(null); }
+  };
+
+  const handleRemove = async (subId, mode) => {
+    const isDelete = mode === 'delete';
+    const confirmMsg = isDelete
+      ? 'Permanently DELETE this subscription record? This will also erase it from the user\'s history and cannot be undone.'
+      : 'Unassign this subscription? The plan will be cancelled but the record will remain in history.';
+    if (!window.confirm(confirmMsg)) return;
+
+    setActionLoadingId(subId);
+    setResult(null);
+    try {
+      const res = await adminAPI.removeUserSubscription(userId, subId, mode);
+      setResult({ ok: res.success, msg: res.message || 'Done' });
+      if (res.success) {
+        if (isDelete) {
+          setSubs(prev => prev.filter(s => s._id !== subId));
+        } else {
+          setSubs(prev => prev.map(s => s._id === subId ? { ...s, status: 'cancelled' } : s));
+        }
+      }
+    } catch (e) { setResult({ ok: false, msg: e.message }); }
+    finally { setActionLoadingId(null); }
+  };
+
+  const smallBtn = (bg, disabled) => ({
+    padding: '0.3rem 0.7rem', borderRadius: '6px', border: 'none',
+    background: disabled ? '#cbd5e1' : bg, color: '#fff',
+    fontWeight: 600, cursor: disabled ? 'not-allowed' : 'pointer',
+    fontSize: '0.75rem', whiteSpace: 'nowrap',
+  });
+
   return (
     <div style={card}>
-      <h4 style={{ margin: '0 0 0.75rem', color: '#1e293b', fontSize: '1rem' }}>Plan Assignment</h4>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+        <h4 style={{ margin: 0, color: '#1e293b', fontSize: '1rem' }}>Plan Assignment</h4>
+        {subs.length > 0 && (
+          <button
+            onClick={() => setShowHistory(h => !h)}
+            style={{ padding: '0.3rem 0.85rem', borderRadius: '6px', border: '1px solid #cbd5e1', background: showHistory ? '#f1f5f9' : '#fff', color: '#475569', fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }}
+          >
+            {showHistory ? 'Hide History' : `View History (${subs.length})`}
+          </button>
+        )}
+      </div>
 
-      <ExistingRecords title="Existing subscriptions" count={userSubscriptions.length}>
-        {userSubscriptions.map((s, i) => (
-          <div key={i} style={{ padding: '0.6rem 0', borderBottom: i < userSubscriptions.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-            <Row label="Plan" value={s.subscription?.name || s.planOptionName} />
-            <Row label="Service" value={s.serviceType} />
-            <Row label="Status" value={s.status} />
-            <Row label="Start" value={s.startDate ? new Date(s.startDate).toLocaleDateString() : null} />
-            <Row label="End" value={s.endDate ? new Date(s.endDate).toLocaleDateString() : null} />
-            <Row label="Duration" value={s.duration} />
-          </div>
-        ))}
-      </ExistingRecords>
+      {/* ── Subscription History ─────────────────────────────────────────────── */}
+      {showHistory && subs.length > 0 && (
+        <div style={{ marginBottom: '1rem', border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
+          {subs.map((s, i) => {
+            const sc = statusColor(s.status);
+            const isActive = s.status === 'active' && new Date(s.endDate).toISOString().slice(0,10) >= new Date().toISOString().slice(0,10);
+            const busy = actionLoadingId === s._id;
+            return (
+              <div key={s._id || i} style={{
+                padding: '0.75rem 1rem',
+                borderBottom: i < subs.length - 1 ? '1px solid #f1f5f9' : 'none',
+                background: i % 2 === 0 ? '#fff' : '#fafafa',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#1e293b', marginBottom: '0.2rem' }}>
+                      {s.subscription?.name || s.planOptionName || 'Plan'}
+                      {s.serviceType && (
+                        <span style={{ marginLeft: '0.5rem', fontSize: '0.72rem', fontWeight: 600, background: '#e2e8f0', color: '#475569', borderRadius: '10px', padding: '0.1rem 0.5rem' }}>
+                          {s.serviceType}
+                        </span>
+                      )}
+                      <span style={{ marginLeft: '0.5rem', fontSize: '0.72rem', fontWeight: 700, background: sc.bg, color: sc.color, borderRadius: '10px', padding: '0.1rem 0.5rem' }}>
+                        {s.status}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.79rem', color: '#64748b' }}>
+                      {s.startDate ? new Date(s.startDate).toLocaleDateString('en-IN') : '?'}
+                      {' → '}
+                      {s.endDate ? new Date(s.endDate).toLocaleDateString('en-IN') : '?'}
+                      {s.duration ? ` · ${s.duration}` : ''}
+                      {s.price ? ` · ₹${s.price}` : ''}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
+                    {/* Reassign: cancelled but end date is today or future */}
+                    {s.status === 'cancelled' && new Date(s.endDate).toISOString().slice(0,10) >= new Date().toISOString().slice(0,10) && (
+                      <button
+                        onClick={() => handleReassign(s._id)}
+                        disabled={busy}
+                        style={smallBtn('#155d8e', busy)}
+                        title="Reactivate within the original subscription period"
+                      >
+                        {busy ? '…' : 'Reassign'}
+                      </button>
+                    )}
+                    {isActive && (
+                      <button
+                        onClick={() => handleRemove(s._id, 'unassign')}
+                        disabled={busy}
+                        style={smallBtn('#f59e0b', busy)}
+                        title="Cancel the plan but keep it in history"
+                      >
+                        {busy ? '…' : 'Unassign'}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleRemove(s._id, 'delete')}
+                      disabled={busy}
+                      style={smallBtn('#dc3545', busy)}
+                      title="Permanently delete this record including history"
+                    >
+                      {busy ? '…' : 'Delete'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
+      {/* ── Mode tabs ────────────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
         <button onClick={() => { setAdjustMode(false); setResult(null); }} style={{
           padding: '0.45rem 1rem', borderRadius: '6px',
@@ -419,7 +547,6 @@ const PlanAssignment = ({ userId, userSubscriptions }) => {
 
       {adjustMode ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-          {/* Subscription picker — always shown so admin knows what they're editing */}
           <div>
             <label style={labelStyle}>Subscription to adjust</label>
             <select style={inputStyle} value={adjustSubId} onChange={e => handleAdjustSubChange(e.target.value)}>
@@ -431,13 +558,8 @@ const PlanAssignment = ({ userId, userSubscriptions }) => {
             </select>
           </div>
 
-          {/* Current end date info box */}
           {selectedAdjustSub?.endDate && (
-            <div style={{
-              padding: '0.7rem 1rem', background: '#fff7ed',
-              border: '1px solid #fed7aa', borderRadius: '8px',
-              fontSize: '0.85rem', color: '#92400e',
-            }}>
+            <div style={{ padding: '0.7rem 1rem', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '8px', fontSize: '0.85rem', color: '#92400e' }}>
               Currently ends on <strong>{new Date(selectedAdjustSub.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>. Pick a new end date below.
             </div>
           )}
@@ -445,13 +567,7 @@ const PlanAssignment = ({ userId, userSubscriptions }) => {
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: '200px' }}>
               <label style={labelStyle}>New end date *</label>
-              <input
-                type="date"
-                style={inputStyle}
-                value={adjustDays}
-                min={new Date().toISOString().slice(0, 10)}
-                onChange={e => setAdjustDays(e.target.value)}
-              />
+              <input type="date" style={inputStyle} value={adjustDays} min={new Date().toISOString().slice(0, 10)} onChange={e => setAdjustDays(e.target.value)} />
             </div>
             <button onClick={handleAdjust} disabled={loading || !adjustDays || !adjustSubId}
               style={btn('linear-gradient(135deg,#c2410c,#f97316)', loading || !adjustDays || !adjustSubId)}>

@@ -118,7 +118,7 @@ const formatPlanDuration = (planOption) => {
   return `${months} month${months === 1 ? '' : 's'}`;
 };
 
-const SERVICE_TYPES = ['RA', 'IA'];
+const SERVICE_TYPES = ['RA', 'IA', 'MP'];
 
 const normalizeServiceType = (serviceType) => {
   const normalized = String(serviceType || 'RA').toUpperCase();

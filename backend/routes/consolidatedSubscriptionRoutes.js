@@ -3,14 +3,71 @@ const router = express.Router();
 import { authenticateToken  } from '../middleware/auth.js';
 import { checkRole  } from '../middleware/roleAuth.js';
 import * as subscriptionService from '../controllers/subscriptionService.js';
+import ModelPortfolio from '../model/ModelPortfolio.js';
 
 // ===== PUBLIC ROUTES =====
+router.get('/model-portfolios/public', async (_req, res) => {
+  try {
+    const portfolios = await ModelPortfolio.find({ isActive: true })
+      .populate({
+        path: 'subscription',
+        select: 'name planOptions currency features isActive',
+        match: { isActive: true }
+      })
+      .sort({ displayOrder: 1, createdAt: -1 });
+    // populate with match can return null subscription — filter those out
+    const filtered = portfolios.filter(p => p.subscription !== null);
+    return res.status(200).json({ success: true, data: filtered });
+  } catch (err) {
+    console.error('Error fetching public model portfolios:', err);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
 // Get all active subscription plans
 router.get('/plans', subscriptionService.getAllSubscriptions);
 // Get subscription plan by ID
 router.get('/plans/:id', subscriptionService.getSubscriptionById);
 
 // ===== USER ROUTES (PROTECTED) =====
+
+// Get the model portfolio linked to the user's active subscription
+router.get('/my-model-portfolio', authenticateToken, async (req, res) => {
+  try {
+    const dbUserId = req.user?._id;
+    if (!dbUserId) return res.status(401).json({ success: false, error: 'Unauthorized' });
+
+    const UserSubscription = (await import('../model/UserSubscription.js')).default;
+
+    // Find all active user subscriptions, then look for a portfolio linked to any of them
+    const userSubs = await UserSubscription.find({
+      user: dbUserId,
+      status: 'active',
+      endDate: { $gte: new Date() },
+    }).populate('subscription').lean();
+
+    if (!userSubs.length) {
+      return res.status(404).json({ success: false, error: 'No active subscription' });
+    }
+
+    const subIds = userSubs.map(s => s.subscription?._id).filter(Boolean);
+
+    const portfolio = await ModelPortfolio.findOne({
+      subscription: { $in: subIds },
+      isActive: true,
+    }).lean();
+
+    if (!portfolio) {
+      return res.status(404).json({ success: false, error: 'No portfolio found' });
+    }
+
+    return res.status(200).json({ success: true, data: portfolio });
+  } catch (err) {
+    console.error('Error fetching user model portfolio:', err);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
 // Get user's subscriptions
 router.get('/user/:userId', authenticateToken, subscriptionService.getUserSubscriptions);
 // Get user's active subscription

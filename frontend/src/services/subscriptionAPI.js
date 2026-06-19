@@ -100,6 +100,31 @@ const subscriptionAPI = {
       console.error('Error verifying payment:', message);
       throw new Error(message);
     }
+  },
+
+  // Get public model portfolios (for pricing page)
+  getPublicModelPortfolios: async () => {
+    try {
+      const res = await api.get('/subscriptions/model-portfolios/public');
+      return res.data;
+    } catch (err) {
+      const message = err.response?.data?.error || 'Error fetching model portfolios';
+      console.error('Error fetching model portfolios:', message);
+      throw new Error(message);
+    }
+  },
+
+  // Get the model portfolio linked to the current user's active MP subscription
+  getMyModelPortfolio: async () => {
+    try {
+      const res = await api.get('/subscriptions/my-model-portfolio');
+      return res.data;
+    } catch (err) {
+      if (err.response?.status === 404) return { success: false, data: null };
+      const message = err.response?.data?.error || 'Error fetching model portfolio';
+      console.error('Error fetching model portfolio:', message);
+      return { success: false, data: null };
+    }
   }
 };
 

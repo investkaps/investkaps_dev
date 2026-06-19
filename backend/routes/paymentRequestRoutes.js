@@ -313,23 +313,28 @@ router.post('/approve/:id', verifyToken, checkRole('admin'), async (req, res) =>
 
     let userSubscription = null;
 
-    // Only create subscription for RA payments
-    if (paymentRequest.serviceType === 'RA') {
-      // Calculate subscription dates
+    // Create subscription for RA and MP payments (not IA)
+    if (paymentRequest.serviceType === 'RA' || paymentRequest.serviceType === 'MP') {
+      if (!paymentRequest.plan) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot approve: the linked subscription plan no longer exists. Please check the plan ID on this payment request.'
+        });
+      }
+
       const startDate = new Date();
       let endDate = new Date();
-
       const durationMonths = Number(paymentRequest.durationMonths) || LEGACY_PLAN_MONTHS[paymentRequest.duration] || 1;
       endDate.setMonth(endDate.getMonth() + durationMonths);
 
-      // Create user subscription
       userSubscription = new UserSubscription({
         user: paymentRequest.user._id,
         subscription: paymentRequest.plan._id,
-        duration: paymentRequest.duration,
-        durationMonths: Number(paymentRequest.durationMonths) || LEGACY_PLAN_MONTHS[paymentRequest.duration] || 1,
+        serviceType: paymentRequest.serviceType === 'MP' ? 'RA' : 'RA',
+        duration: paymentRequest.duration || 'monthly',
+        durationMonths,
         planOptionId: paymentRequest.planOptionId || null,
-        planOptionName: paymentRequest.duration,
+        planOptionName: paymentRequest.duration || 'monthly',
         startDate,
         endDate,
         price: paymentRequest.amount,

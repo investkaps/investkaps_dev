@@ -520,9 +520,76 @@ export const adminAPI = {
     }
   },
 
+  // Model Portfolio admin APIs
+  getModelPortfolios: async () => {
+    try {
+      const res = await api.get('/admin/model-portfolios');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+  createModelPortfolio: async (data) => {
+    try {
+      const res = await api.post('/admin/model-portfolios', data);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+  updateModelPortfolio: async (id, data) => {
+    try {
+      const res = await api.put(`/admin/model-portfolios/${id}`, data);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+  deleteModelPortfolio: async (id) => {
+    try {
+      const res = await api.delete(`/admin/model-portfolios/${id}`);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+  rebalanceModelPortfolio: async (id, data) => {
+    try {
+      const res = await api.post(`/admin/model-portfolios/${id}/rebalance`, data);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+
   assignPlan: async (userId, payload) => {
     try {
       const res = await api.post(`/admin/users/${userId}/assign-plan`, payload);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+
+  removeUserSubscription: async (userId, subId, mode = 'unassign') => {
+    try {
+      const res = await api.delete(`/admin/users/${userId}/subscriptions/${subId}?mode=${mode}`);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+
+  reassignUserSubscription: async (userId, subId) => {
+    try {
+      const res = await api.patch(`/admin/users/${userId}/subscriptions/${subId}/reassign`);
       return res.data;
     } catch (err) {
       const { message } = extractError(err);

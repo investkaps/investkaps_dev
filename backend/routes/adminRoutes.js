@@ -18,6 +18,7 @@ import {
 } from '../services/adminMailService.js';
 import { uploadImage, uploadPDF } from '../config/cloudinary.js';
 import { fetchPanKyc } from '../services/kyc_client.js';
+import ModelPortfolio from '../model/ModelPortfolio.js';
 import { extractCAMSStatus, isKYCVerified } from '../utils/camsStatusMapper.js';
 
 const kycUpload = multer({
@@ -897,6 +898,133 @@ router.post('/users/:id/assign-plan', verifyToken, checkRole('admin'), async (re
   } catch (err) {
     console.error('Admin assign plan error:', err);
     return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+// ─── Reassign (reactivate) a cancelled subscription within its original period ─
+router.patch('/users/:userId/subscriptions/:subId/reassign', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const { userId, subId } = req.params;
+    const userSub = await UserSubscription.findOne({ _id: subId, user: userId });
+    if (!userSub) return res.status(404).json({ success: false, error: 'Subscription record not found' });
+    if (userSub.status !== 'cancelled') return res.status(400).json({ success: false, error: 'Only cancelled subscriptions can be reassigned' });
+    const endDay = new Date(userSub.endDate).toISOString().slice(0, 10);
+    const today = new Date().toISOString().slice(0, 10);
+    if (endDay < today) return res.status(400).json({ success: false, error: 'Subscription period has already expired' });
+
+    userSub.status = 'active';
+    await userSub.save();
+    return res.status(200).json({ success: true, message: 'Subscription reactivated successfully' });
+  } catch (err) {
+    console.error('Admin reassign subscription error:', err);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+// ─── Remove / Delete a user's individual subscription ────────────────────────
+// ?mode=unassign  → marks status 'cancelled', record kept in history
+// ?mode=delete    → hard deletes the record entirely
+router.delete('/users/:userId/subscriptions/:subId', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const { userId, subId } = req.params;
+    const mode = req.query.mode || 'unassign';
+
+    const userSub = await UserSubscription.findOne({ _id: subId, user: userId });
+    if (!userSub) return res.status(404).json({ success: false, error: 'Subscription record not found' });
+
+    if (mode === 'delete') {
+      await UserSubscription.deleteOne({ _id: subId });
+      return res.status(200).json({ success: true, message: 'Subscription record permanently deleted' });
+    }
+
+    // unassign — cancel but keep history (preserve original endDate)
+    userSub.status = 'cancelled';
+    await userSub.save();
+    return res.status(200).json({ success: true, message: 'Subscription unassigned (record kept in history)' });
+  } catch (err) {
+    console.error('Admin remove subscription error:', err);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+// ─── Model Portfolios ─────────────────────────────────────────────────────────
+
+router.get('/model-portfolios', verifyToken, checkRole('admin'), async (_req, res) => {
+  try {
+    const portfolios = await ModelPortfolio.find()
+      .populate('subscription', 'name planOptions')
+      .sort({ displayOrder: 1, createdAt: -1 });
+    return res.status(200).json({ success: true, data: portfolios });
+  } catch (err) {
+    console.error('Error listing model portfolios:', err);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+router.post('/model-portfolios', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const { name, description, subscription, stocks, isActive, displayOrder } = req.body;
+    const portfolio = new ModelPortfolio({
+      name,
+      description,
+      subscription,
+      stocks,
+      isActive,
+      displayOrder,
+      createdBy: req.user._id || req.user.id
+    });
+    await portfolio.save();
+    return res.status(201).json({ success: true, data: portfolio });
+  } catch (err) {
+    console.error('Error creating model portfolio:', err);
+    return res.status(500).json({ success: false, error: err.message || 'Server error' });
+  }
+});
+
+router.put('/model-portfolios/:id', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const { name, description, stocks, isActive, displayOrder } = req.body;
+    const portfolio = await ModelPortfolio.findByIdAndUpdate(
+      req.params.id,
+      { name, description, stocks, isActive, displayOrder },
+      { new: true, runValidators: true }
+    );
+    if (!portfolio) return res.status(404).json({ success: false, error: 'Portfolio not found' });
+    return res.status(200).json({ success: true, data: portfolio });
+  } catch (err) {
+    console.error('Error updating model portfolio:', err);
+    return res.status(500).json({ success: false, error: err.message || 'Server error' });
+  }
+});
+
+router.delete('/model-portfolios/:id', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const portfolio = await ModelPortfolio.findByIdAndDelete(req.params.id);
+    if (!portfolio) return res.status(404).json({ success: false, error: 'Portfolio not found' });
+    return res.status(200).json({ success: true, data: { id: req.params.id } });
+  } catch (err) {
+    console.error('Error deleting model portfolio:', err);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+router.post('/model-portfolios/:id/rebalance', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const { changes, stocks } = req.body;
+    const portfolio = await ModelPortfolio.findById(req.params.id);
+    if (!portfolio) return res.status(404).json({ success: false, error: 'Portfolio not found' });
+
+    portfolio.rebalanceHistory.push({
+      rebalancedBy: req.user._id || req.user.id,
+      changes,
+      snapshot: portfolio.stocks.toObject ? portfolio.stocks.toObject() : [...portfolio.stocks]
+    });
+    if (stocks) portfolio.stocks = stocks;
+    await portfolio.save();
+    return res.status(200).json({ success: true, data: portfolio });
+  } catch (err) {
+    console.error('Error rebalancing model portfolio:', err);
+    return res.status(500).json({ success: false, error: err.message || 'Server error' });
   }
 });
 

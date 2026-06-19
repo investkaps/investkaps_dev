@@ -14,6 +14,7 @@ const SubscriptionManagement = () => {
     packageCode: '',
     name: '',
     description: '',
+    serviceType: 'RA',
     tradingOptions: {
       stockOptions: false,
       indexOptions: false,
@@ -161,6 +162,7 @@ const SubscriptionManagement = () => {
       packageCode: '',
       name: '',
       description: '',
+      serviceType: 'RA',
       tradingOptions: {
         stockOptions: false,
         indexOptions: false,
@@ -187,6 +189,7 @@ const SubscriptionManagement = () => {
       packageCode: subscription.packageCode,
       name: subscription.name,
       description: subscription.description,
+      serviceType: subscription.serviceType || 'RA',
       tradingOptions: {
         stockOptions: subscription.tradingOptions?.stockOptions || false,
         indexOptions: subscription.tradingOptions?.indexOptions || false,
@@ -279,9 +282,9 @@ const SubscriptionManagement = () => {
         subscriptionId = response.data._id;
       }
       
-      if (selectedStrategies && selectedStrategies.length > 0) {
+      if (payload.serviceType !== 'MP' && selectedStrategies && selectedStrategies.length > 0) {
         if (editingSubscription && editingSubscription.strategies && editingSubscription.strategies.length > 0) {
-          const existingStrategyIds = editingSubscription.strategies.map(strategy => 
+          const existingStrategyIds = editingSubscription.strategies.map(strategy =>
             typeof strategy === 'object' ? strategy._id : strategy
           );
           await adminAPI.removeStrategiesFromSubscription(subscriptionId, existingStrategyIds);
@@ -364,100 +367,150 @@ const SubscriptionManagement = () => {
         </div>
       )}
       
-      <div className="admin-table-container">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Package Code</th>
-              <th>Name</th>
-              <th>Plans</th>
-              <th>Trading Options</th>
-              <th>Features</th>
-              <th>Strategies</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {subscriptions.map((subscription) => (
-              <tr key={subscription._id}>
-                <td>{subscription.packageCode}</td>
-                <td>{subscription.name}</td>
-                <td>
-                  {(Array.isArray(subscription.planOptions) && subscription.planOptions.length > 0
-                    ? subscription.planOptions
-                    : normalizeLegacyPlanOptions(subscription.pricing)
-                  ).map((plan, index) => (
-                    <div key={plan._id || `${subscription._id}-${index}`} style={{ marginBottom: 4 }}>
-                      <strong>{plan.name}</strong> - {plan.months} month{plan.months > 1 ? 's' : ''} - {subscription.currency} {plan.price}
+      {subscriptions.length === 0 && !loading ? (
+        <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8', fontSize: '0.95rem' }}>
+          No subscriptions found. Click "Add New Subscription" to create one.
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.25rem' }}>
+          {subscriptions.map((sub) => {
+            const planOpts = Array.isArray(sub.planOptions) && sub.planOptions.length > 0
+              ? sub.planOptions
+              : normalizeLegacyPlanOptions(sub.pricing);
+            const activeTrading = Object.entries(sub.tradingOptions || {}).filter(([, v]) => v).map(([k]) => k.replace(/([A-Z])/g, ' $1').trim());
+            const typeColors = sub.serviceType === 'MP'
+              ? { bg: '#e0f0ff', color: '#155d8e' }
+              : sub.serviceType === 'IA'
+              ? { bg: '#fef3c7', color: '#92400e' }
+              : { bg: '#f0fdf4', color: '#166534' };
+
+            return (
+              <div key={sub._id} style={{
+                background: '#fff',
+                border: `1px solid ${sub.isActive ? '#e2e8f0' : '#fecaca'}`,
+                borderRadius: 12,
+                padding: '1.25rem',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.85rem',
+                opacity: sub.isActive ? 1 : 0.75,
+              }}>
+
+                {/* Header row */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1e293b', marginBottom: '0.2rem', wordBreak: 'break-word' }}>
+                      {sub.name}
                     </div>
-                  ))}
-                </td>
-                <td>
-                  {Object.entries(subscription.tradingOptions || {}).filter(([_, value]) => value).map(([key]) => (
-                    <span key={key} className="trading-option-badge">
-                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                    <div style={{ fontSize: '0.78rem', color: '#94a3b8', fontFamily: 'monospace' }}>{sub.packageCode}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                    <span style={{ padding: '2px 9px', borderRadius: 10, fontSize: '0.72rem', fontWeight: 700, background: typeColors.bg, color: typeColors.color }}>
+                      {sub.serviceType || 'RA'}
                     </span>
-                  ))}
-                </td>
-                <td>{subscription.features?.length || 0} features</td>
-                <td>
-                  {subscription.strategies && Array.isArray(subscription.strategies) ? (
-                    <div className="strategy-badges">
-                      {subscription.strategies.length > 0 ? (
-                        subscription.strategies.map(strategy => (
-                          <span key={typeof strategy === 'object' ? strategy._id : strategy} className="strategy-badge">
-                            {typeof strategy === 'object' ? strategy.name : 'Strategy'}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="no-strategies">None</span>
-                      )}
+                    <span style={{ padding: '2px 9px', borderRadius: 10, fontSize: '0.72rem', fontWeight: 700, background: sub.isActive ? '#d4edda' : '#fee2e2', color: sub.isActive ? '#166534' : '#991b1b' }}>
+                      {sub.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                    {sub.isTrial && <span style={{ padding: '2px 9px', borderRadius: 10, fontSize: '0.72rem', fontWeight: 700, background: '#fef3c7', color: '#92400e' }}>Trial</span>}
+                    {sub.isReferralPlan && <span style={{ padding: '2px 9px', borderRadius: 10, fontSize: '0.72rem', fontWeight: 700, background: '#ede9fe', color: '#5b21b6' }}>Referral</span>}
+                  </div>
+                </div>
+
+                {/* Description */}
+                {sub.description && (
+                  <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b', lineHeight: 1.5 }}>{sub.description}</p>
+                )}
+
+                {/* Plan options */}
+                {planOpts.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Pricing</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                      {planOpts.map((p, i) => (
+                        <div key={p._id || i} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.35rem 0.7rem', fontSize: '0.8rem', color: '#334155' }}>
+                          <span style={{ fontWeight: 700 }}>{p.name}</span>
+                          <span style={{ color: '#94a3b8', margin: '0 0.3rem' }}>·</span>
+                          {p.months}mo
+                          <span style={{ color: '#94a3b8', margin: '0 0.3rem' }}>·</span>
+                          <span style={{ fontWeight: 700, color: '#155d8e' }}>{sub.currency || '₹'}{p.price}</span>
+                        </div>
+                      ))}
                     </div>
-                  ) : (
-                    <span className="no-strategies">None</span>
-                  )}
-                </td>
-                <td>
-                  <span className={`status-badge ${subscription.isActive ? 'active' : 'inactive'}`}>
-                    {subscription.isActive ? 'Active' : 'Inactive'}
-                  </span>
-                </td>
-                <td className="admin-actions">
-                  <button 
-                    className="admin-edit-btn" 
-                    onClick={() => openEditModal(subscription)}
-                    disabled={loading}
-                  >
+                  </div>
+                )}
+
+                {/* Features */}
+                {sub.features?.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>
+                      Features ({sub.features.length})
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                      {sub.features.map((f, i) => (
+                        <div key={i} style={{ fontSize: '0.8rem', color: f.included ? '#166534' : '#94a3b8', display: 'flex', gap: '0.4rem', alignItems: 'flex-start' }}>
+                          <span style={{ flexShrink: 0, fontWeight: 700 }}>{f.included ? '✓' : '✗'}</span>
+                          <span>{f.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Strategies */}
+                {sub.serviceType !== 'MP' && (
+                  <div>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Strategies</div>
+                    {sub.strategies?.length > 0 ? (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                        {sub.strategies.map(st => (
+                          <span key={typeof st === 'object' ? st._id : st} style={{ background: '#eff6ff', color: '#1d4ed8', borderRadius: 6, padding: '2px 8px', fontSize: '0.78rem', fontWeight: 600 }}>
+                            {typeof st === 'object' ? st.name : 'Strategy'}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: '0.8rem', color: '#cbd5e1' }}>None linked</span>
+                    )}
+                  </div>
+                )}
+
+                {/* Trading options */}
+                {activeTrading.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Trading</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                      {activeTrading.map(t => (
+                        <span key={t} style={{ background: '#f0fdf4', color: '#166534', borderRadius: 6, padding: '2px 8px', fontSize: '0.78rem', fontWeight: 600 }}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Telegram */}
+                {sub.telegramChatId && (
+                  <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                    <span style={{ fontWeight: 600 }}>Telegram:</span> {sub.telegramChatId}
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto', paddingTop: '0.5rem', borderTop: '1px solid #f1f5f9', flexWrap: 'wrap' }}>
+                  <button className="admin-edit-btn" onClick={() => openEditModal(sub)} disabled={loading} style={{ flex: 1 }}>
                     Edit
                   </button>
-                  <button 
-                    className="admin-toggle-btn" 
-                    onClick={() => handleToggleStatus(subscription._id)}
-                    disabled={loading}
-                  >
-                    {subscription.isActive ? 'Deactivate' : 'Activate'}
+                  <button className="admin-toggle-btn" onClick={() => handleToggleStatus(sub._id)} disabled={loading} style={{ flex: 1 }}>
+                    {sub.isActive ? 'Deactivate' : 'Activate'}
                   </button>
-                  <button 
-                    className="admin-delete-btn" 
-                    onClick={() => handleDelete(subscription._id)}
-                    disabled={loading}
-                  >
+                  <button className="admin-delete-btn" onClick={() => handleDelete(sub._id)} disabled={loading} style={{ flex: 1 }}>
                     Delete
                   </button>
-                </td>
-              </tr>
-            ))}
-            {subscriptions.length === 0 && !loading && (
-              <tr>
-                <td colSpan="7" className="admin-no-data">
-                  No subscriptions found. Click "Add New Subscription" to create one.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <AdminModal
         isOpen={isModalOpen}
@@ -502,7 +555,26 @@ const SubscriptionManagement = () => {
               required
             />
           </div>
-          
+
+          <div className="admin-form-group">
+            <label htmlFor="serviceType">Subscription Type</label>
+            <select
+              id="serviceType"
+              name="serviceType"
+              value={formData.serviceType}
+              onChange={handleInputChange}
+            >
+              <option value="RA">RA — Research Analyst (strategy-linked)</option>
+              <option value="IA">IA — Investment Advisory (strategy-linked)</option>
+              <option value="MP">MP — Model Portfolio (basket-linked)</option>
+            </select>
+            {formData.serviceType === 'MP' && (
+              <small style={{ color: '#155d8e', display: 'block', marginTop: 6, background: '#e0f0ff', padding: '6px 10px', borderRadius: 6 }}>
+                Model Portfolio subscriptions are not linked to strategies. After saving, go to the Model Portfolios page to attach this subscription to a basket.
+              </small>
+            )}
+          </div>
+
           <div className="admin-form-section">
             <h4>Plan Options</h4>
             <p style={{ color: '#6b7280', marginTop: '-4px' }}>
@@ -722,6 +794,7 @@ const SubscriptionManagement = () => {
             </small>
           </div>
           
+          {formData.serviceType !== 'MP' && (
           <div className="admin-form-section">
             <h4>Strategies</h4>
             {strategies.length > 0 ? (
@@ -753,6 +826,7 @@ const SubscriptionManagement = () => {
               <p>No strategies available. Create strategies first.</p>
             )}
           </div>
+          )}
           
           <div className="admin-form-section">
             <h4>Features</h4>

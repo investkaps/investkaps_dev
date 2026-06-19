@@ -93,7 +93,7 @@ const subscriptionSchema = new mongoose.Schema({
   },
   serviceType: {
     type: String,
-    enum: ['RA', 'IA'],
+    enum: ['RA', 'IA', 'MP'],
     default: 'RA'
   },
   name: {

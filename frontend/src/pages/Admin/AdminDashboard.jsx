@@ -12,6 +12,7 @@ import QuestionnaireManagement from './QuestionnaireManagement';
 import QuestionnaireResponses from './QuestionnaireResponses';
 import EsignManagement from './EsignManagement';
 import TestimonialsManagement from '../../components/Admin/TestimonialsManagement';
+import ModelPortfolioManagement from './ModelPortfolioManagement';
 import './AdminDashboard.css';
 
 /* ─────────────────────────── Settings / Maintenance tab ─── */
@@ -295,6 +296,9 @@ const AdminDashboard = () => {
             <li className={activeTab === 'questionnaire-responses' ? 'active' : ''}>
               <button onClick={() => setActiveTab('questionnaire-responses')}>Responses</button>
             </li>
+            <li className={activeTab === 'model-portfolios' ? 'active' : ''}>
+              <button onClick={() => setActiveTab('model-portfolios')}>Model Portfolios</button>
+            </li>
             <li className={activeTab === 'settings' ? 'active' : ''}>
               <button onClick={() => setActiveTab('settings')}>Settings</button>
             </li>
@@ -323,6 +327,7 @@ const AdminDashboard = () => {
             {activeTab === 'questionnaire-responses' && 'Questionnaire Responses'}
             {activeTab === 'settings' && 'Admin Settings'}
             {activeTab === 'testimonials' && 'Testimonials'}
+            {activeTab === 'model-portfolios' && 'Model Portfolios'}
           </h1>
           <div className="admin-header-actions">
             <span className="admin-date">{new Date().toLocaleDateString()}</span>
@@ -437,6 +442,9 @@ const AdminDashboard = () => {
         )}
         {activeTab === 'testimonials' && (
           <TestimonialsManagement />
+        )}
+        {activeTab === 'model-portfolios' && (
+          <ModelPortfolioManagement />
         )}
       </div>
     </div>

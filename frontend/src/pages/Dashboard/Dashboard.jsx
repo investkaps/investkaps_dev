@@ -8,6 +8,7 @@ import { useRole } from '../../hooks/useRole';
 import { kycAPI, userAPI, phoneAPI, esignAPI, paymentRequestAPI, questionnaireAPI, setupAPI } from '../../services/api';
 import userSubscriptionAPI from '../../services/userSubscriptionAPI';
 import stockRecommendationAPI from '../../services/stockRecommendationAPI';
+import subscriptionAPI from '../../services/subscriptionAPI';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import OTPInput from '../../components/OTPInput/OTPInput';
 import { isValidPhone, sanitizePhone, isValidPAN, formatPAN } from '../../utils/validators';
@@ -206,6 +207,8 @@ const Dashboard = () => {
   const [activeSubscription, setActiveSubscription] = useState(null);
   const [stockRecommendations, setStockRecommendations] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  const [modelPortfolio, setModelPortfolio] = useState(null);
+  const [showBasketModal, setShowBasketModal] = useState(false);
   const [bypassLoading, setBypassLoading] = useState(false);
   // QR / manual payment request statuses
   const [pendingPaymentRequests, setPendingPaymentRequests] = useState([]);
@@ -467,6 +470,11 @@ const Dashboard = () => {
                     return String(serviceType || '').toUpperCase() === 'RA';
                   });
                   setActiveRaSubscription(raSubscription || null);
+                  // Fetch model portfolio — backend returns 404 if none linked
+                  try {
+                    const pfRes = await subscriptionAPI.getMyModelPortfolio();
+                    if (pfRes.success && pfRes.data) setModelPortfolio(pfRes.data);
+                  } catch { /* no portfolio linked to this subscription */ }
                 }
               } else {
                 setActiveRaSubscription(null);
@@ -1340,10 +1348,126 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/* Model Portfolio Basket Modal */}
+        {showBasketModal && modelPortfolio && (
+          <div
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9999, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '2rem 1rem', overflowY: 'auto' }}
+            onClick={e => { if (e.target === e.currentTarget) setShowBasketModal(false); }}
+          >
+            <div style={{ background: '#fff', borderRadius: 14, width: '100%', maxWidth: 860, boxShadow: '0 20px 60px rgba(0,0,0,0.18)', overflow: 'hidden' }}>
+              {/* Header */}
+              <div style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #155d8e 100%)', padding: '1.5rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '.25rem' }}>Model Portfolio</div>
+                  <h2 style={{ margin: 0, color: '#fff', fontSize: '1.4rem', fontWeight: 700 }}>{modelPortfolio.name}</h2>
+                </div>
+                <button onClick={() => setShowBasketModal(false)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 36, height: 36, cursor: 'pointer', color: '#fff', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+              </div>
+
+              <div style={{ padding: '1.5rem 2rem' }}>
+                {/* Description */}
+                {modelPortfolio.description && (
+                  <p style={{ color: '#475569', fontSize: '.9rem', margin: '0 0 1.5rem', lineHeight: 1.6 }}>{modelPortfolio.description}</p>
+                )}
+
+                {/* Stats bar */}
+                <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+                  {[
+                    { label: 'Stocks', value: (modelPortfolio.stocks || []).length },
+                    { label: 'Rebalances', value: (modelPortfolio.rebalanceHistory || []).length },
+                    { label: 'Last Rebalanced', value: modelPortfolio.rebalanceHistory?.length ? new Date(modelPortfolio.rebalanceHistory.at(-1).rebalancedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Never' },
+                  ].map(stat => (
+                    <div key={stat.label} style={{ background: '#f8fafc', borderRadius: 10, padding: '.75rem 1.25rem', minWidth: 110 }}>
+                      <div style={{ fontSize: '.75rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.04em' }}>{stat.label}</div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1e293b', marginTop: '.2rem' }}>{stat.value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Stock Basket Table */}
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e293b', margin: '0 0 .75rem' }}>Current Basket</h3>
+                {modelPortfolio.stocks?.length > 0 ? (
+                  <div style={{ overflowX: 'auto', marginBottom: '2rem' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.875rem' }}>
+                      <thead>
+                        <tr style={{ background: 'linear-gradient(135deg, #3498db 0%, #2c3e50 100%)' }}>
+                          {['Symbol', 'Name', 'Exchange', 'Buy Range', 'Target 1', 'Target 2', 'Target 3', 'Stop Loss', 'Alloc %'].map(h => (
+                            <th key={h} style={{ padding: '10px 12px', color: '#fff', textAlign: 'left', fontWeight: 600, fontSize: '.78rem', textTransform: 'uppercase', letterSpacing: '.04em', whiteSpace: 'nowrap' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {modelPortfolio.stocks.map((st, i) => (
+                          <tr key={i} style={{ borderBottom: '1px solid #f1f5f9', background: i % 2 === 0 ? '#fff' : '#f8fafc' }}>
+                            <td style={{ padding: '11px 12px', fontWeight: 700, fontFamily: 'monospace', color: '#1e293b' }}>{st.stockSymbol}</td>
+                            <td style={{ padding: '11px 12px', color: '#475569', fontSize: '.82rem' }}>{st.stockName}</td>
+                            <td style={{ padding: '11px 12px' }}><span style={{ background: '#e0f2fe', color: '#0369a1', borderRadius: 6, padding: '2px 8px', fontSize: '.75rem', fontWeight: 600 }}>{st.exchange}</span></td>
+                            <td style={{ padding: '11px 12px', color: '#334155', whiteSpace: 'nowrap' }}>
+                              {st.buyRange?.min && st.buyRange?.max ? `₹${st.buyRange.min} – ₹${st.buyRange.max}` : st.buyRange?.min ? `₹${st.buyRange.min}+` : '—'}
+                            </td>
+                            <td style={{ padding: '11px 12px', color: '#15803d', fontWeight: 600 }}>{st.targetPrice1 ? `₹${st.targetPrice1}` : '—'}</td>
+                            <td style={{ padding: '11px 12px', color: '#15803d' }}>{st.targetPrice2 ? `₹${st.targetPrice2}` : '—'}</td>
+                            <td style={{ padding: '11px 12px', color: '#15803d' }}>{st.targetPrice3 ? `₹${st.targetPrice3}` : '—'}</td>
+                            <td style={{ padding: '11px 12px', color: '#dc2626', fontWeight: 600 }}>{st.stopLoss ? `₹${st.stopLoss}` : '—'}</td>
+                            <td style={{ padding: '11px 12px', color: '#334155' }}>{st.allocation ? `${st.allocation}%` : '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div style={{ color: '#94a3b8', padding: '1rem', textAlign: 'center', marginBottom: '1.5rem' }}>No stocks in this basket yet.</div>
+                )}
+
+                {/* Rebalance History */}
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e293b', margin: '0 0 .75rem', borderTop: '1px solid #e2e8f0', paddingTop: '1.25rem' }}>Rebalance History</h3>
+                {modelPortfolio.rebalanceHistory?.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+                    {[...modelPortfolio.rebalanceHistory].reverse().map((entry, i) => (
+                      <div key={i} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: '1rem 1.25rem', background: i === 0 ? '#f0fdf4' : '#f8fafc', borderLeft: `4px solid ${i === 0 ? '#22c55e' : '#cbd5e1'}` }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '.4rem' }}>
+                          {i === 0 && <span style={{ background: '#dcfce7', color: '#166534', fontSize: '.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20, textTransform: 'uppercase' }}>Latest</span>}
+                          <span style={{ fontSize: '.85rem', fontWeight: 700, color: '#1e293b' }}>
+                            {new Date(entry.rebalancedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}
+                          </span>
+                          <span style={{ fontSize: '.78rem', color: '#94a3b8' }}>
+                            {new Date(entry.rebalancedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <p style={{ margin: 0, fontSize: '.875rem', color: '#475569', lineHeight: 1.6 }}>{entry.changes}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ color: '#94a3b8', padding: '.75rem', textAlign: 'center', fontSize: '.875rem' }}>No rebalance history yet.</div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stock Recommendations */}
         {(isAdminUser || activeSubscription) && (
           <div className="stock-recommendations-section">
-            <h2>{isAdminUser ? 'All Active Stock Recommendations' : 'Stock Recommendations'}</h2>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h2 style={{ margin: '0 0 .75rem' }}>{isAdminUser ? 'All Active Stock Recommendations' : 'Stock Recommendations'}</h2>
+              {modelPortfolio && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f0f7ff', border: '1.5px solid #bfdbfe', borderRadius: 10, padding: '.75rem 1.1rem', flexWrap: 'wrap', gap: '.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+                    <div>
+                      <div style={{ fontSize: '.72rem', fontWeight: 600, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '.05em' }}>Your Model Portfolio</div>
+                      <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '.95rem' }}>{modelPortfolio.name}</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowBasketModal(true)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '.4rem', background: 'linear-gradient(135deg, #1e3a5f 0%, #155d8e 100%)', color: '#fff', border: 'none', borderRadius: 7, padding: '.5rem 1.1rem', cursor: 'pointer', fontWeight: 600, fontSize: '.825rem', boxShadow: '0 2px 8px rgba(21,93,142,0.2)', whiteSpace: 'nowrap' }}
+                  >
+                    View Basket →
+                  </button>
+                </div>
+              )}
+            </div>
             {isAdminUser && <p style={{ color: '#64748b', marginBottom: '1rem' }}>Viewing all active recommendations as admin</p>}
             {loadingRecommendations ? (
               <div className="loading-message">Loading recommendations...</div>
@@ -1383,12 +1507,11 @@ const Dashboard = () => {
                   </tbody>
                 </table>
               </div>
-            ) : (
+            ) : !modelPortfolio ? (
               <div className="no-recommendations">
                 <p>No stock recommendations available at the moment.</p>
-                <p>Check back later for new opportunities!</p>
               </div>
-            )}
+            ) : null}
           </div>
         )}
 

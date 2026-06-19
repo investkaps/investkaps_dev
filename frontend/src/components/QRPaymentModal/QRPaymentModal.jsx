@@ -184,8 +184,10 @@ const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSucce
       const finalReferralCode = alreadyUsedReferralCode || (referralStatus === 'valid' ? referralCode.trim().toUpperCase() : '');
       if (finalReferralCode) formDataToSend.append('referralCode', finalReferralCode);
 
+      const token = localStorage.getItem('clerk_jwt');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/payment-requests/submit`, {
         method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formDataToSend,
       });
 
@@ -381,12 +383,25 @@ const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSucce
               </div>
             )}
 
-            <button 
-              type="submit" 
-              className="modern-select-btn"
+            <button
+              type="submit"
               disabled={uploading}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '14px',
+                marginTop: '8px',
+                background: uploading ? '#94a3b8' : 'linear-gradient(135deg, #1e3a5f 0%, #155d8e 100%)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '10px',
+                fontSize: '1rem',
+                fontWeight: 700,
+                cursor: uploading ? 'not-allowed' : 'pointer',
+                transition: 'opacity .2s',
+              }}
             >
-              {uploading ? 'Submitting...' : 'Submit Payment Request'}
+              {uploading ? 'Submitting…' : 'Submit Payment Request'}
             </button>
           </form>
         </div>
