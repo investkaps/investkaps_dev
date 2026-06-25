@@ -51,6 +51,8 @@ const StockRecommendationManagement = () => {
     stockName: '',
     exchange: '',
     currentPrice: '',
+    buyingRangeLow: '',
+    buyingRangeHigh: '',
     targetPrice: '',
     targetPrice2: '',
     targetPrice3: '',
@@ -250,6 +252,8 @@ const StockRecommendationManagement = () => {
       stockSymbol: '',
       stockName: '',
       currentPrice: '',
+      buyingRangeLow: '',
+      buyingRangeHigh: '',
       targetPrice: '',
       targetPrice2: '',
       targetPrice3: '',
@@ -299,6 +303,8 @@ const StockRecommendationManagement = () => {
       ...recommendation,
       targetStrategies: recommendation.targetStrategies.map(strategy => strategy._id || strategy),
       currentPrice: recommendation.currentPrice.toString(),
+      buyingRangeLow: recommendation.buyingRangeLow ? recommendation.buyingRangeLow.toString() : '',
+      buyingRangeHigh: recommendation.buyingRangeHigh ? recommendation.buyingRangeHigh.toString() : '',
       targetPrice: recommendation.targetPrice.toString(),
       targetPrice2: recommendation.targetPrice2 ? recommendation.targetPrice2.toString() : '',
       targetPrice3: recommendation.targetPrice3 ? recommendation.targetPrice3.toString() : '',
@@ -342,6 +348,8 @@ const StockRecommendationManagement = () => {
       const dataToSubmit = {
         ...formData,
         currentPrice: parseFloat(formData.currentPrice),
+        buyingRangeLow: formData.buyingRangeLow ? parseFloat(formData.buyingRangeLow) : undefined,
+        buyingRangeHigh: formData.buyingRangeHigh ? parseFloat(formData.buyingRangeHigh) : undefined,
         targetPrice: parseFloat(formData.targetPrice),
         targetPrice2: formData.targetPrice2 ? parseFloat(formData.targetPrice2) : undefined,
         targetPrice3: formData.targetPrice3 ? parseFloat(formData.targetPrice3) : undefined,
@@ -669,6 +677,49 @@ const StockRecommendationManagement = () => {
               </div>
 
               <div className="form-group" style={{ flex: 1 }}>
+                <label htmlFor="stopLoss">Stop Loss (₹)</label>
+                <input
+                  type="number"
+                  id="stopLoss"
+                  name="stopLoss"
+                  value={formData.stopLoss}
+                  onChange={handleFormChange}
+                  step="0.01"
+                  placeholder="Optional"
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group" style={{ flex: 1 }}>
+                <label htmlFor="buyingRangeLow">Buying Range Low (₹)</label>
+                <input
+                  type="number"
+                  id="buyingRangeLow"
+                  name="buyingRangeLow"
+                  value={formData.buyingRangeLow}
+                  onChange={handleFormChange}
+                  step="0.01"
+                  placeholder="e.g. 450"
+                />
+              </div>
+
+              <div className="form-group" style={{ flex: 1 }}>
+                <label htmlFor="buyingRangeHigh">Buying Range High (₹)</label>
+                <input
+                  type="number"
+                  id="buyingRangeHigh"
+                  name="buyingRangeHigh"
+                  value={formData.buyingRangeHigh}
+                  onChange={handleFormChange}
+                  step="0.01"
+                  placeholder="e.g. 480"
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group" style={{ flex: 1 }}>
                 <label htmlFor="targetPrice">Target 1 (₹) *</label>
                 <input
                   type="number"
@@ -679,19 +730,6 @@ const StockRecommendationManagement = () => {
                   step="0.01"
                   required
                   placeholder="Required"
-                />
-              </div>
-
-              <div className="form-group" style={{ flex: 1 }}>
-                <label htmlFor="stopLoss">Stop Loss (₹)</label>
-                <input
-                  type="number"
-                  id="stopLoss"
-                  name="stopLoss"
-                  value={formData.stopLoss}
-                  onChange={handleFormChange}
-                  step="0.01"
-                  placeholder="Optional"
                 />
               </div>
             </div>

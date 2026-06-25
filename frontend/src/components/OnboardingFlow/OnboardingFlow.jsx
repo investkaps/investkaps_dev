@@ -729,6 +729,33 @@ const OnboardingFlow = ({
 
   const renderPaymentStep = () => {
     if (steps.payment.completed) {
+      const otherStepsPending = !steps.kyc.completed || !steps.phone.completed || !steps.signing.completed;
+      if (otherStepsPending) {
+        return (
+          <div className="ob-step-success">
+            <span className="ob-success-icon" style={{ background: '#fef3c7', color: '#d97706' }}>✓</span>
+            <h3>Payment Received</h3>
+            <p>We have received your payment successfully. Thank you!</p>
+            <div style={{
+              marginTop: '1rem',
+              padding: '1rem 1.2rem',
+              background: '#fffbeb',
+              border: '1.5px solid #fcd34d',
+              borderRadius: '10px',
+              color: '#92400e',
+              fontSize: '0.875rem',
+              lineHeight: '1.6',
+            }}>
+              <strong>Your subscription is on hold.</strong> It will start automatically once you complete the remaining mandatory steps:
+              <ul style={{ marginTop: '0.5rem', paddingLeft: '1.2rem' }}>
+                {!steps.kyc.completed && <li>PAN KYC verification</li>}
+                {!steps.phone.completed && <li>Mobile number verification</li>}
+                {!steps.signing.completed && <li>Agreement e-signing</li>}
+              </ul>
+            </div>
+          </div>
+        );
+      }
       return (
         <div className="ob-step-success">
           <span className="ob-success-icon">✓</span>
@@ -841,7 +868,9 @@ const OnboardingFlow = ({
         </nav>
 
         <div className="ob-sidebar-footer">
-          <span className="ob-lock-note">🔒 PAN KYC is required for activation</span>
+          <div className="ob-activation-notice">
+            Your subscription will only start after all mandatory steps are completed.
+          </div>
         </div>
       </aside>
 

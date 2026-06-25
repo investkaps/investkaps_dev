@@ -85,13 +85,11 @@ export const createUser = async (req, res) => {
     }
 
     console.log(' NEW USER CREATING:', normalizedEmail);
-    const referralCode = await generateReferralCode();
     const user = new User({
       clerkId: finalClerkId,
       email: normalizedEmail,
       name: name || email.split('@')[0],
       isVerified: isVerified || false,
-      referral: { code: referralCode },
     });
 
     const savedUser = await user.save();
@@ -146,14 +144,12 @@ export const createOrUpdateUser = async (req, res) => {
         user
       });
     } else {
-      // Create new user
-      const referralCode = await generateReferralCode();
+      // Create new user — referral code is assigned only on first plan purchase
       user = new User({
         clerkId: id,
         email: primaryEmail.email_address,
         name: `${first_name || ''} ${last_name || ''}`.trim() || primaryEmail.email_address.split('@')[0],
         isVerified: primaryEmail.verification?.status === 'verified',
-        referral: { code: referralCode },
       });
       
       await user.save();

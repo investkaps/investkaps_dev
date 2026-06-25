@@ -70,23 +70,19 @@ const createRecommendation = async (req, res) => {
 
     // If status is published, send notifications
     if (status === 'published') {
-      await sendRecommendationToUsers(recommendation._id);
-      
       // Fetch subscriptions that have the target strategies
       const subscriptions = await Subscription.find({
         strategies: { $in: targetStrategies }
       });
-      
-      // Get subscription IDs
+
       const subscriptionIds = subscriptions.map(sub => sub._id);
-      
-      // Fetch active user subscriptions with user data
+
       const userSubscriptions = await UserSubscription.find({
         subscription: { $in: subscriptionIds },
         status: 'active'
       }).populate('user');
-      
-      // Send to Telegram
+
+      // Telegram
       try {
         const telegramSubscriptions = subscriptions.filter(sub => sub.telegramChatId);
         for (const subscription of telegramSubscriptions) {
@@ -95,35 +91,30 @@ const createRecommendation = async (req, res) => {
         }
       } catch (telegramError) {
         logger.error('Failed to send to Telegram:', telegramError);
-        // Don't fail the request if Telegram fails
       }
 
-      // Send to WhatsApp - use phone numbers from User model
+      // WhatsApp
       try {
         const users = userSubscriptions
           .map(us => us.user)
           .filter(user => user?.profile?.phone && user?.profile?.phoneVerified);
-        
         for (const user of users) {
           await sendRecommendationToWhatsApp(recommendation, user);
           logger.info(`Recommendation sent to WhatsApp ${user.profile.phone}: ${recommendation.stockSymbol}`);
         }
       } catch (whatsappError) {
         logger.error('Failed to send to WhatsApp:', whatsappError);
-        // Don't fail the request if WhatsApp fails
       }
 
-      // Send email notifications to subscribed users
+      // Email — single email per user via the standard template
       try {
         for (const us of userSubscriptions) {
           const u = us.user;
           if (!u?.email) continue;
-
           if (await isEmailUnsubscribed(u.email)) {
             logger.info(`Skipping stock recommendation email for unsubscribed user ${u.email}`);
             continue;
           }
-
           const serviceType = us.serviceType || us.subscription?.serviceType || 'RA';
           await sendNewRecommendationEmail(u, recommendation, serviceType);
           logger.info(`New-recommendation email sent to ${u.email}: ${recommendation.stockSymbol}`);
@@ -261,23 +252,18 @@ const updateRecommendation = async (req, res) => {
 
     // If newly published, send notifications
     if (willBePublished) {
-      await sendRecommendationToUsers(recommendation._id);
-      
-      // Fetch subscriptions that have the target strategies
       const subscriptions = await Subscription.find({
         strategies: { $in: recommendation.targetStrategies }
       });
-      
-      // Get subscription IDs
+
       const subscriptionIds = subscriptions.map(sub => sub._id);
-      
-      // Fetch active user subscriptions with user data
+
       const userSubscriptions = await UserSubscription.find({
         subscription: { $in: subscriptionIds },
         status: 'active'
       }).populate('user');
-      
-      // Send to Telegram
+
+      // Telegram
       try {
         const telegramSubscriptions = subscriptions.filter(sub => sub.telegramChatId);
         for (const subscription of telegramSubscriptions) {
@@ -286,31 +272,32 @@ const updateRecommendation = async (req, res) => {
         }
       } catch (telegramError) {
         logger.error('Failed to send to Telegram:', telegramError);
-        // Don't fail the request if Telegram fails
       }
 
-      // Send to WhatsApp - use phone numbers from User model
+      // WhatsApp
       try {
         const users = userSubscriptions
           .map(us => us.user)
           .filter(user => user?.profile?.phone && user?.profile?.phoneVerified);
-        
         for (const user of users) {
           await sendRecommendationToWhatsApp(recommendation, user);
           logger.info(`Recommendation sent to WhatsApp ${user.profile.phone}: ${recommendation.stockSymbol}`);
         }
       } catch (whatsappError) {
         logger.error('Failed to send to WhatsApp:', whatsappError);
-        // Don't fail the request if WhatsApp fails
       }
 
-      // Send email notifications to subscribed users
+      // Email — single email per user via the standard template
       try {
-        const usersWithEmail = userSubscriptions
-          .map(us => us.user)
-          .filter(u => u?.email);
-        for (const u of usersWithEmail) {
-          await sendNewRecommendationEmail(u, recommendation);
+        for (const us of userSubscriptions) {
+          const u = us.user;
+          if (!u?.email) continue;
+          if (await isEmailUnsubscribed(u.email)) {
+            logger.info(`Skipping stock recommendation email for unsubscribed user ${u.email}`);
+            continue;
+          }
+          const serviceType = us.serviceType || us.subscription?.serviceType || 'RA';
+          await sendNewRecommendationEmail(u, recommendation, serviceType);
           logger.info(`New-recommendation email sent to ${u.email}: ${recommendation.stockSymbol}`);
         }
       } catch (emailError) {

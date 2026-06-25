@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminAPI } from '../../services/api';
+import api, { adminAPI } from '../../services/api';
 import './KycManagement.css';
 import Modal from '../Shared/Modal';
 
@@ -8,6 +8,9 @@ const KycManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedKyc, setSelectedKyc] = useState(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfError, setPdfError] = useState('');
+  const [pdfSavedUrl, setPdfSavedUrl] = useState('');
 
   useEffect(() => {
     fetchKycVerifications();
@@ -56,6 +59,36 @@ const KycManagement = () => {
 
   const closeDetails = () => {
     setSelectedKyc(null);
+    setPdfError('');
+    setPdfSavedUrl('');
+  };
+
+  const handleKycPdfPreview = async () => {
+    if (!selectedKyc) return;
+    setPdfBusy(true); setPdfError('');
+    try {
+      const res = await api.post(`/admin/kyc/${selectedKyc._id}/pdf/preview`, {}, { responseType: 'blob' });
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      window.open(url, '_blank');
+    } catch (err) {
+      const msg = err.response?.data instanceof Blob
+        ? await err.response.data.text().then(t => { try { return JSON.parse(t).error; } catch { return t; } })
+        : err.response?.data?.error || err.message;
+      setPdfError(msg || 'Preview failed');
+    }
+    setPdfBusy(false);
+  };
+
+  const handleKycPdfSave = async () => {
+    if (!selectedKyc) return;
+    setPdfBusy(true); setPdfError(''); setPdfSavedUrl('');
+    try {
+      const { data } = await api.post(`/admin/kyc/${selectedKyc._id}/pdf/save`);
+      setPdfSavedUrl(data.url);
+    } catch (err) {
+      setPdfError(err.response?.data?.error || err.message || 'Save failed');
+    }
+    setPdfBusy(false);
   };
 
   if (loading) {
@@ -301,8 +334,37 @@ const KycManagement = () => {
                 </div>
               )}
             </div>
-            <div className="admin-modal-footer">
-              <button className="admin-button" onClick={closeDetails}>Close</button>
+            <div className="admin-modal-footer" style={{ flexDirection: 'column', gap: 10, alignItems: 'stretch' }}>
+              {pdfError && (
+                <div style={{ padding: '8px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, color: '#dc2626', fontSize: 12 }}>
+                  ⚠ {pdfError}
+                </div>
+              )}
+              {pdfSavedUrl && (
+                <div style={{ padding: '8px 12px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 6, fontSize: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#16a34a', fontWeight: 600 }}>✓ PDF saved to Cloudinary</span>
+                  <a href={pdfSavedUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', fontWeight: 700, textDecoration: 'none' }}>View PDF →</a>
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button className="admin-button" onClick={closeDetails} style={{ marginRight: 'auto' }}>Close</button>
+                <button
+                  className="admin-action-button"
+                  onClick={handleKycPdfPreview}
+                  disabled={pdfBusy}
+                  style={{ opacity: pdfBusy ? 0.6 : 1 }}
+                >
+                  {pdfBusy ? 'Working…' : '👁 Preview PDF'}
+                </button>
+                <button
+                  className="admin-button"
+                  onClick={handleKycPdfSave}
+                  disabled={pdfBusy}
+                  style={{ opacity: pdfBusy ? 0.6 : 1, background: pdfBusy ? '#94a3b8' : undefined }}
+                >
+                  {pdfBusy ? 'Working…' : '💾 Save PDF'}
+                </button>
+              </div>
             </div>
         </Modal>
       )}

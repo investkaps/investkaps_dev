@@ -212,6 +212,9 @@ const Dashboard = () => {
   const [bypassLoading, setBypassLoading] = useState(false);
   // QR / manual payment request statuses
   const [pendingPaymentRequests, setPendingPaymentRequests] = useState([]);
+  // Referral reward state
+  const [referralData, setReferralData] = useState(null);
+  const [claimingReferral, setClaimingReferral] = useState(false);
   const esignRetryTimerRef = useRef(null);
 
   const clearEsignRetryTimer = () => {
@@ -245,6 +248,25 @@ const Dashboard = () => {
 
   const clearStoredOnboardingSelection = () => {
     localStorage.removeItem('selected_onboarding_service_type');
+  };
+
+  const tryActivatePendingSubscription = async () => {
+    try {
+      const clerkId = currentUser?.clerkId || currentUser?.id;
+      if (!clerkId) return;
+      const token = localStorage.getItem('clerk_jwt');
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/payment-requests/activate-pending/${clerkId}`,
+        { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      const data = await res.json();
+      if (data.activated) {
+        // Refresh the dashboard so the subscription shows as active
+        window.location.reload();
+      }
+    } catch (e) {
+      console.warn('tryActivatePendingSubscription failed silently:', e);
+    }
   };
 
   const applyCompletedEsignState = (serviceTypeToUpdate) => {
@@ -312,6 +334,8 @@ const Dashboard = () => {
           clearEsignRetryTimer();
           setEsignStatusChecking(false);
           setEsignStatusMessage('E-signing completed successfully.');
+          // Try to activate any pending subscription now that esign is done
+          tryActivatePendingSubscription();
           return { success: true, completed: true, status: result.status };
         }
 
@@ -459,6 +483,18 @@ const Dashboard = () => {
           // ── Active subscription ───────────────────────────────────────────
           (async () => {
             try {
+              const token = localStorage.getItem('clerk_jwt');
+              // Also check for pending subscriptions (payment approved but onboarding incomplete)
+              let pendingSub = null;
+              try {
+                const pendingRes = await fetch(
+                  `${import.meta.env.VITE_API_URL}/payment-requests/pending-subscription/${currentUser.id}`,
+                  { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+                const pendingData = await pendingRes.json();
+                if (pendingData.success && pendingData.data) pendingSub = pendingData.data;
+              } catch { /* ignore */ }
+
               const subResponse = await userSubscriptionAPI.getActiveSubscription(currentUser.id);
               if (subResponse.success && subResponse.data) {
                 const subscriptions = Array.isArray(subResponse.data) ? subResponse.data : [subResponse.data];
@@ -476,10 +512,27 @@ const Dashboard = () => {
                     if (pfRes.success && pfRes.data) setModelPortfolio(pfRes.data);
                   } catch { /* no portfolio linked to this subscription */ }
                 }
+              } else if (pendingSub) {
+                // Payment approved but onboarding incomplete — show pending state
+                setActiveSubscription(pendingSub);
+                setSteps(prev => ({ ...prev, payment: { ...prev.payment, completed: true, active: true } }));
               } else {
                 setActiveRaSubscription(null);
               }
             } catch (err) { /* No active subscription */ }
+          })(),
+
+          // ── Referral info ─────────────────────────────────────────────────
+          (async () => {
+            try {
+              const token = localStorage.getItem('clerk_jwt');
+              const refRes = await fetch(
+                `${import.meta.env.VITE_API_URL}/referrals/my`,
+                { headers: { 'Authorization': `Bearer ${token}` } }
+              );
+              const refData = await refRes.json();
+              if (refData.success) setReferralData(refData.data);
+            } catch { /* ignore */ }
           })(),
 
           // ── QR / manual payment request statuses ─────────────────────────
@@ -594,6 +647,28 @@ const Dashboard = () => {
     const result = await logout();
     if (result.success) {
       navigate('/');
+    }
+  };
+
+  const handleClaimReferralReward = async () => {
+    setClaimingReferral(true);
+    try {
+      const token = localStorage.getItem('clerk_jwt');
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/referrals/claim`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(data.message);
+        window.location.reload();
+      } else {
+        alert(data.error || 'Failed to claim reward.');
+      }
+    } catch {
+      alert('Something went wrong. Please try again.');
+    } finally {
+      setClaimingReferral(false);
     }
   };
 
@@ -848,6 +923,7 @@ const Dashboard = () => {
         }));
         setIaSteps(prev => ({ ...prev, phone: { ...prev.phone, completed: true } }));
         setOtpSent(false);
+        tryActivatePendingSubscription();
       } else {
         setPhoneError(response.error || 'Invalid OTP. Please try again.');
       }
@@ -1034,7 +1110,8 @@ const Dashboard = () => {
     
     // For admins, always fetch recommendations
     // For regular users, only fetch if setup is complete and they have a subscription
-    if (!isAdminUser && (!isSetupComplete || !activeSubscription)) return;
+    const isExpired = activeSubscription?.endDate && new Date(activeSubscription.endDate) < new Date();
+    if (!isAdminUser && (!isSetupComplete || !activeSubscription || activeSubscription.status !== 'active' || isExpired)) return;
     
     const fetchRecommendations = async () => {
       try {
@@ -1221,6 +1298,52 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Referral reward banner */}
+        {!isAdminUser && referralData?.unclaimedMonths > 0 && (
+          <div style={{
+            background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+            border: '1.5px solid #f59e0b',
+            borderRadius: 12,
+            padding: '1rem 1.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            flexWrap: 'wrap',
+            marginBottom: '0.5rem',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ fontSize: '1.5rem' }}>🎁</span>
+              <div>
+                <div style={{ fontWeight: 700, color: '#92400e', fontSize: '0.95rem' }}>
+                  You have {referralData.unclaimedMonths} free month{referralData.unclaimedMonths > 1 ? 's' : ''} to claim!
+                </div>
+                <div style={{ color: '#78350f', fontSize: '0.82rem', marginTop: '0.15rem' }}>
+                  {referralData.unclaimedMonths} friend{referralData.unclaimedMonths > 1 ? 's' : ''} joined using your referral code. Claim your free access anytime.
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handleClaimReferralReward}
+              disabled={claimingReferral}
+              style={{
+                background: '#f59e0b',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '0.6rem 1.25rem',
+                fontWeight: 700,
+                fontSize: '0.875rem',
+                cursor: claimingReferral ? 'not-allowed' : 'pointer',
+                opacity: claimingReferral ? 0.7 : 1,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {claimingReferral ? 'Claiming...' : 'Claim Free Plan'}
+            </button>
+          </div>
+        )}
+
         {/* Payment success banner */}
         {paymentSuccessBanner && (
           <div className="payment-success-banner">
@@ -1288,6 +1411,23 @@ const Dashboard = () => {
         {activeSubscription && (
           <div className="current-subscription-section">
             <h2>Your Current Plan</h2>
+
+            {activeSubscription.status === 'pending' && (
+              <div style={{
+                marginBottom: '1rem',
+                padding: '1rem 1.2rem',
+                background: '#fffbeb',
+                border: '2px solid #fcd34d',
+                borderRadius: '12px',
+                color: '#92400e',
+                fontSize: '0.875rem',
+                lineHeight: '1.6',
+              }}>
+                <strong>Subscription On Hold</strong><br />
+                Your payment has been received and verified. Your subscription will start automatically as soon as you complete all remaining onboarding steps below.
+              </div>
+            )}
+
             <div className="subscription-card">
               <div className="subscription-header">
                 <div className="plan-info">
@@ -1296,7 +1436,7 @@ const Dashboard = () => {
                 </div>
                 <div className="plan-status">
                   <span className={`status-badge ${activeSubscription.status}`}>
-                    {activeSubscription.status === 'active' ? 'Active' : activeSubscription.status}
+                    {activeSubscription.status === 'active' ? 'Active' : activeSubscription.status === 'pending' ? 'On Hold' : activeSubscription.status}
                   </span>
                 </div>
               </div>
@@ -1311,7 +1451,7 @@ const Dashboard = () => {
                 </div>
                 <div className="detail-item">
                   <span className="detail-label">Start Date:</span>
-                  <span className="detail-value">{new Date(activeSubscription.startDate).toLocaleDateString()}</span>
+                  <span className="detail-value">{activeSubscription.startDate ? new Date(activeSubscription.startDate).toLocaleDateString() : 'Pending activation'}</span>
                 </div>
                 <div className="detail-item">
                   <span className="detail-label">End Date:</span>
@@ -1446,8 +1586,73 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/* Expired plan notice — replaces recommendations when plan has lapsed */}
+        {!isAdminUser && activeSubscription && activeSubscription.status !== 'pending' && activeSubscription.endDate && new Date(activeSubscription.endDate) < new Date() && (
+          <div style={{
+            background: '#fff',
+            border: '1.5px solid #fca5a5',
+            borderRadius: 14,
+            padding: '2rem',
+            textAlign: 'center',
+            marginBottom: '1.5rem',
+          }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⏰</div>
+            <h3 style={{ margin: '0 0 0.5rem', color: '#991b1b', fontSize: '1.2rem', fontWeight: 700 }}>Your Plan Has Expired</h3>
+            <p style={{ color: '#64748b', fontSize: '0.9rem', margin: '0 0 1.5rem', lineHeight: 1.6 }}>
+              Your <strong>{activeSubscription.subscription?.name || 'subscription'}</strong> expired on{' '}
+              {new Date(activeSubscription.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}.
+              Renew or choose a new plan to continue receiving stock recommendations.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <a href="/pricing" style={{
+                background: 'linear-gradient(135deg, #1e3a5f 0%, #155d8e 100%)',
+                color: '#fff',
+                padding: '0.65rem 1.5rem',
+                borderRadius: 8,
+                fontWeight: 700,
+                fontSize: '0.9rem',
+                textDecoration: 'none',
+              }}>
+                Choose a Plan
+              </a>
+              {referralData?.unclaimedMonths > 0 && (
+                <button
+                  onClick={handleClaimReferralReward}
+                  disabled={claimingReferral}
+                  style={{
+                    background: '#f59e0b',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '0.65rem 1.5rem',
+                    fontWeight: 700,
+                    fontSize: '0.9rem',
+                    cursor: claimingReferral ? 'not-allowed' : 'pointer',
+                    opacity: claimingReferral ? 0.7 : 1,
+                  }}
+                >
+                  {claimingReferral ? 'Claiming...' : `Claim ${referralData.unclaimedMonths} Free Month${referralData.unclaimedMonths > 1 ? 's' : ''}`}
+                </button>
+              )}
+              {referralData?.referralPlanSub && new Date(referralData.referralPlanSub.endDate) > new Date() && (
+                <a href="/pricing" style={{
+                  background: '#10b981',
+                  color: '#fff',
+                  padding: '0.65rem 1.5rem',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  fontSize: '0.9rem',
+                  textDecoration: 'none',
+                }}>
+                  Use Referral Plan
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Stock Recommendations */}
-        {(isAdminUser || activeSubscription) && (
+        {(isAdminUser || (activeSubscription && !(activeSubscription.endDate && new Date(activeSubscription.endDate) < new Date()))) && (
           <div className="stock-recommendations-section">
             <div style={{ marginBottom: '1.5rem' }}>
               <h2 style={{ margin: '0 0 .75rem' }}>{isAdminUser ? 'All Active Stock Recommendations' : 'Stock Recommendations'}</h2>
@@ -1477,6 +1682,7 @@ const Dashboard = () => {
                   <thead>
                     <tr>
                       <th>Stock</th><th>Type</th><th>Current</th>
+                      <th>Buy Range</th>
                       <th>Target 1</th><th>Target 2</th><th>Target 3</th>
                       <th>Stop Loss</th><th>Timeframe</th><th>Report</th>
                     </tr>
@@ -1490,6 +1696,15 @@ const Dashboard = () => {
                         </td>
                         <td><span className={`rec-badge ${rec.recommendationType}`}>{rec.recommendationType.toUpperCase()}</span></td>
                         <td className="price-cell">₹{rec.currentPrice}</td>
+                        <td className="price-cell buy-range">
+                          {rec.buyingRangeLow && rec.buyingRangeHigh
+                            ? <span className="buy-range-badge">₹{rec.buyingRangeLow} – ₹{rec.buyingRangeHigh}</span>
+                            : rec.buyingRangeLow
+                            ? <span className="buy-range-badge">≥ ₹{rec.buyingRangeLow}</span>
+                            : rec.buyingRangeHigh
+                            ? <span className="buy-range-badge">≤ ₹{rec.buyingRangeHigh}</span>
+                            : '-'}
+                        </td>
                         <td className="price-cell target">₹{rec.targetPrice}</td>
                         <td className="price-cell target">{rec.targetPrice2 ? `₹${rec.targetPrice2}` : '-'}</td>
                         <td className="price-cell target">{rec.targetPrice3 ? `₹${rec.targetPrice3}` : '-'}</td>

@@ -41,24 +41,52 @@ const paymentRequestSchema = new mongoose.Schema({
   },
   senderName: {
     type: String,
-    required: true
+    required: false,
+    default: ''
   },
   transactionId: {
     type: String,
-    required: true
+    required: false,
+    default: ''
   },
   transactionImageUrl: {
     type: String,
-    required: true
+    required: false,
+    default: ''
   },
   transactionImagePublicId: {
     type: String,
-    required: true
+    required: false,
+    default: ''
+  },
+  billingName: {
+    type: String,
+    required: false,
+    trim: true
+  },
+  billingState: {
+    type: String,
+    required: false,
+    trim: true
   },
   paymentMethod: {
     type: String,
-    enum: ['qr', 'bank_transfer'],
+    enum: ['qr', 'bank_transfer', 'razorpay'],
     default: 'qr'
+  },
+  invoiceNumber: {
+    type: String,
+    required: false,
+    unique: false,
+    sparse: true
+  },
+  invoicePdfUrl: {
+    type: String,
+    required: false
+  },
+  invoicePdfPublicId: {
+    type: String,
+    required: false
   },
   status: {
     type: String,

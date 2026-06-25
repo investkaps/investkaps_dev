@@ -1,9 +1,12 @@
 import Subscription from '../model/Subscription.js';
 import UserSubscription from '../model/UserSubscription.js';
 import User from '../model/User.js';
+import PaymentRequest from '../model/PaymentRequest.js';
+import KycVerification from '../model/KycVerification.js';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import { sendEmail  } from '../utils/emailService.js';
+import { generateInvoiceNumber, generateInvoicePDF, uploadInvoicePDF } from '../utils/invoiceGenerator.js';
 import logger from '../utils/logger.js';
 import moment from 'moment';
 
@@ -153,8 +156,8 @@ const hasActiveSubscriptionForService = async (userId, serviceType) => {
 // Get all subscription plans (public)
 export const getAllSubscriptions = async (req, res) => {
   try {
-    // For public access, only return active subscriptions
-    const filter = { isActive: true };
+    // For public access, only return active non-referral subscriptions
+    const filter = { isActive: true, isReferralPlan: { $ne: true } };
 
     if (req.query.serviceType) {
       filter.serviceType = normalizeServiceType(req.query.serviceType);
@@ -313,6 +316,7 @@ export const updateSubscription = async (req, res) => {
       telegramChatId,
       isActive,
       isTrial,
+      isReferralPlan,
       displayOrder
     } = req.body;
 
@@ -346,6 +350,7 @@ export const updateSubscription = async (req, res) => {
       telegramChatId: telegramChatId !== undefined ? telegramChatId : subscription.telegramChatId,
       isActive: isActive !== undefined ? isActive : subscription.isActive,
       isTrial: isTrial !== undefined ? isTrial : subscription.isTrial,
+      isReferralPlan: isReferralPlan !== undefined ? isReferralPlan : subscription.isReferralPlan,
       displayOrder: displayOrder !== undefined ? displayOrder : subscription.displayOrder,
       updatedAt: Date.now()
     };
@@ -760,7 +765,7 @@ export const verifyPayment = async (req, res) => {
       });
     }
     
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId, duration, planOptionId } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId, duration, planOptionId, billingName, billingState } = req.body;
     const userId = req.user.id;
     
     // Verify signature
@@ -868,35 +873,97 @@ export const verifyPayment = async (req, res) => {
     
     await newUserSubscription.save();
     
-    // Send confirmation email to user
+    // ── Generate and store invoice ──────────────────────────────────────────
+    let invoiceBuffer = null;
+    let invoiceNumber = null;
+    let invoicePdfUrl = null;
+
     try {
+      let pan = null;
+      try {
+        const kyc = await KycVerification.findOne({ user: userId, status: 'completed' })
+          .sort({ createdAt: -1 }).select('pan').lean();
+        pan = kyc?.pan || null;
+      } catch {}
+
+      invoiceNumber = await generateInvoiceNumber(PaymentRequest);
+      invoiceBuffer = await generateInvoicePDF({
+        invoiceNumber,
+        date: new Date(),
+        serviceType: subscriptionServiceType,
+        billingName: billingName || user.name,
+        billingState: billingState || '',
+        pan,
+        email: user.email,
+        phone: user.profile?.phone || '',
+        transactionId: razorpay_payment_id,
+        packageName: subscription.name,
+        duration: selectedPlanOption.name,
+        amount: price,
+        coupon: 0,
+      });
+
+      const uploaded = await uploadInvoicePDF(invoiceBuffer, invoiceNumber);
+      invoicePdfUrl = uploaded.url;
+
+      // Create a PaymentRequest record to persist the invoice
+      await PaymentRequest.create({
+        user: userId,
+        serviceType: subscriptionServiceType,
+        plan: planId,
+        planName: subscription.name,
+        duration: selectedPlanOption.name,
+        durationMonths: selectedPlanOption.months,
+        planOptionId: String(selectedPlanOption._id || planOptionId || ''),
+        amount: price,
+        senderName: user.name,
+        billingName: billingName || user.name,
+        billingState: billingState || '',
+        transactionId: razorpay_payment_id,
+        transactionImageUrl: '',
+        transactionImagePublicId: '',
+        paymentMethod: 'razorpay',
+        status: 'approved',
+        approvedAt: new Date(),
+        userSubscription: newUserSubscription._id,
+        invoiceNumber,
+        invoicePdfUrl: uploaded.url,
+        invoicePdfPublicId: uploaded.publicId,
+      });
+
+      logger.info(`[INVOICE] Razorpay invoice ${invoiceNumber} generated for user ${userId}`);
+    } catch (invErr) {
+      logger.error('[INVOICE] Razorpay invoice generation failed (non-blocking):', invErr.message);
+    }
+
+    // Send confirmation email with invoice attachment
+    try {
+      const endDateFmt = moment(endDate).format('MMMM Do, YYYY');
       const emailData = {
         to: user.email,
-        subject: 'Subscription Confirmation - InvestKaps',
+        subject: 'Subscription Confirmed — InvestKaps',
         serviceType: subscriptionServiceType,
-        text: `Thank you for subscribing to ${subscription.name}. Your subscription is now active and will expire on ${moment(endDate).format('MMMM Do, YYYY')}.`,
         html: `
-          <h2>Subscription Confirmation</h2>
-          <p>Dear ${user.name},</p>
-          <p>Thank you for subscribing to <strong>${subscription.name}</strong>.</p>
-          <p>Your subscription details:</p>
-          <ul>
-            <li><strong>Plan:</strong> ${subscription.name}</li>
-            <li><strong>Duration:</strong> ${formatPlanDuration(selectedPlanOption)}</li>
-            <li><strong>Months:</strong> ${selectedPlanOption.months}</li>
-            <li><strong>Start Date:</strong> ${moment(startDate).format('MMMM Do, YYYY')}</li>
-            <li><strong>Expiry Date:</strong> ${moment(endDate).format('MMMM Do, YYYY')}</li>
-            <li><strong>Amount Paid:</strong> ${subscription.currency || '₹'} ${price}</li>
-          </ul>
-          <p>You can view your subscription details in your dashboard.</p>
-          <p>Thank you for choosing InvestKaps!</p>
-        `
+          <h2>Payment Verified — Your Plan Has Started!</h2>
+          <p>Hi ${user.name}, your Razorpay payment has been verified and your subscription is now active.</p>
+          <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+            <tr><td style="padding:6px;color:#64748b;">Plan</td><td style="padding:6px;font-weight:600;">${subscription.name}</td></tr>
+            <tr><td style="padding:6px;color:#64748b;">Duration</td><td style="padding:6px;font-weight:600;">${selectedPlanOption.name}</td></tr>
+            <tr><td style="padding:6px;color:#64748b;">Amount Paid</td><td style="padding:6px;font-weight:600;">₹${price}</td></tr>
+            <tr><td style="padding:6px;color:#64748b;">Valid Until</td><td style="padding:6px;font-weight:600;">${endDateFmt}</td></tr>
+            <tr><td style="padding:6px;color:#64748b;">Transaction ID</td><td style="padding:6px;font-weight:600;">${razorpay_payment_id}</td></tr>
+          </table>
+          ${invoicePdfUrl ? `<p>Your invoice is also attached to this email.</p>` : ''}
+          <p>Log in to your dashboard to access your plan.</p>
+        `,
+        attachments: invoiceBuffer && invoiceNumber
+          ? [{ filename: `Invoice_${invoiceNumber}.pdf`, content: invoiceBuffer, contentType: 'application/pdf' }]
+          : undefined,
       };
-      
+
       await sendEmail(emailData);
     } catch (emailError) {
       logger.error('Error sending subscription confirmation email:', emailError);
-      // Don't fail the request if email fails
     }
     
     res.status(200).json({

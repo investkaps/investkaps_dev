@@ -71,7 +71,10 @@ const PaymentApproval = () => {
         throw new Error(data.message || data.error || `Server error ${response.status}`);
       }
 
-      alert('Payment approved! Subscription activated.');
+      const msg = data.subscriptionStatus === 'pending'
+        ? 'Payment approved. Subscription is ON HOLD until the user completes all onboarding steps (KYC, phone, e-sign). It will activate automatically.'
+        : 'Payment approved and subscription activated.';
+      alert(msg);
       setSelectedRequest(null);
       setAdminNotes('');
       fetchPaymentRequests();
@@ -198,6 +201,13 @@ const PaymentApproval = () => {
                   </span>
                 </div>
               </div>
+
+              {/* On-hold notice for approved payments where subscription is pending */}
+              {request.status === 'approved' && request.userSubscription?.status === 'pending' && (
+                <div style={{ marginBottom: '12px', padding: '8px 12px', background: '#fffbeb', border: '1.5px solid #fcd34d', borderRadius: '8px', fontSize: '0.8rem', color: '#92400e' }}>
+                  Subscription on hold — user has not completed all onboarding steps (KYC / phone / e-sign). Will activate automatically when they do.
+                </div>
+              )}
 
               {/* Details grid */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '8px 16px', marginBottom: '14px', fontSize: '0.875rem' }}>

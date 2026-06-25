@@ -8,89 +8,105 @@ import { referralAPI } from '../../services/api';
 import { FaArrowRight, FaTimes as FaClose } from 'react-icons/fa';
 import QRPaymentModal from '../../components/QRPaymentModal/QRPaymentModal';
 
-const SHOW_LIMIT = 4;
 
-const PlanCard = ({ plan, idx, totalPlans, active, onSelect, getCurrentPrice }) => {
-  const [expanded, setExpanded] = useState(false);
+const PlanCard = ({ plan, idx, totalPlans, active, onSelect, ctaLabel }) => {
+  const [selectedOpt, setSelectedOpt] = useState(0);
   const featured = plan.packageCode === 'PRO' || idx === Math.floor(totalPlans / 2);
   const includedFeatures = plan.features?.filter(f => f.included) || [];
-  const visibleFeatures = expanded ? includedFeatures : includedFeatures.slice(0, SHOW_LIMIT);
+  const options = plan.planOptions || [];
+
   return (
     <div className={`px-card ${featured ? 'px-card--featured' : ''} ${active ? 'px-card--active' : ''}`}>
-      {active && <div className="px-card-ribbon px-card-ribbon--green">Active</div>}
-      {!active && featured && <div className="px-card-ribbon px-card-ribbon--gold">Popular</div>}
-      <h3 className="px-card-name">{plan.name}</h3>
-      {plan.description && <p className="px-card-desc">{plan.description}</p>}
-      <div className="px-card-price">
-        <span className="px-price-currency">₹</span>
-        <span className="px-price-amount">{getCurrentPrice(plan).toLocaleString('en-IN')}</span>
-        <span className="px-price-per">/mo</span>
-      </div>
-      <p className="px-price-note">Starting price</p>
-      {includedFeatures.length > 0 && (
-        <div className="px-features-wrap">
-          <ul className="px-features">
-            {visibleFeatures.map((f, i) => (
-              <li key={i} className="px-feature"><span className="px-check">✓</span>{f.name}</li>
+      <div className="px-card-body">
+        {/* Left */}
+        <div className="px-card-left">
+          <p className="px-card-eyebrow">Subscription</p>
+          <h3 className="px-card-name">{plan.name}</h3>
+          {plan.description && <p className="px-card-desc">{plan.description}</p>}
+          <div className="px-duration-list">
+            {options.map((opt, i) => (
+              <div
+                key={i}
+                className={`px-duration-row${selectedOpt === i ? ' px-duration-row--selected' : ''}`}
+                onClick={() => setSelectedOpt(i)}
+              >
+                <span className="px-duration-radio">{selectedOpt === i ? '●' : '○'}</span>
+                <span className="px-duration-label">{opt.name || opt.duration}</span>
+                <span className="px-duration-price">₹{Number(opt.price).toLocaleString('en-IN')}</span>
+              </div>
             ))}
-          </ul>
-          {includedFeatures.length > SHOW_LIMIT && (
-            <button className="px-toggle-features" onClick={() => setExpanded(e => !e)}>
-              {expanded ? '▲ Show less' : `▼ +${includedFeatures.length - SHOW_LIMIT} more features`}
-            </button>
+          </div>
+        </div>
+        {/* Right */}
+        <div className="px-card-right">
+          {includedFeatures.length > 0 && (
+            <>
+              <p className="px-features-heading">What's Included</p>
+              <ul className="px-features">
+                {includedFeatures.map((f, i) => (
+                  <li key={i} className="px-feature"><span className="px-check">✓</span>{f.name}</li>
+                ))}
+              </ul>
+            </>
           )}
         </div>
-      )}
-      <div className="px-card-actions">
-        <button className={`px-cta ${active ? 'px-cta--active' : featured ? 'px-cta--featured' : ''}`} onClick={e => onSelect(plan, e)}>
-          {active ? 'Extend Plan' : 'Get Started'} <FaArrowRight />
+      </div>
+      <div className="px-card-footer">
+        <button className={`px-cta ${active ? 'px-cta--active' : ''}`} onClick={e => onSelect(plan, options[selectedOpt], e)}>
+          {ctaLabel || (active ? 'Extend Plan' : 'Get Started')}
         </button>
-        {active && <p className="px-active-note">Already active — extend for more time</p>}
       </div>
     </div>
   );
 };
 
-const MpCard = ({ portfolio, active, onSelect, getCurrentPrice }) => {
-  const [expanded, setExpanded] = useState(false);
+const MpCard = ({ portfolio, active, onSelect }) => {
+  const [selectedOpt, setSelectedOpt] = useState(0);
   const sub = portfolio.subscription;
-  const minPrice = sub.planOptions?.length
-    ? Math.min(...sub.planOptions.map(o => Number(o.price)))
-    : getCurrentPrice(sub);
+  const options = sub.planOptions || [];
   const includedFeatures = sub.features?.filter(f => f.included) || [];
-  const visibleFeatures = expanded ? includedFeatures : includedFeatures.slice(0, SHOW_LIMIT);
+  const mpFeatures = [
+    `Curated basket of ${portfolio.stocks?.length || 0} stocks`,
+    'Regular rebalancing with change notes',
+    'Buy range, targets & stop loss for each stock',
+    'Full rebalance history on your dashboard',
+  ];
+  const allFeatures = [...mpFeatures.map(f => ({ name: f })), ...includedFeatures];
+
   return (
     <div className={`px-card ${active ? 'px-card--active' : ''}`}>
-      {active && <div className="px-card-ribbon px-card-ribbon--green">Active</div>}
-      <h3 className="px-card-name">{sub.name}</h3>
-      {portfolio.description && <p className="px-card-desc">{portfolio.description}</p>}
-      <div className="px-card-price">
-        <span className="px-price-currency">₹</span>
-        <span className="px-price-amount">{minPrice.toLocaleString('en-IN')}</span>
-        <span className="px-price-per">/mo</span>
+      <div className="px-card-body">
+        <div className="px-card-left">
+          <p className="px-card-eyebrow">Subscription</p>
+          <h3 className="px-card-name">{sub.name}</h3>
+          {portfolio.description && <p className="px-card-desc">{portfolio.description}</p>}
+          <div className="px-duration-list">
+            {options.map((opt, i) => (
+              <div
+                key={i}
+                className={`px-duration-row${selectedOpt === i ? ' px-duration-row--selected' : ''}`}
+                onClick={() => setSelectedOpt(i)}
+              >
+                <span className="px-duration-radio">{selectedOpt === i ? '●' : '○'}</span>
+                <span className="px-duration-label">{opt.name || opt.duration}</span>
+                <span className="px-duration-price">₹{Number(opt.price).toLocaleString('en-IN')}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="px-card-right">
+          <p className="px-features-heading">What's Included</p>
+          <ul className="px-features">
+            {allFeatures.map((f, i) => (
+              <li key={i} className="px-feature"><span className="px-check">✓</span>{f.name}</li>
+            ))}
+          </ul>
+        </div>
       </div>
-      <p className="px-price-note">Starting price</p>
-      <div className="px-features-wrap">
-        <ul className="px-features">
-          <li className="px-feature"><span className="px-check">✓</span>Curated basket of {portfolio.stocks?.length || 0} stocks</li>
-          <li className="px-feature"><span className="px-check">✓</span>Regular rebalancing with change notes</li>
-          <li className="px-feature"><span className="px-check">✓</span>Buy range, targets &amp; stop loss for each stock</li>
-          <li className="px-feature"><span className="px-check">✓</span>Full rebalance history on your dashboard</li>
-          {visibleFeatures.map((f, i) => (
-            <li key={i} className="px-feature"><span className="px-check">✓</span>{f.name}</li>
-          ))}
-        </ul>
-        {includedFeatures.length > SHOW_LIMIT && (
-          <button className="px-toggle-features" onClick={() => setExpanded(e => !e)}>
-            {expanded ? '▲ Show less' : `▼ +${includedFeatures.length - SHOW_LIMIT} more`}
-          </button>
-        )}
-      </div>
-      <div className="px-card-actions">
-        <button className={`px-cta ${active ? 'px-cta--active' : 'px-cta--mp'}`} onClick={e => onSelect(sub, e)}>
-          {active ? 'Extend Plan' : 'Subscribe'} <FaArrowRight />
+      <div className="px-card-footer">
+        <button className={`px-cta ${active ? 'px-cta--active' : 'px-cta--mp'}`} onClick={e => onSelect(sub, options[selectedOpt], e)}>
+          {active ? 'Extend Plan' : 'Subscribe'}
         </button>
-        {active && <p className="px-active-note">Already active — extend for more time</p>}
       </div>
     </div>
   );
@@ -113,16 +129,19 @@ const Pricing = () => {
   const [showDurationModal, setShowDurationModal] = useState(false);
   const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [showBillingModal, setShowBillingModal] = useState(false);
+  const [billingInfo, setBillingInfo] = useState({ name: '', state: '' });
   const [activeSubscriptions, setActiveSubscriptions] = useState([]);
   const [userReferralCode, setUserReferralCode] = useState(null);
   const [referralInfo, setReferralInfo] = useState(null);
+  const [referralPlan, setReferralPlan] = useState(undefined); // undefined = loading, null = none
 
   const [pricingTab, setPricingTab] = useState('ra');
   const [modelPortfolios, setModelPortfolios] = useState([]);
   const [modelPortfoliosLoading, setModelPortfoliosLoading] = useState(false);
   const [expandedPortfolio, setExpandedPortfolio] = useState(null);
 
-  const anyModalOpen = showDurationModal || showPaymentMethodModal || showQRModal;
+  const anyModalOpen = showDurationModal || showPaymentMethodModal || showQRModal || showBillingModal;
 
   const LEGACY_DURATION_MAP = {
     monthly: { months: 1, label: 'Monthly' },
@@ -228,6 +247,11 @@ const Pricing = () => {
     hasFetched.current = true;
     fetchSubscriptions();
     fetchModelPortfolios();
+    // Fetch referral plan publicly
+    fetch(`${import.meta.env.VITE_API_URL}/referrals/plan`)
+      .then(r => r.json())
+      .then(d => setReferralPlan(d.data || null))
+      .catch(() => setReferralPlan(null));
     if (currentUser) {
       fetchActiveSubscriptions();
       referralAPI.getMy().then(res => {
@@ -250,11 +274,18 @@ const Pricing = () => {
     return () => { document.body.style.overflow = ''; };
   }, [anyModalOpen, showDurationModal, showPaymentMethodModal]);
 
-  const handleSelectPlan = (plan, event) => {
+  const handleSelectPlan = (plan, preSelectedOption, event) => {
     lastTriggerRef.current = event?.currentTarget || null;
     setSelectedPlan(plan);
-    setSelectedPlanOption(getPlanOptions(plan)[0] || null);
-    setShowDurationModal(true);
+    const allOptions = getPlanOptions(plan);
+    // Match the pre-selected option by _id or index, fall back to first
+    const matched = preSelectedOption
+      ? allOptions.find(o => o._id === preSelectedOption._id || o.name === preSelectedOption.name) || allOptions[0]
+      : allOptions[0];
+    setSelectedPlanOption(matched || null);
+    // Skip duration modal — user already picked on the card
+    setShowDurationModal(false);
+    setShowPaymentMethodModal(true);
   };
 
   const closeDurationModal = () => { setShowDurationModal(false); setSelectedPlan(null); setSelectedPlanOption(null); };
@@ -267,9 +298,14 @@ const Pricing = () => {
     navigate('/dashboard', { replace: true, state: { paymentSubmitted: true, planName: name, planDuration: dur } });
   };
 
+  const startRazorpayWithBilling = () => {
+    setShowPaymentMethodModal(false);
+    setShowBillingModal(true);
+  };
+
   const createOrder = async () => {
     if (!selectedPlan || !selectedPlanOption) return;
-    setShowPaymentMethodModal(false); setError(''); setLoading(true);
+    setShowBillingModal(false); setError(''); setLoading(true);
     try {
       await loadRazorpayScript();
       const price = Number(selectedPlanOption.price);
@@ -308,17 +344,19 @@ const Pricing = () => {
         razorpay_payment_id: paymentResponse.razorpay_payment_id,
         razorpay_signature: paymentResponse.razorpay_signature,
         planId: selectedPlan._id, duration: selectedPlanOption?.name,
-        durationMonths: selectedPlanOption?.months, planOptionId: selectedPlanOption?._id
+        durationMonths: selectedPlanOption?.months, planOptionId: selectedPlanOption?._id,
+        billingName: billingInfo.name,
+        billingState: billingInfo.state,
       });
       navigate('/dashboard', { replace: true, state: { justPurchased: true, paymentId: paymentResponse.razorpay_payment_id } });
     } catch (e) { setError(e.response?.data?.message || 'Payment verification failed'); }
     finally { document.body.classList.remove('razorpay-active'); setLoading(false); }
   };
 
-  // Split plans: RA = not IA, hide IA entirely
+  // Split plans: RA = not IA, not MP, not referral
   const raPlans = plans.filter(p => {
     const st = String(p.serviceType || '').toUpperCase();
-    return st !== 'IA' && st !== 'MP';
+    return st !== 'IA' && st !== 'MP' && !p.isReferralPlan;
   });
 
   const isActive = (plan) => activeSubscriptions.some(s => s.subscription?._id === plan._id || s.subscription?.name === plan.name);
@@ -411,45 +449,54 @@ const Pricing = () => {
         {/* ══ Referral ══════════════════════════════════════════════════════════ */}
         {pricingTab === 'referral' && (
           <section className="px-section">
-            <div className="px-referral-wrap">
-              <div className="px-referral-card">
-                <div className="px-referral-icon">🎁</div>
-                <h3>Referral Program</h3>
-                <div className="px-referral-steps">
-                  <div className="px-ref-step">
-                    <div className="px-ref-num">1</div>
-                    <div>
-                      <strong>Get a code</strong>
-                      <p>Ask a friend who uses InvestKaps for their referral code.</p>
-                    </div>
-                  </div>
-                  <div className="px-ref-step">
-                    <div className="px-ref-num">2</div>
-                    <div>
-                      <strong>Enter at checkout</strong>
-                      <p>When you select any plan, enter the code at the payment step to unlock a discount.</p>
-                    </div>
-                  </div>
-                  <div className="px-ref-step">
-                    <div className="px-ref-num">3</div>
-                    <div>
-                      <strong>Both benefit</strong>
-                      <p>You get a discount and your friend gets rewarded too.</p>
-                    </div>
-                  </div>
-                </div>
-                {userReferralCode && (
-                  <div className="px-ref-used">
-                    <span style={{ color: '#16a34a', fontWeight: 700 }}>✓</span>
-                    You used referral code <strong>{userReferralCode}</strong>
-                  </div>
-                )}
-                <p className="px-ref-cta-label">Pick a plan and enter your referral code at checkout.</p>
-                <button className="px-cta px-cta--mp" style={{ display: 'inline-flex', width: 'auto', padding: '.75rem 2rem' }} onClick={() => setPricingTab('ra')}>
-                  Browse Plans <FaArrowRight />
-                </button>
+            {referralPlan === undefined ? (
+              <div className="px-loading"><div className="px-spinner" /><p>Loading…</p></div>
+            ) : referralPlan === null ? (
+              <div className="px-empty">
+                This plan is being set up — check back soon. Every friend you refer will earn you a free month of access.
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="px-cards">
+                  <PlanCard
+                    plan={{
+                      ...referralPlan,
+                      planOptions: [{ name: 'Free — Referral Reward', price: 0, months: 1 }],
+                    }}
+                    idx={0}
+                    totalPlans={1}
+                    active={!!(referralInfo?.referralPlanSub && new Date(referralInfo.referralPlanSub.endDate) > new Date())}
+                    onSelect={() => {}}
+                    ctaLabel={
+                      referralInfo?.unclaimedMonths > 0
+                        ? `Claim ${referralInfo.unclaimedMonths} Month${referralInfo.unclaimedMonths > 1 ? 's' : ''} — Go to Dashboard`
+                        : 'Earn by Referring Friends'
+                    }
+                  />
+                </div>
+                <div style={{ marginTop: '1.25rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '1rem 1.25rem' }}>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.65rem' }}>How to earn this plan</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {[
+                      'Find your referral code in your profile.',
+                      'Share it with friends — when they purchase any plan using your code, you earn 1 free month.',
+                      'Months accumulate — claim them from your dashboard whenever you want.',
+                    ].map((step, i) => (
+                      <div key={i} style={{ display: 'flex', gap: '0.65rem', alignItems: 'flex-start', fontSize: '0.875rem', color: '#475569' }}>
+                        <span style={{ fontWeight: 700, color: '#1e3a5f', minWidth: 18 }}>{i + 1}.</span>
+                        <span>{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {referralInfo && (
+                    <div style={{ marginTop: '0.9rem', paddingTop: '0.9rem', borderTop: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '0.82rem', color: '#64748b' }}>Total referred: <strong style={{ color: '#1e293b' }}>{referralInfo.totalReferred || 0}</strong></span>
+                      <span style={{ fontSize: '0.82rem', color: '#64748b' }}>Months to claim: <strong style={{ color: '#1e293b' }}>{referralInfo.unclaimedMonths || 0}</strong></span>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </section>
         )}
       </div>
@@ -498,7 +545,7 @@ const Pricing = () => {
               <button className="duration-close-btn" onClick={() => setShowPaymentMethodModal(false)} aria-label="Close"><FaClose /></button>
             </div>
             <div className="payment-method-options">
-              <button type="button" className="payment-method-card" onClick={createOrder}>
+              <button type="button" className="payment-method-card" onClick={startRazorpayWithBilling}>
                 <div className="payment-method-icon">💳</div>
                 <span className="payment-method-title">Razorpay</span>
                 <span className="payment-method-description">Card, UPI, Net Banking, Wallet</span>
@@ -511,6 +558,51 @@ const Pricing = () => {
                 <span className="payment-method-btn">Pay via QR Code</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Razorpay Billing Info Modal ──────────────────────────────────────── */}
+      {showBillingModal && selectedPlan && (
+        <div className="duration-modal-overlay" role="presentation">
+          <div className="duration-modal" role="dialog" aria-modal="true" aria-labelledby="billing-title" tabIndex={-1}
+            style={{ maxWidth: 440 }}>
+            <div className="duration-modal-header">
+              <div>
+                <h2 id="billing-title">Billing Details</h2>
+                <p className="modal-description">These details will appear on your invoice.</p>
+              </div>
+              <button className="duration-close-btn" onClick={() => { setShowBillingModal(false); setShowPaymentMethodModal(true); }} aria-label="Close"><FaClose /></button>
+            </div>
+            <form onSubmit={e => { e.preventDefault(); createOrder(); }} style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '0 0 8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label htmlFor="rzp-billing-name" style={{ fontSize: 13, fontWeight: 600, color: '#334155' }}>Full Name (for invoice) *</label>
+                <input
+                  id="rzp-billing-name"
+                  type="text"
+                  value={billingInfo.name}
+                  onChange={e => setBillingInfo(b => ({ ...b, name: e.target.value }))}
+                  placeholder="Your legal full name"
+                  required
+                  style={{ padding: '10px 12px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 14, outline: 'none' }}
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label htmlFor="rzp-billing-state" style={{ fontSize: 13, fontWeight: 600, color: '#334155' }}>State *</label>
+                <input
+                  id="rzp-billing-state"
+                  type="text"
+                  value={billingInfo.state}
+                  onChange={e => setBillingInfo(b => ({ ...b, state: e.target.value }))}
+                  placeholder="e.g. Delhi, Maharashtra, Karnataka"
+                  required
+                  style={{ padding: '10px 12px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 14, outline: 'none' }}
+                />
+              </div>
+              <button type="submit" className="btn-primary" style={{ marginTop: 4, width: '100%', padding: '12px', borderRadius: 8, fontSize: 15, fontWeight: 600 }}>
+                Continue to Payment
+              </button>
+            </form>
           </div>
         </div>
       )}

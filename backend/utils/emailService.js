@@ -201,7 +201,7 @@ const sendPaymentRequestReceivedEmail = async (user, paymentRequest, options = {
       </td></tr>
     </table>
 
-    <p style="margin:0;color:#64748b;font-size:13px;line-height:1.6;">Our team will verify your payment and activate your subscription within <strong>24 hours</strong>. You'll receive another email once it's processed.</p>
+    <p style="margin:0;color:#64748b;font-size:13px;line-height:1.6;">Our team will verify your payment within <strong>24 hours</strong>. You will receive a separate email once it is processed. If you have not yet completed all onboarding steps, your subscription will be held and will start automatically once everything is done.</p>
   `);
 
   return sendEmail({
@@ -214,38 +214,125 @@ const sendPaymentRequestReceivedEmail = async (user, paymentRequest, options = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 2. Payment request APPROVED  (sent to user)
+// 2a. Payment VERIFIED — subscription on hold (pending onboarding steps)
 // ─────────────────────────────────────────────────────────────────────────────
-const sendPaymentApprovedEmail = async (user, paymentRequest, userSubscription, options = {}) => {
+const sendPaymentApprovedEmail = async (user, paymentRequest, userSubscription, invoiceAttachment = null, options = {}) => {
   const serviceType = normalizeServiceType(userSubscription?.serviceType || paymentRequest?.serviceType);
+  const isOnHold = userSubscription?.status === 'pending';
+
+  if (isOnHold) {
+    const html = wrap(`
+      <h2 style="margin:0 0 6px;color:#1e293b;font-size:20px;">Payment Verified</h2>
+      <p style="margin:0 0 20px;color:#64748b;font-size:14px;">Hi ${user.name || user.email}, we have verified your payment successfully. Thank you!</p>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;margin-bottom:20px;">
+        <tr><td style="padding:18px 22px;">
+          <p style="margin:0 0 8px;font-size:13px;color:#92400e;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Payment Confirmed</p>
+          <table width="100%" cellpadding="4" cellspacing="0">
+            <tr><td style="color:#475569;font-size:13px;">Plan</td><td style="color:#1e293b;font-size:13px;font-weight:600;">${paymentRequest.planName || 'N/A'}</td></tr>
+            <tr><td style="color:#475569;font-size:13px;">Amount Paid</td><td style="color:#1e293b;font-size:13px;font-weight:600;">₹${paymentRequest.amount}</td></tr>
+            <tr><td style="color:#475569;font-size:13px;">Duration</td><td style="color:#1e293b;font-size:13px;font-weight:600;">${paymentRequest.duration || 'N/A'}</td></tr>
+            <tr><td style="color:#475569;font-size:13px;">Transaction ID</td><td style="color:#1e293b;font-size:13px;font-weight:600;">${paymentRequest.transactionId}</td></tr>
+            <tr><td style="color:#475569;font-size:13px;">Status</td><td>${badge('On Hold', '#92400e', '#fef3c7')}</td></tr>
+          </table>
+        </td></tr>
+      </table>
+
+      <p style="margin:0 0 16px;color:#64748b;font-size:13px;line-height:1.6;">Your subscription is currently on hold because some onboarding steps are still pending. Please log in and complete the following to activate your plan:</p>
+      <ul style="margin:0 0 16px;padding-left:20px;color:#475569;font-size:13px;line-height:2;">
+        <li>PAN KYC verification</li>
+        <li>Mobile number verification</li>
+        <li>Agreement e-signing</li>
+      </ul>
+      <p style="margin:0 0 20px;color:#64748b;font-size:13px;line-height:1.6;">Your subscription will start automatically the moment all steps are completed. No further action is needed once you are done.</p>
+      ${btn('Complete Onboarding', (process.env.FRONTEND_URL || 'https://investkaps.com') + '/dashboard')}
+    `);
+
+    return sendEmail({
+      to: user.email,
+      subject: 'Payment Verified — Complete Your Onboarding to Activate',
+      html,
+      serviceType,
+      allowUnsubscribed: options.allowUnsubscribed,
+      attachments: invoiceAttachment
+        ? [{ filename: invoiceAttachment.filename, content: invoiceAttachment.buffer, contentType: 'application/pdf' }]
+        : undefined,
+    });
+  }
+
+  // Subscription activated immediately (all steps were already done)
   const endDate = userSubscription?.endDate
     ? new Date(userSubscription.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
     : 'N/A';
 
   const html = wrap(`
-    <h2 style="margin:0 0 6px;color:#1e293b;font-size:20px;">🎉 Payment Approved!</h2>
-    <p style="margin:0 0 20px;color:#64748b;font-size:14px;">Hi ${user.name || user.email}, your payment has been verified and your subscription is now <strong>active</strong>.</p>
+    <h2 style="margin:0 0 6px;color:#1e293b;font-size:20px;">Payment Verified — Plan Started!</h2>
+    <p style="margin:0 0 20px;color:#64748b;font-size:14px;">Hi ${user.name || user.email}, your payment has been verified and your subscription is now active. Welcome aboard!</p>
 
     <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;margin-bottom:20px;">
       <tr><td style="padding:18px 22px;">
-        <p style="margin:0 0 8px;font-size:13px;color:#16a34a;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Subscription Activated</p>
+        <p style="margin:0 0 8px;font-size:13px;color:#16a34a;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Subscription Details</p>
         <table width="100%" cellpadding="4" cellspacing="0">
           <tr><td style="color:#475569;font-size:13px;">Plan</td><td style="color:#1e293b;font-size:13px;font-weight:600;">${paymentRequest.planName || 'N/A'}</td></tr>
           <tr><td style="color:#475569;font-size:13px;">Amount Paid</td><td style="color:#1e293b;font-size:13px;font-weight:600;">₹${paymentRequest.amount}</td></tr>
-          <tr><td style="color:#475569;font-size:13px;">Duration</td><td style="color:#1e293b;font-size:13px;font-weight:600;">${paymentRequest.duration}</td></tr>
+          <tr><td style="color:#475569;font-size:13px;">Duration</td><td style="color:#1e293b;font-size:13px;font-weight:600;">${paymentRequest.duration || 'N/A'}</td></tr>
           <tr><td style="color:#475569;font-size:13px;">Valid Until</td><td style="color:#1e293b;font-size:13px;font-weight:600;">${endDate}</td></tr>
           <tr><td style="color:#475569;font-size:13px;">Status</td><td>${badge('Active', '#15803d', '#dcfce7')}</td></tr>
         </table>
       </td></tr>
     </table>
 
-    <p style="margin:0;color:#64748b;font-size:13px;line-height:1.6;">Log in to your dashboard to view stock recommendations, manage your account, and explore all plan features.</p>
+    <p style="margin:0 0 20px;color:#64748b;font-size:13px;line-height:1.6;">Log in to your dashboard to view stock recommendations and explore all plan features.</p>
     ${btn('Go to Dashboard', (process.env.FRONTEND_URL || 'https://investkaps.com') + '/dashboard')}
   `);
 
   return sendEmail({
     to: user.email,
-    subject: '🎉 Payment Approved — Your Subscription is Active!',
+    subject: 'Payment Verified — Your Plan Has Started!',
+    html,
+    serviceType,
+    allowUnsubscribed: options.allowUnsubscribed,
+    attachments: invoiceAttachment
+      ? [{ filename: invoiceAttachment.filename, content: invoiceAttachment.buffer, contentType: 'application/pdf' }]
+      : undefined,
+  });
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2b. Subscription STARTED — sent when pending sub activates after onboarding
+// ─────────────────────────────────────────────────────────────────────────────
+const sendSubscriptionStartedEmail = async (user, userSubscription, options = {}) => {
+  const serviceType = normalizeServiceType(userSubscription?.serviceType);
+  const endDate = userSubscription?.endDate
+    ? new Date(userSubscription.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+    : 'N/A';
+  const startDate = userSubscription?.startDate
+    ? new Date(userSubscription.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+    : 'N/A';
+
+  const html = wrap(`
+    <h2 style="margin:0 0 6px;color:#1e293b;font-size:20px;">Your Plan is Now Active!</h2>
+    <p style="margin:0 0 20px;color:#64748b;font-size:14px;">Hi ${user.name || user.email}, you have completed all onboarding steps and your subscription is now live. Start exploring!</p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;margin-bottom:20px;">
+      <tr><td style="padding:18px 22px;">
+        <p style="margin:0 0 8px;font-size:13px;color:#16a34a;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Subscription Active</p>
+        <table width="100%" cellpadding="4" cellspacing="0">
+          <tr><td style="color:#475569;font-size:13px;">Plan</td><td style="color:#1e293b;font-size:13px;font-weight:600;">${userSubscription?.subscription?.name || 'N/A'}</td></tr>
+          <tr><td style="color:#475569;font-size:13px;">Started On</td><td style="color:#1e293b;font-size:13px;font-weight:600;">${startDate}</td></tr>
+          <tr><td style="color:#475569;font-size:13px;">Valid Until</td><td style="color:#1e293b;font-size:13px;font-weight:600;">${endDate}</td></tr>
+          <tr><td style="color:#475569;font-size:13px;">Status</td><td>${badge('Active', '#15803d', '#dcfce7')}</td></tr>
+        </table>
+      </td></tr>
+    </table>
+
+    <p style="margin:0 0 20px;color:#64748b;font-size:13px;line-height:1.6;">Your dashboard is ready. Head over to view stock recommendations and make the most of your plan.</p>
+    ${btn('Go to Dashboard', (process.env.FRONTEND_URL || 'https://investkaps.com') + '/dashboard')}
+  `);
+
+  return sendEmail({
+    to: user.email,
+    subject: 'Your InvestKaps Plan is Now Active!',
     html,
     serviceType,
     allowUnsubscribed: options.allowUnsubscribed
@@ -314,15 +401,20 @@ const sendNewRecommendationEmail = async (user, recommendation, serviceType = 'R
         </table>
         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:18px;">
           <tr>
-            <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);">
+            <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 8px 0 0;">
               <p style="margin:0;color:#bfdbfe;font-size:11px;font-weight:600;text-transform:uppercase;">LTP</p>
               <p style="margin:4px 0 0;color:#ffffff;font-size:18px;font-weight:700;">₹${recommendation.currentPrice}</p>
             </td>
-            <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);">
+            ${recommendation.buyingRangeLow || recommendation.buyingRangeHigh ? `
+            <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 8px;">
+              <p style="margin:0;color:#bfdbfe;font-size:11px;font-weight:600;text-transform:uppercase;">Buy Range</p>
+              <p style="margin:4px 0 0;color:#fde68a;font-size:15px;font-weight:700;">₹${recommendation.buyingRangeLow || '—'} – ₹${recommendation.buyingRangeHigh || '—'}</p>
+            </td>` : ''}
+            <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 8px;">
               <p style="margin:0;color:#bfdbfe;font-size:11px;font-weight:600;text-transform:uppercase;">Target</p>
               <p style="margin:4px 0 0;color:#6ee7b7;font-size:18px;font-weight:700;">₹${recommendation.targetPrice}</p>
             </td>
-            <td style="text-align:center;">
+            <td style="text-align:center;padding:0 0 0 8px;">
               <p style="margin:0;color:#bfdbfe;font-size:11px;font-weight:600;text-transform:uppercase;">Stop Loss</p>
               <p style="margin:4px 0 0;color:#fca5a5;font-size:18px;font-weight:700;">₹${recommendation.stopLoss || 'N/A'}</p>
             </td>
@@ -441,6 +533,7 @@ export {
   sendEmail,
   sendPaymentRequestReceivedEmail,
   sendPaymentApprovedEmail,
+  sendSubscriptionStartedEmail,
   sendPaymentRejectedEmail,
   sendNewRecommendationEmail,
   sendUpdatedRecommendationEmail,

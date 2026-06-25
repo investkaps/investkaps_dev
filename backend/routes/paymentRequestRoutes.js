@@ -9,11 +9,25 @@ import Referral from '../model/Referral.js';
 import { uploadImage, deleteImage  } from '../config/cloudinary.js';
 import { verifyToken  } from '../middleware/auth.js';
 import { checkRole  } from '../middleware/roleAuth.js';
+import { generateInvoiceNumber, generateInvoicePDF, uploadInvoicePDF } from '../utils/invoiceGenerator.js';
+import KycVerification from '../model/KycVerification.js';
 import {
   sendPaymentRequestReceivedEmail,
   sendPaymentApprovedEmail,
+  sendSubscriptionStartedEmail,
   sendPaymentRejectedEmail
 } from '../utils/emailService.js';
+
+const generateReferralCode = async () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  for (let attempt = 0; attempt < 5; attempt++) {
+    let code = '';
+    for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    const existing = await User.findOne({ 'referral.code': code }).lean();
+    if (!existing) return code;
+  }
+  return 'R' + Date.now().toString(36).toUpperCase().slice(-7);
+};
 
 // Configure multer for memory storage
 const storage = multer.memoryStorage();
@@ -63,7 +77,7 @@ const getDurationLabel = ({ planName, duration, planOption }) => {
 // Submit payment request
 router.post('/submit', upload.single('transactionImage'), async (req, res) => {
   try {
-    const { senderName, transactionId, planId, planName, duration, durationMonths, planOptionId, amount, userId, serviceType = 'RA', paymentMethod = 'qr', referralCode } = req.body;
+    const { senderName, billingName, billingState, transactionId, planId, planName, duration, durationMonths, planOptionId, amount, userId, serviceType = 'RA', paymentMethod = 'qr', referralCode } = req.body;
 
     // For IA payments, planId and duration are not required
     const isIaPayment = serviceType === 'IA';
@@ -167,6 +181,8 @@ router.post('/submit', upload.single('transactionImage'), async (req, res) => {
       durationMonths: !isIaPayment ? getDurationMonths({ duration, durationMonths, planOption }) : undefined,
       amount: parseFloat(amount),
       senderName,
+      billingName: billingName || senderName,
+      billingState: billingState || '',
       transactionId,
       transactionImageUrl: uploadResult.url,
       transactionImagePublicId: uploadResult.publicId,
@@ -240,6 +256,7 @@ router.get('/all', verifyToken, checkRole('admin'), async (req, res) => {
       .populate('user', 'name email clerkId')
       .populate('plan', 'name packageCode')
       .populate('approvedBy', 'name email')
+      .populate('userSubscription', 'status startDate endDate')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -322,10 +339,18 @@ router.post('/approve/:id', verifyToken, checkRole('admin'), async (req, res) =>
         });
       }
 
-      const startDate = new Date();
-      let endDate = new Date();
+      // Check if user has completed all mandatory onboarding steps
+      const payingUser = await User.findById(paymentRequest.user._id).select('verificationStatus');
+      const vs = payingUser?.verificationStatus || {};
+      const onboardingComplete = vs.panKyc === true && vs.phone === true && vs.esign === true;
+
+      const startDate = onboardingComplete ? new Date() : null;
+      let endDate = null;
       const durationMonths = Number(paymentRequest.durationMonths) || LEGACY_PLAN_MONTHS[paymentRequest.duration] || 1;
-      endDate.setMonth(endDate.getMonth() + durationMonths);
+      if (onboardingComplete) {
+        endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + durationMonths);
+      }
 
       userSubscription = new UserSubscription({
         user: paymentRequest.user._id,
@@ -338,7 +363,7 @@ router.post('/approve/:id', verifyToken, checkRole('admin'), async (req, res) =>
         startDate,
         endDate,
         price: paymentRequest.amount,
-        status: 'active',
+        status: onboardingComplete ? 'active' : 'pending',
         paymentMethod: 'qr_code',
         paymentRequestId: paymentRequest._id
       });
@@ -369,54 +394,21 @@ router.post('/approve/:id', verifyToken, checkRole('admin'), async (req, res) =>
 
           if (referralPlan) {
             const referrerId = pendingReferral.referrer;
-
-            // Find or create referrer's Referral Plan subscription
-            let referralSub = await UserSubscription.findOne({
-              user: referrerId,
-              subscription: referralPlan._id,
-            });
-
             const now = new Date();
-            if (!referralSub) {
-              // First referral — create the subscription starting now + 1 month
-              const endDate = new Date(now);
-              endDate.setMonth(endDate.getMonth() + 1);
 
-              referralSub = new UserSubscription({
-                user: referrerId,
-                subscription: referralPlan._id,
-                serviceType: 'RA',
-                status: 'active',
-                startDate: now,
-                endDate,
-                price: 0,
-                duration: 'monthly',
-                paymentMethod: 'manual',
-              });
-              await referralSub.save();
-
-              // Link on the referrer's user doc
-              await User.updateOne(
-                { _id: referrerId },
-                { $set: { 'referral.referralPlanSub': referralSub._id } }
-              );
-            } else {
-              // Subsequent referrals — extend by 1 month
-              const base = referralSub.endDate > now ? referralSub.endDate : now;
-              base.setMonth(base.getMonth() + 1);
-              referralSub.endDate = base;
-              if (referralSub.status !== 'active') referralSub.status = 'active';
-              await referralSub.save();
-            }
+            // Increment both totalReferred (permanent) and unclaimedMonths (claimable balance)
+            await User.updateOne(
+              { _id: referrerId },
+              { $inc: { 'referral.unclaimedMonths': 1, 'referral.totalReferred': 1 } }
+            );
 
             // Mark referral as rewarded
             pendingReferral.status           = 'rewarded';
             pendingReferral.rewardedAt        = now;
             pendingReferral.paymentRequestId  = paymentRequest._id;
-            pendingReferral.referralPlanSubId = referralSub._id;
             await pendingReferral.save();
 
-            console.log(`[REFERRAL] Rewarded referrer=${referrerId}; plan extended to ${referralSub.endDate}`);
+            console.log(`[REFERRAL] Rewarded referrer=${referrerId}; +1 unclaimed month added`);
           } else {
             console.warn('[REFERRAL] No referral plan found (isReferralPlan=true). Reward skipped.');
           }
@@ -427,16 +419,81 @@ router.post('/approve/:id', verifyToken, checkRole('admin'), async (req, res) =>
       }
     }
 
-    // Email the user that their payment was approved (fire-and-forget)
-    if (paymentRequest.user?.email) {
-      sendPaymentApprovedEmail(paymentRequest.user, paymentRequest, userSubscription).catch(err =>
-        console.error('Failed to send payment-approved email:', err)
-      );
+    // ── Generate invoice ──────────────────────────────────────────────────────
+    let invoicePdfUrl = null;
+    let invoicePdfBuffer = null;
+    let invoiceNumber = null;
+    try {
+      // Fetch PAN from latest KYC record
+      let pan = null;
+      try {
+        const kyc = await KycVerification.findOne({ user: paymentRequest.user._id, status: 'completed' })
+          .sort({ createdAt: -1 }).select('pan').lean();
+        pan = kyc?.pan || null;
+      } catch {}
+
+      invoiceNumber = await generateInvoiceNumber(PaymentRequest);
+      invoicePdfBuffer = await generateInvoicePDF({
+        invoiceNumber,
+        date: new Date(),
+        serviceType: paymentRequest.serviceType || 'RA',
+        billingName: paymentRequest.billingName || paymentRequest.senderName,
+        billingState: paymentRequest.billingState || '',
+        pan,
+        email: paymentRequest.user.email,
+        phone: paymentRequest.user.profile?.phone || '',
+        transactionId: paymentRequest.transactionId,
+        packageName: paymentRequest.planName,
+        duration: paymentRequest.duration,
+        amount: paymentRequest.amount,
+        coupon: 0,
+      });
+
+      const uploaded = await uploadInvoicePDF(invoicePdfBuffer, invoiceNumber);
+      invoicePdfUrl = uploaded.url;
+
+      await PaymentRequest.findByIdAndUpdate(paymentRequest._id, {
+        invoiceNumber,
+        invoicePdfUrl: uploaded.url,
+        invoicePdfPublicId: uploaded.publicId,
+      });
+
+      console.log(`[INVOICE] Generated ${invoiceNumber} for payment ${paymentRequest._id}`);
+    } catch (invErr) {
+      console.error('[INVOICE] Generation failed (non-blocking):', invErr.message);
     }
 
+    // Generate referral code on first plan purchase (if they don't already have one)
+    if (paymentRequest.user && !paymentRequest.user.referral?.code) {
+      try {
+        const code = await generateReferralCode();
+        await User.updateOne(
+          { _id: paymentRequest.user._id },
+          { $set: { 'referral.code': code } }
+        );
+        console.log(`[REFERRAL] Generated referral code ${code} for user ${paymentRequest.user._id}`);
+      } catch (codeErr) {
+        console.error('[REFERRAL] Failed to generate referral code:', codeErr.message);
+      }
+    }
+
+    // Email the user that their payment was approved, attach invoice PDF (fire-and-forget)
+    if (paymentRequest.user?.email) {
+      sendPaymentApprovedEmail(
+        paymentRequest.user,
+        paymentRequest,
+        userSubscription,
+        invoicePdfBuffer ? { buffer: invoicePdfBuffer, filename: `Invoice_${invoiceNumber || 'INV'}.pdf` } : null
+      ).catch(err => console.error('Failed to send payment-approved email:', err));
+    }
+
+    const subStatus = userSubscription?.status || 'active';
     res.json({
       success: true,
-      message: 'Payment request approved successfully',
+      message: subStatus === 'pending'
+        ? 'Payment approved. Subscription is on hold until user completes all onboarding steps.'
+        : 'Payment approved and subscription activated.',
+      subscriptionStatus: subStatus,
       data: {
         paymentRequest,
         userSubscription
@@ -449,6 +506,76 @@ router.post('/approve/:id', verifyToken, checkRole('admin'), async (req, res) =>
       message: 'Failed to approve payment request',
       error: error.message
     });
+  }
+});
+
+// Get pending subscription for a user (payment approved but onboarding incomplete)
+router.get('/pending-subscription/:clerkId', verifyToken, async (req, res) => {
+  try {
+    const { clerkId } = req.params;
+    if (req.clerkId !== clerkId && req.user?.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+    const user = await User.findOne({ clerkId }).select('_id');
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const sub = await UserSubscription.findOne({ user: user._id, status: 'pending' })
+      .populate('subscription')
+      .sort({ createdAt: -1 });
+
+    return res.json({ success: true, data: sub || null });
+  } catch (error) {
+    console.error('Error fetching pending subscription:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch pending subscription' });
+  }
+});
+
+// Activate pending subscriptions once all onboarding steps are done (called by frontend after each step)
+router.post('/activate-pending/:clerkId', verifyToken, async (req, res) => {
+  try {
+    const { clerkId } = req.params;
+
+    // Users can only trigger activation for themselves
+    if (req.clerkId !== clerkId && req.user?.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+
+    const user = await User.findOne({ clerkId }).select('name email verificationStatus');
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const vs = user.verificationStatus || {};
+    if (!(vs.panKyc === true && vs.phone === true && vs.esign === true)) {
+      return res.json({ success: true, activated: false, message: 'Onboarding not yet complete' });
+    }
+
+    // Find all pending subscriptions for this user and activate them
+    const pendingSubs = await UserSubscription.find({ user: user._id, status: 'pending' });
+    if (!pendingSubs.length) {
+      return res.json({ success: true, activated: false, message: 'No pending subscriptions found' });
+    }
+
+    const now = new Date();
+    for (const sub of pendingSubs) {
+      sub.status = 'active';
+      sub.startDate = now;
+      const end = new Date(now);
+      end.setMonth(end.getMonth() + (sub.durationMonths || 1));
+      sub.endDate = end;
+      await sub.save();
+
+      // Send "plan started" email (fire-and-forget)
+      if (user.email) {
+        const populatedSub = await UserSubscription.findById(sub._id).populate('subscription', 'name');
+        sendSubscriptionStartedEmail(user, populatedSub).catch(err =>
+          console.error('Failed to send subscription-started email:', err)
+        );
+      }
+    }
+
+    return res.json({ success: true, activated: true, count: pendingSubs.length, message: `${pendingSubs.length} subscription(s) activated.` });
+  } catch (error) {
+    console.error('Error activating pending subscriptions:', error);
+    res.status(500).json({ success: false, message: 'Failed to activate subscriptions', error: error.message });
   }
 });
 

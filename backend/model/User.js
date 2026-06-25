@@ -183,6 +183,16 @@ const UserSchema = new mongoose.Schema({
       ref: 'UserSubscription',
       default: null,
     },
+    // Total people successfully referred (ever) — only increments, never decrements
+    totalReferred: {
+      type: Number,
+      default: 0,
+    },
+    // Months earned but not yet claimed — increments on each reward, decrements on claim
+    unclaimedMonths: {
+      type: Number,
+      default: 0,
+    },
   },
   createdAt: {
     type: Date,

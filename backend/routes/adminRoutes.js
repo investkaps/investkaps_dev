@@ -1,6 +1,10 @@
 import express from 'express';
 const router = express.Router();
 import multer from 'multer';
+import { fileURLToPath } from 'url';
+import path from 'path';
+const __adminRoutesDir = path.dirname(fileURLToPath(import.meta.url));
+const KYC_LOGO_PATH = path.resolve(__adminRoutesDir, '../../frontend/public/logo.png');
 import { verifyToken  } from '../middleware/auth.js';
 import { checkRole  } from '../middleware/roleAuth.js';
 import User from '../model/User.js';
@@ -17,9 +21,12 @@ import {
   sendAdminMail
 } from '../services/adminMailService.js';
 import { uploadImage, uploadPDF } from '../config/cloudinary.js';
+import PDFDocument from 'pdfkit';
 import { fetchPanKyc } from '../services/kyc_client.js';
 import ModelPortfolio from '../model/ModelPortfolio.js';
+import PaymentRequest from '../model/PaymentRequest.js';
 import { extractCAMSStatus, isKYCVerified } from '../utils/camsStatusMapper.js';
+import { generateInvoiceNumber, generateInvoicePDF, uploadInvoicePDF } from '../utils/invoiceGenerator.js';
 
 const kycUpload = multer({
   storage: multer.memoryStorage(),
@@ -672,7 +679,26 @@ router.post('/users/:id/override-kyc-pan', verifyToken, checkRole('admin'), asyn
       camsStatusCode: statusMapping.rawCode,
       status: 'success',
       rawEc2Response: kycRaw,
-      camsDownloadData: { kycStatus: statusMapping.status, camsStatusCode: statusMapping.rawCode, fullName: kycData?.kycData?.[0]?.name, recordedAt: new Date() },
+      camsDownloadData: {
+        kycStatus: statusMapping.status,
+        camsStatusCode: statusMapping.rawCode,
+        statusDescription: statusMapping.description,
+        kycMode: kycData?.kycData?.[0]?.kycMode || null,
+        signFlag: kycData?.kycData?.[0]?.signFlag || null,
+        ipvFlag: kycData?.kycData?.[0]?.ipvFlag || null,
+        ipvDate: kycData?.kycData?.[0]?.ipvDate || null,
+        applicationNo: kycData?.kycData?.[0]?.appNo || null,
+        registrationDate: kycData?.kycData?.[0]?.date || null,
+        fullName: kycData?.kycData?.[0]?.name || null,
+        fatherName: kycData?.kycData?.[0]?.firtName || null,
+        gender: kycData?.kycData?.[0]?.gender || null,
+        nationality: kycData?.kycData?.[0]?.nationality || null,
+        address: kycData?.kycData?.[0]?.corAddress1 || null,
+        mobile: kycData?.kycData?.[0]?.mobileNo || null,
+        email: kycData?.kycData?.[0]?.email || null,
+        dob: kycData?.kycData?.[0]?.dob || null,
+        recordedAt: new Date(),
+      },
     });
     await record.save();
 
@@ -792,7 +818,7 @@ router.post(
  */
 router.get('/subscriptions/list', verifyToken, checkRole('admin'), async (_req, res) => {
   try {
-    const subs = await Subscription.find({ isActive: true }).select('name packageCode serviceType planOptions pricing').sort('displayOrder');
+    const subs = await Subscription.find({ isActive: true, isReferralPlan: { $ne: true } }).select('name packageCode serviceType planOptions pricing').sort('displayOrder');
     return res.status(200).json({ success: true, data: subs });
   } catch (err) {
     console.error('Admin subscription list error:', err);
@@ -961,6 +987,34 @@ router.get('/model-portfolios', verifyToken, checkRole('admin'), async (_req, re
   }
 });
 
+// ── Notify all active subscribers of a subscription plan ─────────────────────
+const notifyPortfolioSubscribers = async (subscriptionId, subject, buildHtml) => {
+  try {
+    const activeSubs = await UserSubscription.find({
+      subscription: subscriptionId,
+      status: 'active',
+      endDate: { $gt: new Date() },
+    }).populate('user', 'name email').lean();
+
+    const results = await Promise.allSettled(
+      activeSubs
+        .filter(s => s.user?.email)
+        .map(s => sendEmail({
+          to: s.user.email,
+          subject,
+          html: buildHtml(s.user.name || 'Valued Subscriber'),
+          serviceType: 'RA',
+        }))
+    );
+
+    const sent = results.filter(r => r.status === 'fulfilled').length;
+    const failed = results.filter(r => r.status === 'rejected').length;
+    console.log(`[PORTFOLIO EMAIL] subject="${subject}" sent=${sent} failed=${failed}`);
+  } catch (err) {
+    console.error('[PORTFOLIO EMAIL] Failed to notify subscribers:', err.message);
+  }
+};
+
 router.post('/model-portfolios', verifyToken, checkRole('admin'), async (req, res) => {
   try {
     const { name, description, subscription, stocks, isActive, displayOrder } = req.body;
@@ -974,6 +1028,55 @@ router.post('/model-portfolios', verifyToken, checkRole('admin'), async (req, re
       createdBy: req.user._id || req.user.id
     });
     await portfolio.save();
+
+    // Non-blocking email to all active subscribers
+    if (subscription && isActive !== false) {
+      const stockList = (stocks || []).map(s =>
+        `<tr>
+          <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;">${s.stockSymbol}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;">${s.stockName}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;">Rs. ${s.buyRange?.min ?? '—'} – ${s.buyRange?.max ?? '—'}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;">Rs. ${s.targetPrice1}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;">Rs. ${s.stopLoss}</td>
+        </tr>`
+      ).join('');
+
+      notifyPortfolioSubscribers(
+        subscription,
+        `New Model Portfolio Available: ${name}`,
+        (userName) => `
+          <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#334155;">
+            <div style="background:#1e3a5f;padding:24px;text-align:center;">
+              <h1 style="color:#fff;margin:0;font-size:22px;">InvestKaps</h1>
+              <p style="color:#c7d8f0;margin:6px 0 0;font-size:13px;">...driven by research, guided by expertise</p>
+            </div>
+            <div style="padding:24px;">
+              <p style="margin:0 0 12px;">Dear ${userName},</p>
+              <p style="margin:0 0 16px;">We have launched a new <strong>Model Portfolio</strong> for your subscription plan.</p>
+              <h2 style="color:#1e3a5f;font-size:18px;margin:0 0 4px;">${name}</h2>
+              <p style="color:#64748b;margin:0 0 20px;font-size:13px;">${description || ''}</p>
+              ${stockList ? `
+              <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;">
+                <thead>
+                  <tr style="background:#1e3a5f;color:#fff;">
+                    <th style="padding:8px 10px;text-align:left;">Symbol</th>
+                    <th style="padding:8px 10px;text-align:left;">Name</th>
+                    <th style="padding:8px 10px;text-align:left;">Buy Range</th>
+                    <th style="padding:8px 10px;text-align:left;">Target</th>
+                    <th style="padding:8px 10px;text-align:left;">Stop Loss</th>
+                  </tr>
+                </thead>
+                <tbody>${stockList}</tbody>
+              </table>` : ''}
+              <p style="color:#64748b;font-size:12px;margin:20px 0 0;">Log in to your InvestKaps dashboard to view the full portfolio details.</p>
+            </div>
+            <div style="background:#f8fafc;padding:16px;text-align:center;font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;">
+              InvestKaps | A-144, Vivek Vihar, Phase-1, Delhi-110095 | SEBI Reg: INH000016834
+            </div>
+          </div>`
+      );
+    }
+
     return res.status(201).json({ success: true, data: portfolio });
   } catch (err) {
     console.error('Error creating model portfolio:', err);
@@ -1021,10 +1124,503 @@ router.post('/model-portfolios/:id/rebalance', verifyToken, checkRole('admin'), 
     });
     if (stocks) portfolio.stocks = stocks;
     await portfolio.save();
+
+    // Non-blocking email to all active subscribers
+    const newStocks = stocks || portfolio.stocks;
+    const stockList = (Array.isArray(newStocks) ? newStocks : []).map(s =>
+      `<tr>
+        <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;">${s.stockSymbol}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;">${s.stockName}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;">Rs. ${s.buyRange?.min ?? '—'} – ${s.buyRange?.max ?? '—'}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;">Rs. ${s.targetPrice1}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;">Rs. ${s.stopLoss}</td>
+      </tr>`
+    ).join('');
+
+    notifyPortfolioSubscribers(
+      portfolio.subscription,
+      `Portfolio Rebalanced: ${portfolio.name}`,
+      (userName) => `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#334155;">
+          <div style="background:#1e3a5f;padding:24px;text-align:center;">
+            <h1 style="color:#fff;margin:0;font-size:22px;">InvestKaps</h1>
+            <p style="color:#c7d8f0;margin:6px 0 0;font-size:13px;">...driven by research, guided by expertise</p>
+          </div>
+          <div style="padding:24px;">
+            <p style="margin:0 0 12px;">Dear ${userName},</p>
+            <p style="margin:0 0 16px;">Your <strong>${portfolio.name}</strong> model portfolio has been <strong>rebalanced</strong>.</p>
+            ${changes ? `<div style="background:#f0f9ff;border-left:4px solid #1e3a5f;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#334155;">${changes}</div>` : ''}
+            ${stockList ? `
+            <p style="font-weight:600;margin:0 0 8px;color:#1e3a5f;">Updated Portfolio Holdings</p>
+            <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;">
+              <thead>
+                <tr style="background:#1e3a5f;color:#fff;">
+                  <th style="padding:8px 10px;text-align:left;">Symbol</th>
+                  <th style="padding:8px 10px;text-align:left;">Name</th>
+                  <th style="padding:8px 10px;text-align:left;">Buy Range</th>
+                  <th style="padding:8px 10px;text-align:left;">Target</th>
+                  <th style="padding:8px 10px;text-align:left;">Stop Loss</th>
+                </tr>
+              </thead>
+              <tbody>${stockList}</tbody>
+            </table>` : ''}
+            <p style="color:#64748b;font-size:12px;margin:20px 0 0;">Log in to your InvestKaps dashboard to view the complete updated portfolio.</p>
+          </div>
+          <div style="background:#f8fafc;padding:16px;text-align:center;font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;">
+            InvestKaps | A-144, Vivek Vihar, Phase-1, Delhi-110095 | SEBI Reg: INH000016834
+          </div>
+        </div>`
+    );
+
     return res.status(200).json({ success: true, data: portfolio });
   } catch (err) {
     console.error('Error rebalancing model portfolio:', err);
     return res.status(500).json({ success: false, error: err.message || 'Server error' });
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   ADMIN — KYC PDF export
+   ═══════════════════════════════════════════════════════════════ */
+
+// Lookup maps for CAMS codes
+const GENDER_MAP = { M: 'Male', F: 'Female', T: 'Transgender' };
+const OCCUPATION_MAP = {
+  '01': 'Private Sector', '02': 'Public Sector', '03': 'Business',
+  '04': 'Professional', '05': 'Agriculture', '06': 'Retired',
+  '07': 'Housewife', '08': 'Student', '99': 'Others',
+};
+const INCOME_MAP = {
+  '01': 'Below 1 Lakh', '02': '1-5 Lakh', '03': '5-10 Lakh',
+  '04': '10-25 Lakh', '05': '> 25 Lakh', '06': '> 1 Crore',
+};
+const MARITAL_MAP = { '01': 'Single', '02': 'Married', '03': 'Others' };
+const NATIONALITY_MAP = { '01': 'Indian' };
+const RES_STATUS_MAP = { R: 'Resident Individual', N: 'Non-Resident', F: 'Foreign National' };
+const KYC_MODE_MAP = {
+  '1': 'In-Person', '2': 'In-Person', '3': 'Aadhaar OTP',
+  '4': 'Aadhaar Biometric', '5': 'Online (eKYC)', '6': 'Video KYC',
+};
+
+const buildKycPDF = async (kycId) => {
+  const kyc = await KycVerification.findById(kycId).populate('user', 'name email').lean();
+  if (!kyc) throw Object.assign(new Error('KYC record not found'), { status: 404 });
+
+  const d = kyc.camsDownloadData || {};
+  // Raw CAMS API record — the most complete source
+  const r = kyc.rawEc2Response?.data?.kycData?.[0] || {};
+
+  // Helpers
+  const val = (v) => (v && String(v).trim()) || '—';
+  const pick = (...vs) => { for (const v of vs) { if (v && String(v).trim()) return String(v).trim(); } return null; };
+  const fmtDate = (s) => {
+    if (!s) return '—';
+    const dt = new Date(s);
+    return isNaN(dt) ? String(s) : dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+  const boolFlag = (v) => v === 'Y' ? 'Yes' : v === 'N' ? 'No' : v ? String(v) : null;
+
+  // Build full correspondence address from raw fields
+  const buildAddress = (a1, a2, a3, city, pin, state) => {
+    const parts = [a1, a2, a3, city, pin ? `PIN: ${pin}` : '', state ? `State Code: ${state}` : ''].filter(Boolean);
+    return parts.length ? parts.join(', ') : null;
+  };
+  const corAddr = buildAddress(r.corAddress1, r.corAddress2, r.corAddress3, r.corCity, r.corPincode, r.corState)
+    || d.address || null;
+  const perAddr = buildAddress(r.perAddress1, r.perAddress2, r.perAddress3, r.perCity, r.perPincode, r.perState) || null;
+
+  const NAVY = '#1e3a5f';
+  const LIGHT = '#f8fafc';
+  const BORDER = '#e2e8f0';
+  const TEXT = '#334155';
+  const MUTED = '#64748b';
+  const W = 595.28;
+  const M = 40;
+  const CW = W - M * 2;
+
+  const LOGO = KYC_LOGO_PATH;
+
+  const sections = [
+    {
+      title: 'User Information',
+      rows: [
+        ['Platform Name', kyc.user?.name],
+        ['Platform Email', kyc.user?.email],
+      ],
+    },
+    {
+      title: 'Personal Details',
+      rows: [
+        ['Full Name', pick(r.name, d.fullName, kyc.fullName)],
+        ["Father's / Guardian's Name", pick(r.firtName, d.fatherName)],
+        ['Date of Birth', pick(r.dob, d.dob, kyc.dob)],
+        ['Gender', GENDER_MAP[pick(r.gender, d.gender)] || pick(r.gender, d.gender)],
+        ['Marital Status', MARITAL_MAP[r.maritalStatus] || r.maritalStatus || null],
+        ['Nationality', NATIONALITY_MAP[pick(r.nationality, d.nationality)] || pick(r.nationality, d.nationality)],
+        ['Residential Status', RES_STATUS_MAP[r.resStatus] || r.resStatus || null],
+        ['Occupation', OCCUPATION_MAP[r.occupation] || r.occupation || null],
+        ['Income Slab', INCOME_MAP[r.income] || r.income || null],
+        ['PAN Number', pick(r.pan, kyc.pan)],
+        ['PAN Copy Submitted', boolFlag(r.panCopy)],
+        ['Aadhaar Linked', r.uidNo === 'Y' ? 'Yes' : r.uidNo === 'N' ? 'No' : null],
+      ],
+    },
+    {
+      title: 'Contact Details',
+      rows: [
+        ['Mobile', pick(r.mobileNo, d.mobile)],
+        ['Email', pick(r.email, d.email)],
+        ['Office Phone', r.offNo || null],
+        ['Residence Phone', r.resNo || null],
+      ],
+    },
+    {
+      title: 'Correspondence Address',
+      rows: [
+        ['Address Line 1', r.corAddress1 || null],
+        ['Address Line 2', r.corAddress2 || null],
+        ['Address Line 3', r.corAddress3 || null],
+        ['City', r.corCity || null],
+        ['Pincode', r.corPincode || null],
+        ['State Code', r.corState || null],
+        ['Country Code', r.corCountry || null],
+        ['Address (Combined)', !r.corAddress1 ? corAddr : null],
+      ],
+    },
+    {
+      title: 'Permanent Address',
+      rows: [
+        ['Address Line 1', r.perAddress1 || null],
+        ['Address Line 2', r.perAddress2 || null],
+        ['Address Line 3', r.perAddress3 || null],
+        ['City', r.perCity || null],
+        ['Pincode', r.perPincode || null],
+        ['State Code', r.perState || null],
+        ['Country Code', r.perCountry || null],
+      ],
+    },
+    {
+      title: 'KYC Verification Details',
+      rows: [
+        ['KYC Status', pick(d.kycStatus, kyc.kycStatus)],
+        ['Status Description', pick(d.statusDescription, r.errorDescription)],
+        ['KYC Mode', KYC_MODE_MAP[pick(r.kycMode, d.kycMode)] || pick(r.kycMode, d.kycMode)],
+        ['CAMS Status Code', pick(d.camsStatusCode, r.status, String(kyc.camsStatusCode || ''))],
+        ['Status Date', pick(r.statusDate, d.registrationDate)],
+        ['KRA Application No.', pick(d.applicationNo, r.appNo)],
+        ['Registration Date', pick(r.date, d.registrationDate)],
+        ['IPV Flag', boolFlag(pick(r.ipvFlag, d.ipvFlag))],
+        ['IPV Date', pick(r.ipvDate, d.ipvDate)],
+        ['Signature Available', boolFlag(pick(r.signature ? 'Y' : null, d.signFlag))],
+        ['Political Connection', r.polConn === 'NA' ? 'None' : r.polConn || null],
+        ['Internal Reference', r.internalRef || null],
+        ['KRA Info', r.kraInfo || null],
+        ['IOP Flag', r.iopFlag || null],
+        ['Version', r.versionNo || null],
+        ['Dump Date', r.dnlDdt || null],
+        ['Verified At', fmtDate(kyc.createdAt)],
+      ],
+    },
+    {
+      title: 'FATCA / Tax Details',
+      rows: [
+        ['FATCA Applicable', boolFlag(r.fatcaApplicableFlag)],
+        ['Birth Place', r.fatcaBirthPlace || null],
+        ['Birth Country', r.fatcaBirthCountry || null],
+        ['Country of Residence', r.fatcaCountryRes || null],
+        ['Country of Citizenship', r.fatcaCountryCityzenship || null],
+        ['FATCA Declaration Date', r.fatcaDateDeclaration || null],
+      ],
+    },
+  ];
+
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: 'A4', margin: 0 });
+    const chunks = [];
+    doc.on('data', c => chunks.push(c));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+
+    // Header
+    doc.rect(0, 0, W, 120).fill(NAVY);
+    const logoSize = 52;
+    try { doc.image(LOGO, W / 2 - logoSize / 2, 12, { width: logoSize, height: logoSize }); } catch {}
+    doc.fontSize(18).fillColor('#fff').font('Helvetica-Bold').text('investkaps', M, 72, { width: CW, align: 'center' });
+    doc.fontSize(9).fillColor('#c7d8f0').font('Helvetica').text('KYC Verification Report', M, 94, { width: CW, align: 'center' });
+
+    let y = 136;
+
+    // Meta strip — 3 rows
+    const appNo = pick(d.applicationNo, r.appNo);
+    doc.rect(M, y, CW, 50).fill(LIGHT).stroke(BORDER);
+    // Row 1 — Application No (prominent, full width)
+    doc.fontSize(8).fillColor(MUTED).font('Helvetica-Bold').text('KRA Application No.:', M + 10, y + 8);
+    doc.fontSize(8).fillColor(TEXT).font('Helvetica-Bold').text(appNo || '—', M + 120, y + 8);
+    // Row 2
+    doc.fontSize(8).fillColor(MUTED).font('Helvetica-Bold').text('PAN:', M + 10, y + 22);
+    doc.fontSize(8).fillColor(TEXT).font('Helvetica').text(val(kyc.pan), M + 38, y + 22);
+    doc.fontSize(8).fillColor(MUTED).font('Helvetica-Bold').text('Generated:', M + 10, y + 36);
+    doc.fontSize(8).fillColor(TEXT).font('Helvetica').text(fmtDate(new Date()), M + 68, y + 36);
+    const rightX = M + CW / 2 + 10;
+    doc.fontSize(8).fillColor(MUTED).font('Helvetica-Bold').text('Record ID:', rightX, y + 22);
+    doc.fontSize(8).fillColor(TEXT).font('Helvetica').text(String(kyc._id), rightX + 58, y + 22);
+    doc.fontSize(8).fillColor(MUTED).font('Helvetica-Bold').text('Status:', rightX, y + 36);
+    const statusColor = kyc.status === 'success' ? '#16a34a' : '#dc2626';
+    doc.fontSize(8).fillColor(statusColor).font('Helvetica-Bold').text(kyc.status === 'success' ? 'VERIFIED' : 'FAILED', rightX + 42, y + 36);
+    y += 64;
+
+    // Sections
+    for (const section of sections) {
+      // Filter blanks before rendering
+      const rows = section.rows.filter(([, v]) => v && String(v).trim());
+
+      // Skip entire section if no data (except User Information which always shows)
+      if (rows.length === 0 && section.title !== 'User Information') continue;
+
+      // Page break before section header if needed (leave 60pt buffer)
+      if (y > 750) {
+        doc.addPage({ size: 'A4', margin: 0 });
+        y = 40;
+      }
+
+      // Section header
+      doc.rect(M, y, CW, 22).fill(NAVY);
+      doc.fontSize(9).fillColor('#fff').font('Helvetica-Bold').text(section.title, M + 10, y + 6);
+      y += 22;
+
+      if (rows.length === 0) {
+        doc.rect(M, y, CW, 22).fill('#fff').strokeColor(BORDER).lineWidth(0.5).stroke();
+        doc.fontSize(8).fillColor(MUTED).font('Helvetica').text('No data available', M + 10, y + 7);
+        y += 22;
+      } else {
+        rows.forEach(([label, value], i) => {
+          const valStr = val(value);
+          // Estimate rows needed; long values wrap at ~65 chars per line at 8pt
+          const approxLines = Math.ceil(valStr.length / 65) || 1;
+          const rowH = Math.max(22, approxLines * 13 + 8);
+
+          // Mid-section page break
+          if (y + rowH > 800) {
+            doc.addPage({ size: 'A4', margin: 0 });
+            y = 40;
+            // Re-draw section header on new page
+            doc.rect(M, y, CW, 22).fill(NAVY);
+            doc.fontSize(9).fillColor('#fff').font('Helvetica-Bold').text(section.title + ' (cont.)', M + 10, y + 6);
+            y += 22;
+          }
+
+          doc.rect(M, y, CW, rowH).fill(i % 2 === 0 ? '#fff' : LIGHT).strokeColor(BORDER).lineWidth(0.3).stroke();
+          doc.fontSize(8).fillColor(MUTED).font('Helvetica-Bold').text(label, M + 10, y + 7, { width: 150 });
+          doc.fontSize(8).fillColor(TEXT).font('Helvetica').text(valStr, M + 165, y + 7, { width: CW - 175, lineGap: 2 });
+          y += rowH;
+        });
+      }
+      y += 8;
+    }
+
+    // Footer
+    doc.moveTo(M, y + 4).lineTo(M + CW, y + 4).strokeColor(BORDER).lineWidth(0.5).stroke();
+    doc.fontSize(7.5).fillColor(MUTED).font('Helvetica')
+      .text('This document is generated for internal compliance purposes only. Do not share externally without authorisation.', M, y + 10, { width: CW, align: 'center' });
+
+    doc.end();
+  });
+};
+
+/**
+ * POST /api/admin/kyc/:id/pdf/preview
+ * Stream KYC PDF directly — no save.
+ */
+router.post('/kyc/:id/pdf/preview', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const buf = await buildKycPDF(req.params.id);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="KYC_Preview.pdf"');
+    res.setHeader('Content-Length', buf.length);
+    return res.send(buf);
+  } catch (err) {
+    if (err.status === 404) return res.status(404).json({ success: false, error: err.message });
+    console.error('[KYC PDF PREVIEW]', err.message);
+    return res.status(500).json({ success: false, error: 'Failed to generate KYC PDF' });
+  }
+});
+
+/**
+ * POST /api/admin/kyc/:id/pdf/save
+ * Generate KYC PDF, save to Cloudinary, store URL on the KYC record.
+ */
+router.post('/kyc/:id/pdf/save', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const buf = await buildKycPDF(req.params.id);
+    const filename = `kyc_${req.params.id}`;
+    const uploaded = await uploadPDF(buf, filename, 'kyc-reports');
+    await KycVerification.findByIdAndUpdate(req.params.id, {
+      $set: { kycPdfUrl: uploaded.url, kycPdfPublicId: uploaded.publicId },
+    });
+    return res.json({ success: true, url: uploaded.url });
+  } catch (err) {
+    if (err.status === 404) return res.status(404).json({ success: false, error: err.message });
+    console.error('[KYC PDF SAVE]', err.message);
+    return res.status(500).json({ success: false, error: 'Failed to save KYC PDF' });
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   ADMIN — Invoice Management
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * GET /api/admin/invoices
+ * List all payment requests that have an invoice, paginated.
+ */
+router.get('/invoices', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search } = req.query;
+    const query = { invoiceNumber: { $exists: true, $ne: null } };
+
+    let results = await PaymentRequest.find(query)
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    if (search) {
+      const s = search.toLowerCase();
+      results = results.filter(r =>
+        r.invoiceNumber?.toLowerCase().includes(s) ||
+        r.billingName?.toLowerCase().includes(s) ||
+        r.user?.email?.toLowerCase().includes(s) ||
+        r.user?.name?.toLowerCase().includes(s)
+      );
+    }
+
+    const total = results.length;
+    const skip = (Number(page) - 1) * Number(limit);
+    const paginated = results.slice(skip, skip + Number(limit));
+
+    return res.json({ success: true, data: paginated, total, page: Number(page) });
+  } catch (err) {
+    console.error('[ADMIN INVOICES] GET error:', err.message);
+    return res.status(500).json({ success: false, error: 'Server error.' });
+  }
+});
+
+/**
+ * POST /api/admin/invoices/preview
+ * Generate invoice PDF and stream it back directly — no save, no email.
+ */
+router.post('/invoices/preview', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const {
+      billingName, billingState, email, phone, pan,
+      packageName, duration, amount, coupon = 0,
+      serviceType = 'RA', transactionId = 'PREVIEW',
+    } = req.body;
+
+    if (!billingName || !billingState || !packageName || !amount) {
+      return res.status(400).json({ success: false, message: 'billingName, billingState, packageName, and amount are required.' });
+    }
+
+    const invoiceNumber = `PREVIEW-${Date.now()}`;
+    const pdfBuffer = await generateInvoicePDF({
+      invoiceNumber,
+      date: new Date(),
+      serviceType,
+      billingName,
+      billingState,
+      pan: pan || null,
+      email: email || '',
+      phone: phone || '',
+      transactionId,
+      packageName,
+      duration: duration || '',
+      amount: Number(amount),
+      coupon: Number(coupon) || 0,
+    });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="Invoice_Preview.pdf"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+    return res.send(pdfBuffer);
+  } catch (err) {
+    console.error('[ADMIN INVOICE PREVIEW] error:', err.message);
+    return res.status(500).json({ success: false, error: err.message || 'Server error.' });
+  }
+});
+
+/**
+ * POST /api/admin/invoices/create
+ * Generate a custom invoice (not tied to a payment request), upload to Cloudinary, optionally email it.
+ */
+router.post('/invoices/create', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const {
+      billingName, billingState, email, phone, pan,
+      packageName, duration, amount, coupon = 0,
+      serviceType = 'RA', sendEmail: doSendEmail = true,
+    } = req.body;
+
+    if (!billingName || !billingState || !email || !packageName || !amount) {
+      return res.status(400).json({ success: false, message: 'billingName, billingState, email, packageName, and amount are required.' });
+    }
+
+    const invoiceNumber = await generateInvoiceNumber(PaymentRequest);
+    const pdfBuffer = await generateInvoicePDF({
+      invoiceNumber,
+      date: new Date(),
+      serviceType,
+      billingName,
+      billingState,
+      pan: pan || null,
+      email,
+      phone: phone || '',
+      transactionId: 'CUSTOM-ADMIN',
+      packageName,
+      duration: duration || '',
+      amount: Number(amount),
+      coupon: Number(coupon) || 0,
+    });
+
+    const uploaded = await uploadInvoicePDF(pdfBuffer, invoiceNumber);
+
+    // Store as a minimal PaymentRequest record so it shows in the list
+    const pr = await PaymentRequest.create({
+      user: req.user._id,
+      serviceType,
+      planName: packageName,
+      duration: duration || '',
+      amount: Number(amount),
+      senderName: billingName,
+      billingName,
+      billingState,
+      transactionId: `ADMIN-${invoiceNumber}`,
+      transactionImageUrl: '',
+      transactionImagePublicId: '',
+      paymentMethod: 'razorpay',
+      status: 'approved',
+      approvedAt: new Date(),
+      invoiceNumber,
+      invoicePdfUrl: uploaded.url,
+      invoicePdfPublicId: uploaded.publicId,
+    });
+
+    if (doSendEmail) {
+      try {
+        await sendEmail({
+          to: email,
+          subject: `Invoice ${invoiceNumber} — InvestKaps`,
+          serviceType,
+          html: `<p>Dear ${billingName},</p><p>Please find your invoice attached.</p><p>Invoice Number: <strong>${invoiceNumber}</strong></p>`,
+          attachments: [{ filename: `Invoice_${invoiceNumber}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }],
+        });
+      } catch (emailErr) {
+        console.error('[ADMIN INVOICE] Email failed:', emailErr.message);
+      }
+    }
+
+    return res.json({ success: true, invoiceNumber, pdfUrl: uploaded.url, paymentRequestId: pr._id });
+  } catch (err) {
+    console.error('[ADMIN INVOICES] CREATE error:', err.message);
+    return res.status(500).json({ success: false, error: err.message || 'Server error.' });
   }
 });
 

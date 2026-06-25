@@ -1,8 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -E \"\\\\.\\(js|ts\\)$\")",
-      "Bash(grep -E \"\\\\.\\(jsx|js\\)$\")"
+      "Bash(node --input-type=module)",
+      "Bash(npx vite *)",
+      "Bash(node --check routes/paymentRequestRoutes.js)",
+      "Bash(node --check controllers/subscriptionService.js)",
+      "Bash(node --check routes/adminRoutes.js)",
+      "Read(//c/Users/aiman/AppData/Local/Temp/**)",
+      "Bash(python3 -c ' *)",
+      "Bash(node -e ' *)",
+      "Bash(npm run *)"
     ]
   }
 }

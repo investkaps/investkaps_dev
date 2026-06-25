@@ -6,6 +6,8 @@ import './QRPaymentModal.css';
 const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSuccess, alreadyUsedReferralCode }) => {
   const [formData, setFormData] = useState({
     senderName: '',
+    billingName: '',
+    billingState: '',
     transactionId: '',
     transactionImage: null
   });
@@ -142,10 +144,20 @@ const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSucce
     e.preventDefault();
     
     const cleanName = sanitizeInput(formData.senderName);
+    const cleanBillingName = sanitizeInput(formData.billingName);
+    const cleanBillingState = sanitizeInput(formData.billingState);
     const cleanTxnId = sanitizeInput(formData.transactionId);
 
     if (!isValidName(cleanName)) {
       setError('Please enter a valid name (2-100 characters, letters only)');
+      return;
+    }
+    if (!cleanBillingName || cleanBillingName.trim().length < 2) {
+      setError('Please enter a billing name for the invoice');
+      return;
+    }
+    if (!cleanBillingState || cleanBillingState.trim().length < 2) {
+      setError('Please enter your state for the invoice');
       return;
     }
     if (!isValidTransactionId(cleanTxnId)) {
@@ -171,6 +183,8 @@ const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSucce
     try {
       const formDataToSend = new FormData();
       formDataToSend.append('senderName', cleanName);
+      formDataToSend.append('billingName', cleanBillingName);
+      formDataToSend.append('billingState', cleanBillingState);
       formDataToSend.append('transactionId', cleanTxnId);
       formDataToSend.append('transactionImage', formData.transactionImage);
       formDataToSend.append('planId', plan._id);
@@ -302,16 +316,42 @@ const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSucce
             {error && <div id="qr-payment-error" className="error-message" role="alert">{error}</div>}
 
             <div className="form-group">
-              <label htmlFor="senderName">Sender Name *</label>
+              <label htmlFor="senderName">Payment Received From *</label>
               <input
                 id="senderName"
                 type="text"
                 value={formData.senderName}
                 onChange={(e) => setFormData({ ...formData, senderName: e.target.value })}
-                placeholder="Enter name as per transaction"
+                placeholder="Name as shown in your UPI / bank app"
                 required
                 autoComplete="name"
                 aria-describedby={error ? 'qr-payment-error' : undefined}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="billingName">Billing Name (for invoice) *</label>
+              <input
+                id="billingName"
+                type="text"
+                value={formData.billingName}
+                onChange={(e) => setFormData({ ...formData, billingName: e.target.value })}
+                placeholder="Full legal name to appear on invoice"
+                required
+                autoComplete="name"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="billingState">State (for invoice) *</label>
+              <input
+                id="billingState"
+                type="text"
+                value={formData.billingState}
+                onChange={(e) => setFormData({ ...formData, billingState: e.target.value })}
+                placeholder="e.g. Delhi, Maharashtra, Karnataka"
+                required
+                autoComplete="address-level1"
               />
             </div>
 

@@ -9,6 +9,26 @@ import { verifyToken, requireAdmin } from '../middleware/auth.js';
 import logger from '../utils/logger.js';
 
 /* ═══════════════════════════════════════════════════════════════
+   PUBLIC — referral plan details (for pricing page)
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * GET /api/referrals/plan
+ * Returns the referral plan's public details (name, features) — no auth required.
+ */
+router.get('/plan', async (_req, res) => {
+  try {
+    const plan = await Subscription.findOne({ isReferralPlan: true, isActive: true })
+      .select('name description features')
+      .lean();
+    return res.json({ success: true, data: plan || null });
+  } catch (err) {
+    logger.error('[REFERRAL] GET plan error:', err.message);
+    return res.status(500).json({ success: false, error: 'Server error.' });
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════
    PUBLIC — validate a code (used inline in payment form)
    ═══════════════════════════════════════════════════════════════ */
 
@@ -83,6 +103,8 @@ router.get('/my', verifyToken, async (req, res) => {
         usedCode: user.referral?.usedCode || null,
         referredBy: user.referral?.referredBy || null,
         referralPlanSub: user.referral?.referralPlanSub || null,
+        totalReferred: user.referral?.totalReferred || 0,
+        unclaimedMonths: user.referral?.unclaimedMonths || 0,
         referrals,
         totalReferrals: referrals.length,
         totalRewarded: totalMonthsEarned,
@@ -90,6 +112,81 @@ router.get('/my', verifyToken, async (req, res) => {
     });
   } catch (err) {
     logger.error('[REFERRAL] GET my error:', err.message);
+    return res.status(500).json({ success: false, error: 'Server error.' });
+  }
+});
+
+/**
+ * POST /api/referrals/claim
+ * Claim all accumulated unclaimed months onto the referral plan subscription.
+ * Creates the subscription if it doesn't exist yet; extends it if it does.
+ */
+router.post('/claim', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const user = await User.findById(userId).select('referral name').lean();
+    const unclaimedMonths = user?.referral?.unclaimedMonths || 0;
+
+    if (unclaimedMonths <= 0) {
+      return res.status(400).json({ success: false, error: 'No unclaimed months available.' });
+    }
+
+    const referralPlan = await Subscription.findOne({ isReferralPlan: true }).lean();
+    if (!referralPlan) {
+      return res.status(404).json({ success: false, error: 'Referral plan not configured. Contact support.' });
+    }
+
+    let referralSub = await UserSubscription.findOne({
+      user: userId,
+      subscription: referralPlan._id,
+    });
+
+    const now = new Date();
+
+    if (!referralSub) {
+      const endDate = new Date(now);
+      endDate.setMonth(endDate.getMonth() + unclaimedMonths);
+
+      referralSub = new UserSubscription({
+        user: userId,
+        subscription: referralPlan._id,
+        serviceType: referralPlan.serviceType || 'RA',
+        status: 'active',
+        startDate: now,
+        endDate,
+        price: 0,
+        duration: 'monthly',
+        paymentMethod: 'referral',
+      });
+      await referralSub.save();
+
+      await User.updateOne(
+        { _id: userId },
+        { $set: { 'referral.referralPlanSub': referralSub._id, 'referral.unclaimedMonths': 0 } }
+      );
+    } else {
+      const base = referralSub.endDate > now ? new Date(referralSub.endDate) : new Date(now);
+      base.setMonth(base.getMonth() + unclaimedMonths);
+      referralSub.endDate = base;
+      if (referralSub.status !== 'active') referralSub.status = 'active';
+      await referralSub.save();
+
+      await User.updateOne(
+        { _id: userId },
+        { $set: { 'referral.unclaimedMonths': 0, 'referral.referralPlanSub': referralSub._id } }
+      );
+    }
+
+    logger.info(`[REFERRAL] User ${userId} claimed ${unclaimedMonths} month(s); sub ends ${referralSub.endDate}`);
+
+    return res.json({
+      success: true,
+      message: `Successfully claimed ${unclaimedMonths} month${unclaimedMonths > 1 ? 's' : ''} on your referral plan.`,
+      data: { referralSub, claimedMonths: unclaimedMonths },
+    });
+  } catch (err) {
+    logger.error('[REFERRAL] claim error:', err.message);
     return res.status(500).json({ success: false, error: 'Server error.' });
   }
 });

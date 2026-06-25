@@ -78,7 +78,7 @@ app.use(globalLimiter);
 app.use('/api/kyc', express.json({ limit: '10kb' }));
 
 app.use(express.json({
-  limit: '1mb',  // Reduced from 50mb; prevents JSON-bomb attacks while allowing esign PDF base64
+  limit: '10mb',
   verify: (req, res, buf) => {
     if (req.originalUrl === '/api/payment/webhook') {
       req.rawBody = buf;

@@ -42,6 +42,14 @@ const StockRecommendationSchema = new mongoose.Schema({
     type: Number,
     required: false
   },
+  buyingRangeLow: {
+    type: Number,
+    required: false
+  },
+  buyingRangeHigh: {
+    type: Number,
+    required: false
+  },
   stopLoss: {
     type: Number,
     required: false

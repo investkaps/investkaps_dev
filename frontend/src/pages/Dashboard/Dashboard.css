@@ -1809,6 +1809,23 @@ input.verified {
   color: #dc2626;
 }
 
+.price-cell.buy-range {
+  white-space: nowrap;
+}
+
+.buy-range-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: 'Roboto Mono', monospace;
+  white-space: nowrap;
+}
+
 .timeframe-cell {
   color: #6c757d;
   font-size: 0.85rem;
