@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import './Subscribe.css';
 
 const Subscribe = () => {
+  const location = useLocation();
   const [expandedPlan, setExpandedPlan] = useState(null);
+
+  const service = new URLSearchParams(location.search).get('service') || 'research';
+  const pageTitle = service === 'advisory' ? 'Investment Advisory Services' : 'Research Analyst Services';
 
   const planCards = [
     {
@@ -56,6 +61,22 @@ const Subscribe = () => {
       ]
     },
     {
+      id: 'one-on-one-advisory',
+      category: 'Stock Recommendation Plans',
+      name: 'One-on-One Advisory',
+      image: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=400&h=250&fit=crop',
+      alt: 'Personal Advisory',
+      price: 'Rs. 2,999/-',
+      priceNote: '*per 60-min consultation',
+      summary: 'Personalized one-on-one meeting with an expert advisor to discuss your portfolio and strategy.',
+      details: [
+        { label: 'Session duration', value: '60 minutes' },
+        { label: 'Pricing', value: 'Rs. 2,999 per session (inclusive of follow-up notes)' },
+        { label: 'Deliverables', value: 'Personalized portfolio review, tailored actionable ideas, and post-session summary.' },
+        { label: 'How to book', value: 'Click Subscribe to proceed to booking and payment.' }
+      ]
+    },
+    {
       id: 'levered-risk-fno',
       category: 'Stock & Index Derivatives Plans',
       name: 'Levered Risk FnO Plan',
@@ -91,8 +112,40 @@ const Subscribe = () => {
         { label: 'Minimum capital', value: 'Rs. 300,000 given portfolio of 15 stocks and multiple thereof.' },
         { label: 'Risk appetite', value: 'Low to medium risk. Suited for investors looking for returns on portfolio basis.' }
       ]
+    },
+    {
+      id: 'international-equity',
+      category: 'International Equity Plans',
+      name: 'International Equity Portfolio',
+      image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=250&fit=crop',
+      alt: 'International Equity',
+      price: 'Rs. 7,999/-',
+      priceNote: '*pricing for quarterly plan',
+      summary: 'Curated global equity portfolio with exposure to international markets and diversified economies.',
+      details: [
+        { label: 'Research focus', value: 'Global equity exposure across developed and emerging markets with focus on multinational corporations and international sectors.' },
+        { label: 'Objective', value: 'Building wealth through international diversification and gaining exposure to global growth opportunities.' },
+        { label: 'Subscription tenor & pricing', value: ['3 months - Rs. 7,999/-', '6 months - Rs. 14,999/-', '12 months - Rs. 27,999/-'] },
+        { label: 'Deliverables', value: 'Portfolio recommendations with currency hedging considerations and periodic rebalancing guidance.' },
+        { label: 'Indicative holding period', value: 'Long-term (1-3 years)' },
+        { label: 'Risk appetite', value: 'Medium to high risk. Suited for investors seeking international diversification and currency exposure.' }
+      ]
     }
   ];
+
+  // Filter plans based on service type
+  const getFilteredPlans = () => {
+    if (service === 'advisory') {
+      return planCards.filter(plan => 
+        plan.id === 'one-on-one-advisory' || 
+        plan.id === 'ik15-momentum' || 
+        plan.id === 'international-equity'
+      );
+    }
+    return planCards;
+  };
+
+  const filteredPlans = getFilteredPlans();
 
   const renderValue = (value) => {
     if (Array.isArray(value)) {
@@ -164,58 +217,69 @@ const Subscribe = () => {
         {/* Header */}
         <div className="page-header">
           <h1 className="page-title">
-            <span className="lang-en" lang="en">Subscription Plans</span>
-            <span className="lang-hi" lang="hi">सदस्यता योजनाएं</span>
+            <span className="lang-en" lang="en">{pageTitle}</span>
+            <span className="lang-hi" lang="hi">{service === 'advisory' ? 'निवेश परामर्श सेवा' : 'रिसर्च एनालिस्ट सेवा'}</span>
           </h1>
           <p className="page-subtitle lang-en" lang="en">You may choose the offering best suited to your requirements</p>
           <p className="page-subtitle lang-hi" lang="hi">आप अपनी आवश्यकताओं के अनुसार सबसे उपयुक्त प्रस्ताव चुन सकते हैं</p>
         </div>
 
-        {/* Stock Recommendation Plans */}
-        <div className="plan-category">
-          <h2 className="category-title">
-            <span className="lang-en" lang="en">Stock Recommendation Plans</span>
-            <span className="lang-hi" lang="hi">स्टॉक अनुशंसा योजनाएं</span>
-          </h2>
-          <div className="plans-grid">
-            {planCards.filter((plan) => plan.category === 'Stock Recommendation Plans').map(renderPlanCard)}
-          </div>
-        </div>
-
-        {/* Stock & Index Derivatives Plans */}
-        <div className="plan-category">
-          <h2 className="category-title">
-            <span className="lang-en" lang="en">Stock & Index Derivatives Plans</span>
-            <span className="lang-hi" lang="hi">स्टॉक और इंडेक्स डेरिवेटिव योजनाएं</span>
-          </h2>
-          <div className="plans-grid">
-            {planCards.filter((plan) => plan.category === 'Stock & Index Derivatives Plans').map(renderPlanCard)}
-          </div>
-        </div>
-
-        {/* Model Portfolios */}
-        <div className="plan-category">
-          <h2 className="category-title">
-            <span className="lang-en" lang="en">Model Portfolios</span>
-            <span className="lang-hi" lang="hi">मॉडल पोर्टफोलियो</span>
-          </h2>
-          <div className="plans-grid">
-            <div className="plan-card coming-soon">
-              <div className="plan-image">
-                <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=250&fit=crop" alt="Portfolio Management" />
-              </div>
-              <h3 className="plan-name">
-                <span className="lang-en" lang="en">Core Alpha Model Portfolio</span>
-                <span className="lang-hi" lang="hi">कोर अल्फा मॉडल पोर्टफोलियो</span>
-              </h3>
-              <div className="plan-status">
-                <span className="status-text lang-en" lang="en">...to be launched soon</span>
-                <span className="status-text lang-hi" lang="hi">...जल्द लॉन्च किया जाएगा</span>
+        {/* Conditional rendering based on service type */}
+        {service === 'research' && (
+          <>
+            {/* Stock Recommendation Plans */}
+            <div className="plan-category">
+              <h2 className="category-title">
+                <span className="lang-en" lang="en">Stock Recommendation Plans</span>
+                <span className="lang-hi" lang="hi">स्टॉक अनुशंसा योजनाएं</span>
+              </h2>
+              <div className="plans-grid">
+                {planCards.filter((plan) => plan.category === 'Stock Recommendation Plans').map(renderPlanCard)}
               </div>
             </div>
-            {planCards.filter((plan) => plan.category === 'Model Portfolios').map(renderPlanCard)}
+
+            {/* Stock & Index Derivatives Plans */}
+            <div className="plan-category">
+              <h2 className="category-title">
+                <span className="lang-en" lang="en">Stock & Index Derivatives Plans</span>
+                <span className="lang-hi" lang="hi">स्टॉक और इंडेक्स डेरिवेटिव योजनाएं</span>
+              </h2>
+              <div className="plans-grid">
+                {planCards.filter((plan) => plan.category === 'Stock & Index Derivatives Plans').map(renderPlanCard)}
+              </div>
+            </div>
+
+            {/* Model Portfolios */}
+            <div className="plan-category">
+              <h2 className="category-title">
+                <span className="lang-en" lang="en">Model Portfolios</span>
+                <span className="lang-hi" lang="hi">मॉडल पोर्टफोलियो</span>
+              </h2>
+              <div className="plans-grid">
+                <div className="plan-card coming-soon">
+                  <div className="plan-image">
+                    <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=250&fit=crop" alt="Portfolio Management" />
+                  </div>
+                  <h3 className="plan-name">
+                    <span className="lang-en" lang="en">Core Alpha Model Portfolio</span>
+                    <span className="lang-hi" lang="hi">कोर अल्फा मॉडल पोर्टफोलियो</span>
+                  </h3>
+                  <div className="plan-status">
+                    <span className="status-text lang-en" lang="en">...to be launched soon</span>
+                    <span className="status-text lang-hi" lang="hi">...जल्द लॉन्च किया जाएगा</span>
+                  </div>
+                </div>
+                {planCards.filter((plan) => plan.category === 'Model Portfolios').map(renderPlanCard)}
+              </div>
+            </div>
+          </>
+        )}
+
+        {service === 'advisory' && (
+          <div className="plans-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '24px', marginBottom: '44px' }}>
+            {filteredPlans.map(renderPlanCard)}
           </div>
-        </div>
+        )}
 
         {/* Free Subscription Section */}
         <div className="free-subscription-section">

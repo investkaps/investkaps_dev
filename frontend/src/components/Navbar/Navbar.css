@@ -121,6 +121,7 @@ body.is-register .navbar.scrolled .logo-text {
 
 .nav-item {
   margin: 0 1rem;
+  position: relative;
 }
 
 .nav-link {
@@ -130,6 +131,57 @@ body.is-register .navbar.scrolled .logo-text {
   padding: 0.5rem;
   position: relative;
   transition: all 0.3s ease;
+}
+
+.nav-item-dropdown .subscribe-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 240px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 10px 0;
+  z-index: 100;
+}
+
+.nav-item-dropdown:hover .subscribe-dropdown,
+.nav-item-dropdown .subscribe-dropdown.open {
+  display: block;
+}
+
+.subscribe-dropdown-link {
+  display: block;
+  color: #0f172a;
+  padding: 0.85rem 1.25rem;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.subscribe-dropdown-link:hover {
+  background: rgba(91, 110, 225, 0.08);
+  color: #1d4ed8;
+}
+
+@media screen and (max-width: 960px) {
+  .nav-item-dropdown .subscribe-dropdown {
+    position: static;
+    transform: none;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+    padding: 0;
+  }
+
+  .nav-item-dropdown .subscribe-dropdown-link {
+    padding-left: 2rem;
+    background: transparent;
+    color: white;
+  }
 }
 
 /* Default color is already defined above */

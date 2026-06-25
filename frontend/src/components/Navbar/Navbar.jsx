@@ -189,8 +189,28 @@ const Navbar = ({ scrolled }) => {
           <li className="nav-item">
             <Link to="/about" className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`} onClick={() => setMenuOpen(false)}>About</Link>
           </li>
-          <li className="nav-item">
-            <Link to="/subscribe" className={`nav-link ${location.pathname === '/subscribe' ? 'active' : ''}`} onClick={() => setMenuOpen(false)}>Subscribe</Link>
+          <li
+            className="nav-item nav-item-dropdown"
+            onMouseEnter={() => setSubscribeDropdownOpen(true)}
+            onMouseLeave={() => setSubscribeDropdownOpen(false)}
+          >
+            <Link
+              to="/subscribe"
+              className={`nav-link ${location.pathname === '/subscribe' ? 'active' : ''}`}
+              onClick={() => setMenuOpen(false)}
+              aria-haspopup="true"
+              aria-expanded={subscribeDropdownOpen}
+            >
+              Subscribe
+            </Link>
+            <div className={`subscribe-dropdown ${subscribeDropdownOpen ? 'open' : ''}`}>
+              <Link to="/subscribe?service=research" className="subscribe-dropdown-link" onClick={() => setMenuOpen(false)}>
+                Research Analyst Services
+              </Link>
+              <Link to="/subscribe?service=advisory" className="subscribe-dropdown-link" onClick={() => setMenuOpen(false)}>
+                Investment Advisory Services
+              </Link>
+            </div>
           </li>
           {isAuthenticated && (
             <>
