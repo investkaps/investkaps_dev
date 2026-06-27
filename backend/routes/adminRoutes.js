@@ -1635,7 +1635,9 @@ router.post('/symbols/refresh', verifyToken, checkRole('admin'), async (req, res
   }
 
   try {
-    const response = await fetch(`${ltpApiUrl}/instruments/refresh`, { signal: AbortSignal.timeout(180_000) });
+    const response = await fetch(`${ltpApiUrl}/instruments/refresh`, {
+      signal: AbortSignal.timeout(600_000),  // 10 minutes
+    });
     const data = await response.json();
 
     if (!response.ok) {

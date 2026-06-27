@@ -677,10 +677,21 @@ export const adminAPI = {
   },
   
   // Symbol Search API Methods
-  searchSymbols: async (query, limit = 50) => {
+  getExchanges: async () => {
+    try {
+      const res = await api.get('/symbols/exchanges');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching exchanges:', message);
+      throw new Error(message);
+    }
+  },
+
+  searchSymbols: async (query, limit = 50, exchange = null) => {
     try {
       const res = await api.get('/symbols/search', {
-        params: { query, limit }
+        params: { query, limit, ...(exchange ? { exchange } : {}) }
       });
       return res.data;
     } catch (err) {

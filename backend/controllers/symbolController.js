@@ -18,7 +18,7 @@ const Instrument = mongoose.models.Instrument || mongoose.model(
 
 export const searchSymbols = async (req, res) => {
   try {
-    const { query, limit = 50 } = req.query;
+    const { query, limit = 50, exchange } = req.query;
 
     if (!query) {
       return res.status(400).json({ success: false, error: 'Query parameter is required' });
@@ -28,8 +28,11 @@ export const searchSymbols = async (req, res) => {
     const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
     const lim   = Math.min(parseInt(limit) || 50, 200);
 
+    const matchStage = { $or: [{ symbol: regex }, { name: regex }] };
+    if (exchange) matchStage.exchange = exchange.toUpperCase();
+
     const results = await Instrument.aggregate([
-      { $match: { $or: [{ symbol: regex }, { name: regex }] } },
+      { $match: matchStage },
       {
         $addFields: {
           _score: {
@@ -73,6 +76,16 @@ export const getAllSymbols = async (req, res) => {
   } catch (error) {
     logger.error(`Error fetching symbols: ${error.message}`);
     return res.status(500).json({ success: false, error: 'Failed to fetch symbols' });
+  }
+};
+
+export const getExchanges = async (req, res) => {
+  try {
+    const exchanges = await Instrument.distinct('exchange');
+    return res.status(200).json({ success: true, exchanges: exchanges.sort() });
+  } catch (error) {
+    logger.error(`Error fetching exchanges: ${error.message}`);
+    return res.status(500).json({ success: false, error: 'Failed to fetch exchanges' });
   }
 };
 

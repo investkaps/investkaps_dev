@@ -49,7 +49,12 @@ const StockRecommendationManagement = () => {
     title: '',
     stockSymbol: '',
     stockName: '',
-    exchange: '',
+    exchange: 'NSE',
+    // NFO/derivative fields
+    expiry: '',
+    strike: '',
+    lotSize: '',
+    instrumentType: '',
     currentPrice: '',
     buyingRangeLow: '',
     buyingRangeHigh: '',
@@ -66,6 +71,9 @@ const StockRecommendationManagement = () => {
     status: 'draft',
     expiresAt: ''
   });
+
+  const NFO_EXCHANGES = new Set(['NFO', 'BFO', 'CDS', 'MCX']);
+  const isNFO = NFO_EXCHANGES.has(formData.exchange);
 
   useEffect(() => {
     fetchRecommendations();
@@ -344,7 +352,7 @@ const StockRecommendationManagement = () => {
       setLoading(true);
       setError(null);
       
-      // Convert string values to numbers
+      const isNfoSubmit = new Set(['NFO', 'BFO', 'CDS', 'MCX']).has(formData.exchange);
       const dataToSubmit = {
         ...formData,
         currentPrice: parseFloat(formData.currentPrice),
@@ -354,6 +362,10 @@ const StockRecommendationManagement = () => {
         targetPrice2: formData.targetPrice2 ? parseFloat(formData.targetPrice2) : undefined,
         targetPrice3: formData.targetPrice3 ? parseFloat(formData.targetPrice3) : undefined,
         stopLoss: formData.stopLoss ? parseFloat(formData.stopLoss) : undefined,
+        strike: isNfoSubmit && formData.strike ? parseFloat(formData.strike) : undefined,
+        lotSize: isNfoSubmit && formData.lotSize ? parseFloat(formData.lotSize) : undefined,
+        expiry: isNfoSubmit ? formData.expiry || undefined : undefined,
+        instrumentType: isNfoSubmit ? formData.instrumentType || undefined : undefined,
       };
       
       let response;
@@ -583,44 +595,57 @@ const StockRecommendationManagement = () => {
               />
             </div>
 
+            <div className="form-group">
+              <label htmlFor="exchange">Exchange</label>
+              <select
+                id="exchange"
+                name="exchange"
+                value={formData.exchange}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  exchange: e.target.value,
+                  stockSymbol: '',
+                  stockName: '',
+                  expiry: '',
+                  strike: '',
+                  lotSize: '',
+                  instrumentType: '',
+                }))}
+                required
+                style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px', width: '100%' }}
+              >
+                <option value="NSE">NSE</option>
+                <option value="BSE">BSE</option>
+                <option value="NFO">NFO</option>
+                <option value="BFO">BFO</option>
+                <option value="CDS">CDS</option>
+                <option value="MCX">MCX</option>
+              </select>
+            </div>
+
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="stockSymbol">Stock Symbol</label>
-                <div style={{ position: 'relative' }}>
-                  <SymbolAutocomplete
-                    value={formData.stockSymbol}
-                    onChange={(value) => setFormData(prev => ({ ...prev, stockSymbol: value }))}
-                    onSelect={(item) => {
-                      setFormData(prev => ({
-                        ...prev,
-                        stockSymbol: item.symbol,
-                        stockName: item.name,
-                        exchange: item.exchange
-                      }));
-                    }}
-                    placeholder="Search by symbol"
-                  />
-                  {formData.exchange && (
-                    <span style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      fontSize: '11px',
-                      color: '#999',
-                      textTransform: 'uppercase',
-                      background: '#f0f0f0',
-                      padding: '4px 8px',
-                      borderRadius: '3px',
-                      fontWeight: '600',
-                      pointerEvents: 'none'
-                    }}>
-                      {formData.exchange}
-                    </span>
-                  )}
-                </div>
+                <SymbolAutocomplete
+                  value={formData.stockSymbol}
+                  onChange={(value) => setFormData(prev => ({ ...prev, stockSymbol: value }))}
+                  onSelect={(item) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      stockSymbol: item.symbol,
+                      stockName: item.name || prev.stockName,
+                      exchange: item.exchange || prev.exchange,
+                      expiry: item.expiry || '',
+                      strike: item.strike || '',
+                      lotSize: item.lotSize || '',
+                      instrumentType: item.instrumentType || '',
+                    }));
+                  }}
+                  placeholder={`Search ${formData.exchange} symbol…`}
+                  exchange={formData.exchange}
+                />
                 <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
-                  Search by symbol. Name and exchange auto-populate.
+                  Results filtered by selected exchange.
                 </small>
               </div>
 
@@ -633,17 +658,79 @@ const StockRecommendationManagement = () => {
                     setFormData(prev => ({
                       ...prev,
                       stockSymbol: item.symbol,
-                      stockName: item.name,
-                      exchange: item.exchange
+                      stockName: item.name || prev.stockName,
+                      exchange: item.exchange || prev.exchange,
+                      expiry: item.expiry || '',
+                      strike: item.strike || '',
+                      lotSize: item.lotSize || '',
+                      instrumentType: item.instrumentType || '',
                     }));
                   }}
-                  placeholder="Search by company name"
+                  placeholder={`Search ${formData.exchange} company name…`}
+                  exchange={formData.exchange}
                 />
                 <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
-                  Search by company name. Symbol and exchange auto-populate.
+                  Results filtered by selected exchange.
                 </small>
               </div>
             </div>
+
+            {/* NFO/derivative fields — only shown for NFO, BFO, CDS, MCX */}
+            {isNFO && (
+              <div style={{ background: '#fffdf0', border: '1px solid #fde68a', borderRadius: 6, padding: '14px 16px', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', marginBottom: 4 }}>
+                  <span style={{ background: '#fbbf24', color: '#78350f', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4 }}>F&O</span>
+                  <span style={{ fontSize: 12, color: '#92400e' }}>Derivative details — auto-filled from symbol search</span>
+                </div>
+                <div className="form-group" style={{ flex: '1 1 160px' }}>
+                  <label>Expiry Date</label>
+                  <input
+                    type="text"
+                    name="expiry"
+                    value={formData.expiry}
+                    onChange={handleFormChange}
+                    placeholder="e.g. 26-DEC-2024"
+                    style={{ padding: '8px', border: '1px solid #ddd', borderRadius: 4, fontSize: 14, width: '100%' }}
+                  />
+                </div>
+                <div className="form-group" style={{ flex: '1 1 120px' }}>
+                  <label>Strike Price</label>
+                  <input
+                    type="number"
+                    name="strike"
+                    value={formData.strike}
+                    onChange={handleFormChange}
+                    placeholder="e.g. 25000"
+                    style={{ padding: '8px', border: '1px solid #ddd', borderRadius: 4, fontSize: 14, width: '100%' }}
+                  />
+                </div>
+                <div className="form-group" style={{ flex: '1 1 100px' }}>
+                  <label>Lot Size</label>
+                  <input
+                    type="number"
+                    name="lotSize"
+                    value={formData.lotSize}
+                    onChange={handleFormChange}
+                    placeholder="e.g. 50"
+                    style={{ padding: '8px', border: '1px solid #ddd', borderRadius: 4, fontSize: 14, width: '100%' }}
+                  />
+                </div>
+                <div className="form-group" style={{ flex: '1 1 120px' }}>
+                  <label>Type</label>
+                  <select
+                    name="instrumentType"
+                    value={formData.instrumentType}
+                    onChange={handleFormChange}
+                    style={{ padding: '8px', border: '1px solid #ddd', borderRadius: 4, fontSize: 14, width: '100%' }}
+                  >
+                    <option value="">Select</option>
+                    <option value="CE">CE (Call)</option>
+                    <option value="PE">PE (Put)</option>
+                    <option value="FUT">FUT (Future)</option>
+                  </select>
+                </div>
+              </div>
+            )}
 
             <div className="form-row" style={{ alignItems: 'flex-start' }}>
               <div className="form-group" style={{ flex: 1 }}>

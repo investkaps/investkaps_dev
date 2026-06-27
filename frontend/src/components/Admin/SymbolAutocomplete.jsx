@@ -100,12 +100,13 @@ const LoadingText = styled.div`
   font-size: 14px;
 `;
 
-const SymbolAutocomplete = ({ 
-  value, 
-  onChange, 
-  onSelect, 
+const SymbolAutocomplete = ({
+  value,
+  onChange,
+  onSelect,
   placeholder = "Search stock symbol...",
-  disabled = false 
+  disabled = false,
+  exchange = null,
 }) => {
   const [inputValue, setInputValue] = useState(value || '');
   const [suggestions, setSuggestions] = useState([]);
@@ -115,10 +116,18 @@ const SymbolAutocomplete = ({
   const wrapperRef = useRef(null);
   const debounceTimer = useRef(null);
 
-  // Update input value when prop changes
+  // Update input when value prop changes
   useEffect(() => {
     setInputValue(value || '');
   }, [value]);
+
+  // Re-search when exchange filter changes
+  useEffect(() => {
+    if (inputValue && inputValue.length >= 1) {
+      searchSymbols(inputValue);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exchange]);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -141,7 +150,7 @@ const SymbolAutocomplete = ({
 
     setLoading(true);
     try {
-      const response = await adminAPI.searchSymbols(query, 50);
+      const response = await adminAPI.searchSymbols(query, 50, exchange);
       
       if (response.success) {
         setSuggestions(response.symbols || []);

@@ -51,16 +51,24 @@ const SettingsTab = () => {
   const [symModalOpen, setSymModalOpen] = useState(false);
   const [symLogs, setSymLogs] = useState([]);
   const [symResult, setSymResult] = useState(null);
+  const [symElapsed, setSymElapsed] = useState(0);
   const symLogEndRef = useRef(null);
+  const symTimerRef = useRef(null);
   useEffect(() => { symLogEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [symLogs]);
 
   const handleSymbolRefresh = async () => {
     setSymBusy(true);
+    setSymElapsed(0);
     setSymLogs([{ level: 'info', msg: '▶ Starting mStock symbol fetch…' }]);
     setSymResult(null);
     setSymModalOpen(true);
+
+    symTimerRef.current = setInterval(() => {
+      setSymElapsed(s => s + 1);
+    }, 1000);
+
     try {
-      const { data } = await api.post('/admin/symbols/refresh');
+      const { data } = await api.post('/admin/symbols/refresh', {}, { timeout: 600_000 });
       setSymLogs(prev => [...prev, ...(data.logs || []), { level: 'info', msg: `✓ Done — ${data.total?.toLocaleString()} symbols upserted into MongoDB` }]);
       setSymResult(data);
     } catch (err) {
@@ -69,6 +77,7 @@ const SettingsTab = () => {
       const errMsg = errData?.error || err.message || 'Refresh failed';
       setSymLogs(prev => [...prev, ...serverLogs, { level: 'error', msg: `✗ ${errMsg}` }]);
     }
+    clearInterval(symTimerRef.current);
     setSymBusy(false);
   };
 
@@ -347,7 +356,9 @@ const SettingsTab = () => {
             {/* Header */}
             <div style={{ padding: '0.875rem 1.25rem', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
               <span style={{ color: '#f8fafc', fontWeight: 700, fontSize: 14, fontFamily: 'monospace' }}>
-                {symBusy ? '⏳  mStock symbol fetch — running…' : symLogs.some(l => l.level === 'error') ? '✗  Fetch failed' : '✓  Fetch complete'}
+                {symBusy
+                  ? `⏳  mStock symbol fetch — running… (${symElapsed}s)`
+                  : symLogs.some(l => l.level === 'error') ? '✗  Fetch failed' : '✓  Fetch complete'}
               </span>
               {!symBusy && (
                 <button onClick={() => setSymModalOpen(false)} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: 18, cursor: 'pointer', lineHeight: 1, padding: 0 }}>✕</button>

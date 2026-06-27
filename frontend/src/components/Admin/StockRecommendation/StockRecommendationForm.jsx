@@ -122,7 +122,7 @@ const NfoTag = styled.span`
   margin-left: 8px;
 `;
 
-const NFO_EXCHANGES = ['NFO', 'BFO', 'CDS', 'MCX'];
+const NFO_EXCHANGES = new Set(['NFO', 'BFO', 'CDS', 'MCX']);
 
 const EMPTY_FORM = {
   title: '',
@@ -151,6 +151,7 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
   const { user } = useAuth();
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [subscriptions, setSubscriptions] = useState([]);
+  const [exchanges, setExchanges] = useState(['NSE', 'BSE', 'NFO', 'BFO', 'CDS', 'MCX']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -163,7 +164,18 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
         console.error('Error fetching subscriptions:', error);
       }
     };
+    const fetchExchanges = async () => {
+      try {
+        const response = await adminAPI.getExchanges();
+        if (response.success && response.exchanges?.length) {
+          setExchanges(response.exchanges);
+        }
+      } catch (error) {
+        // fallback to hardcoded list already set as default
+      }
+    };
     fetchSubscriptions();
+    fetchExchanges();
   }, []);
 
   useEffect(() => {
@@ -198,10 +210,15 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
     }
   }, [recommendation]);
 
-  const isNFO = NFO_EXCHANGES.includes(formData.exchange);
+  const isNFO = NFO_EXCHANGES.has(formData.exchange);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // Clear symbol/name when exchange changes so stale data doesn't carry over
+    if (name === 'exchange') {
+      setFormData(prev => ({ ...prev, exchange: value, stockSymbol: '', stockName: '', expiry: '', strike: '', lotSize: '', instrumentType: '' }));
+      return;
+    }
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -316,36 +333,32 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
           />
         </FormGroup>
 
-        {/* Symbol search + exchange row */}
-        <div style={{ display: 'flex', gap: '16px' }}>
-          <FormGroup style={{ flex: 2 }}>
-            <Label>Stock Symbol</Label>
-            <SymbolAutocomplete
-              value={formData.stockSymbol}
-              onChange={(val) => setFormData(prev => ({ ...prev, stockSymbol: val }))}
-              onSelect={handleSymbolSelect}
-              placeholder="Search NSE / BSE / NFO symbol…"
-            />
-          </FormGroup>
+        {/* Exchange first, then symbol search filtered by exchange */}
+        <FormGroup>
+          <Label htmlFor="exchange">Exchange</Label>
+          <Select
+            id="exchange"
+            name="exchange"
+            value={formData.exchange}
+            onChange={handleChange}
+            required
+          >
+            {exchanges.map(ex => (
+              <option key={ex} value={ex}>{ex}</option>
+            ))}
+          </Select>
+        </FormGroup>
 
-          <FormGroup style={{ flex: 1 }}>
-            <Label htmlFor="exchange">Exchange</Label>
-            <Select
-              id="exchange"
-              name="exchange"
-              value={formData.exchange}
-              onChange={handleChange}
-              required
-            >
-              <option value="NSE">NSE</option>
-              <option value="BSE">BSE</option>
-              <option value="NFO">NFO</option>
-              <option value="BFO">BFO</option>
-              <option value="CDS">CDS</option>
-              <option value="MCX">MCX</option>
-            </Select>
-          </FormGroup>
-        </div>
+        <FormGroup>
+          <Label>Stock Symbol</Label>
+          <SymbolAutocomplete
+            value={formData.stockSymbol}
+            onChange={(val) => setFormData(prev => ({ ...prev, stockSymbol: val }))}
+            onSelect={handleSymbolSelect}
+            placeholder={`Search ${formData.exchange} symbol…`}
+            exchange={formData.exchange}
+          />
+        </FormGroup>
 
         <FormGroup>
           <Label htmlFor="stockName">

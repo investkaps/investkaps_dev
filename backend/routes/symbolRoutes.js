@@ -10,6 +10,7 @@ import { checkRole } from '../middleware/roleAuth.js';
  * @access  Private (Admin only)
  */
 router.get('/search', verifyToken, checkRole(['admin']), symbolController.searchSymbols);
+router.get('/exchanges', verifyToken, checkRole(['admin']), symbolController.getExchanges);
 
 /**
  * @route   GET /api/symbols
