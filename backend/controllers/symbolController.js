@@ -1,192 +1,88 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
 import logger from '../utils/logger.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Lightweight schema — no model file needed, collection managed by app.py
+const Instrument = mongoose.models.Instrument || mongoose.model(
+  'Instrument',
+  new mongoose.Schema({
+    exchange:       { type: String },
+    symbol:         { type: String },
+    name:           { type: String },
+    // NFO-only fields
+    expiry:         { type: String },
+    strike:         { type: Number },
+    lotSize:        { type: Number },
+    instrumentType: { type: String },
+  }, { collection: 'instruments', timestamps: false })
+);
 
-// Cache for symbols to avoid reading file on every request
-let symbolsCache = null;
-let lastLoadTime = null;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-/**
- * Load symbols from symbols.json file
- * @returns {Array<Object>} Array of stock objects with exchange, symbol, and name
- */
-function loadSymbols() {
-  try {
-    // Check if cache is still valid
-    if (symbolsCache && lastLoadTime && (Date.now() - lastLoadTime < CACHE_DURATION)) {
-      return symbolsCache;
-    }
-
-    const symbolsPath = path.join(__dirname, '..', 'symbols.json');
-    
-    if (!fs.existsSync(symbolsPath)) {
-      logger.error('symbols.json file not found');
-      return [];
-    }
-
-    const data = fs.readFileSync(symbolsPath, 'utf-8');
-    symbolsCache = JSON.parse(data);
-    lastLoadTime = Date.now();
-    
-    logger.info(`Loaded ${symbolsCache.length} symbols from symbols.json`);
-    return symbolsCache;
-  } catch (error) {
-    logger.error(`Error loading symbols: ${error.message}`);
-    return [];
-  }
-}
-
-/**
- * Search symbols based on query
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
 export const searchSymbols = async (req, res) => {
   try {
     const { query, limit = 50 } = req.query;
 
     if (!query) {
-      return res.status(400).json({
-        success: false,
-        error: 'Query parameter is required'
-      });
+      return res.status(400).json({ success: false, error: 'Query parameter is required' });
     }
 
-    const symbols = loadSymbols();
+    const q     = query.trim().toUpperCase();
+    const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    const lim   = Math.min(parseInt(limit) || 50, 200);
 
-    if (symbols.length === 0) {
-      return res.status(500).json({
-        success: false,
-        error: 'Symbols data not available'
-      });
-    }
+    const results = await Instrument.aggregate([
+      { $match: { $or: [{ symbol: regex }, { name: regex }] } },
+      {
+        $addFields: {
+          _score: {
+            $switch: {
+              branches: [
+                { case: { $eq: ['$symbol', q] },                                          then: 0 },
+                { case: { $regexMatch: { input: '$symbol', regex: `^${q}`, options: 'i' } }, then: 1 },
+                { case: { $regexMatch: { input: '$name',   regex: `^${q}`, options: 'i' } }, then: 2 },
+                { case: { $regexMatch: { input: '$symbol', regex: q,       options: 'i' } }, then: 3 },
+              ],
+              default: 4,
+            },
+          },
+        },
+      },
+      { $sort: { _score: 1, symbol: 1 } },
+      { $limit: lim },
+      { $project: { _id: 0, _score: 0 } },
+    ]);
 
-    // Search for symbols by both symbol and name (case-insensitive)
-    const searchQuery = query.toUpperCase().trim();
-    
-    // Priority 1: Exact symbol match
-    const exactSymbolMatch = symbols.filter(item => 
-      item.symbol.toUpperCase() === searchQuery
-    );
-    
-    // Priority 2: Symbol starts with query
-    const symbolStartsWith = symbols.filter(item => 
-      item.symbol.toUpperCase().startsWith(searchQuery) && 
-      item.symbol.toUpperCase() !== searchQuery
-    );
-    
-    // Priority 3: Name starts with query
-    const nameStartsWith = symbols.filter(item => 
-      item.name.toUpperCase().startsWith(searchQuery) &&
-      !item.symbol.toUpperCase().startsWith(searchQuery)
-    );
-    
-    // Priority 4: Symbol contains query
-    const symbolContains = symbols.filter(item => 
-      item.symbol.toUpperCase().includes(searchQuery) && 
-      !item.symbol.toUpperCase().startsWith(searchQuery) && 
-      item.symbol.toUpperCase() !== searchQuery
-    );
-    
-    // Priority 5: Name contains query
-    const nameContains = symbols.filter(item => 
-      item.name.toUpperCase().includes(searchQuery) &&
-      !item.name.toUpperCase().startsWith(searchQuery) &&
-      !item.symbol.toUpperCase().includes(searchQuery)
-    );
-
-    // Combine results with priority
-    const results = [
-      ...exactSymbolMatch, 
-      ...symbolStartsWith, 
-      ...nameStartsWith,
-      ...symbolContains,
-      ...nameContains
-    ].slice(0, parseInt(limit));
-
-    return res.status(200).json({
-      success: true,
-      query: searchQuery,
-      count: results.length,
-      symbols: results
-    });
-
+    return res.status(200).json({ success: true, query: q, count: results.length, symbols: results });
   } catch (error) {
     logger.error(`Error searching symbols: ${error.message}`);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to search symbols'
-    });
+    return res.status(500).json({ success: false, error: 'Failed to search symbols' });
   }
 };
 
-/**
- * Get all symbols (with pagination)
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
 export const getAllSymbols = async (req, res) => {
   try {
-    const { page = 1, limit = 100 } = req.query;
+    const { page = 1, limit = 100, exchange } = req.query;
+    const lim    = Math.min(parseInt(limit) || 100, 500);
+    const skip   = (Math.max(parseInt(page) || 1, 1) - 1) * lim;
+    const filter = exchange ? { exchange: exchange.toUpperCase() } : {};
 
-    const symbols = loadSymbols();
+    const [total, symbols] = await Promise.all([
+      Instrument.countDocuments(filter),
+      Instrument.find(filter, { _id: 0, __v: 0 }).skip(skip).limit(lim).lean(),
+    ]);
 
-    if (symbols.length === 0) {
-      return res.status(500).json({
-        success: false,
-        error: 'Symbols data not available'
-      });
-    }
-
-    const startIndex = (parseInt(page) - 1) * parseInt(limit);
-    const endIndex = startIndex + parseInt(limit);
-    const paginatedSymbols = symbols.slice(startIndex, endIndex);
-
-    return res.status(200).json({
-      success: true,
-      total: symbols.length,
-      page: parseInt(page),
-      limit: parseInt(limit),
-      symbols: paginatedSymbols
-    });
-
+    return res.status(200).json({ success: true, total, page: parseInt(page), limit: lim, symbols });
   } catch (error) {
-    logger.error(`Error fetching all symbols: ${error.message}`);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to fetch symbols'
-    });
+    logger.error(`Error fetching symbols: ${error.message}`);
+    return res.status(500).json({ success: false, error: 'Failed to fetch symbols' });
   }
 };
 
-/**
- * Reload symbols cache (admin only)
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
+// Kept for backwards-compatible admin route — no-op now since DB is source of truth
 export const reloadSymbols = async (req, res) => {
   try {
-    symbolsCache = null;
-    lastLoadTime = null;
-    
-    const symbols = loadSymbols();
-
-    return res.status(200).json({
-      success: true,
-      message: 'Symbols cache reloaded',
-      count: symbols.length
-    });
-
+    const total = await Instrument.countDocuments();
+    return res.status(200).json({ success: true, message: 'Symbols served from MongoDB', count: total });
   } catch (error) {
-    logger.error(`Error reloading symbols: ${error.message}`);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to reload symbols'
-    });
+    logger.error(`Error in reloadSymbols: ${error.message}`);
+    return res.status(500).json({ success: false, error: 'Failed to count symbols' });
   }
 };

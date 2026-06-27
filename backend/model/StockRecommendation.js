@@ -22,6 +22,11 @@ const StockRecommendationSchema = new mongoose.Schema({
     enum: ['NSE', 'BSE', 'NFO', 'BFO', 'CDS', 'MCX'],
     default: 'NSE'
   },
+  // NFO / derivative instrument details
+  expiry:         { type: String },
+  strike:         { type: Number },
+  lotSize:        { type: Number },
+  instrumentType: { type: String, enum: ['CE', 'PE', 'FUT', null], default: null },
   currentPrice: {
     type: Number,
     required: true

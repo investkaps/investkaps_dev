@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useAuth } from '../../../context/AuthContext';
 import stockRecommendationAPI from '../../../services/stockRecommendationAPI';
 import { adminAPI } from '../../../services/api';
+import SymbolAutocomplete from '../SymbolAutocomplete';
 
 const FormContainer = styled.div`
   background: white;
@@ -110,29 +111,49 @@ const ButtonGroup = styled.div`
   margin-top: 16px;
 `;
 
+const NfoTag = styled.span`
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 8px;
+`;
+
+const NFO_EXCHANGES = ['NFO', 'BFO', 'CDS', 'MCX'];
+
+const EMPTY_FORM = {
+  title: '',
+  stockSymbol: '',
+  stockName: '',
+  exchange: 'NSE',
+  currentPrice: '',
+  targetPrice: '',
+  stopLoss: '',
+  recommendationType: 'buy',
+  timeFrame: 'short_term',
+  description: '',
+  rationale: '',
+  riskLevel: 'moderate',
+  targetSubscriptions: [],
+  status: 'draft',
+  expiresAt: '',
+  // NFO extras (populated from autocomplete)
+  expiry: '',
+  strike: '',
+  lotSize: '',
+  instrumentType: '',
+};
+
 const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel }) => {
   const { user } = useAuth();
-  const [formData, setFormData] = useState({
-    title: '',
-    stockSymbol: '',
-    stockName: '',
-    currentPrice: '',
-    targetPrice: '',
-    stopLoss: '',
-    recommendationType: 'buy',
-    timeFrame: 'short_term',
-    description: '',
-    rationale: '',
-    riskLevel: 'moderate',
-    targetSubscriptions: [],
-    status: 'draft',
-    expiresAt: ''
-  });
+  const [formData, setFormData] = useState(EMPTY_FORM);
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Fetch available subscriptions
   useEffect(() => {
     const fetchSubscriptions = async () => {
       try {
@@ -142,21 +163,20 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
         console.error('Error fetching subscriptions:', error);
       }
     };
-
     fetchSubscriptions();
   }, []);
 
-  // If editing, populate form with recommendation data
   useEffect(() => {
     if (recommendation) {
-      const expiresAt = recommendation.expiresAt 
+      const expiresAt = recommendation.expiresAt
         ? new Date(recommendation.expiresAt).toISOString().split('T')[0]
         : '';
-      
+
       setFormData({
         title: recommendation.title || '',
         stockSymbol: recommendation.stockSymbol || '',
         stockName: recommendation.stockName || '',
+        exchange: recommendation.exchange || 'NSE',
         currentPrice: recommendation.currentPrice || '',
         targetPrice: recommendation.targetPrice || '',
         stopLoss: recommendation.stopLoss || '',
@@ -165,14 +185,20 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
         description: recommendation.description || '',
         rationale: recommendation.rationale || '',
         riskLevel: recommendation.riskLevel || 'moderate',
-        targetSubscriptions: recommendation.targetSubscriptions?.map(sub => 
+        targetSubscriptions: recommendation.targetSubscriptions?.map(sub =>
           typeof sub === 'object' ? sub._id : sub
         ) || [],
         status: recommendation.status || 'draft',
-        expiresAt
+        expiresAt,
+        expiry: recommendation.expiry || '',
+        strike: recommendation.strike || '',
+        lotSize: recommendation.lotSize || '',
+        instrumentType: recommendation.instrumentType || '',
       });
     }
   }, [recommendation]);
+
+  const isNFO = NFO_EXCHANGES.includes(formData.exchange);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -186,21 +212,30 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
     }
   };
 
+  // Called when admin picks a symbol from the autocomplete dropdown
+  const handleSymbolSelect = (item) => {
+    setFormData(prev => ({
+      ...prev,
+      stockSymbol: item.symbol,
+      stockName: item.name || prev.stockName,
+      exchange: item.exchange || prev.exchange,
+      // NFO fields from instruments collection
+      expiry: item.expiry || '',
+      strike: item.strike || '',
+      lotSize: item.lotSize || '',
+      instrumentType: item.instrumentType || '',
+    }));
+  };
+
   const handleSubscriptionToggle = (subscriptionId) => {
     setFormData(prev => {
       const isSelected = prev.targetSubscriptions.includes(subscriptionId);
-      
-      if (isSelected) {
-        return {
-          ...prev,
-          targetSubscriptions: prev.targetSubscriptions.filter(id => id !== subscriptionId)
-        };
-      } else {
-        return {
-          ...prev,
-          targetSubscriptions: [...prev.targetSubscriptions, subscriptionId]
-        };
-      }
+      return {
+        ...prev,
+        targetSubscriptions: isSelected
+          ? prev.targetSubscriptions.filter(id => id !== subscriptionId)
+          : [...prev.targetSubscriptions, subscriptionId],
+      };
     });
   };
 
@@ -208,49 +243,49 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
     if (!formData.title) return 'Title is required';
     if (!formData.stockSymbol) return 'Stock symbol is required';
     if (!formData.stockName) return 'Stock name is required';
+    if (!formData.exchange) return 'Exchange is required';
     if (!formData.currentPrice) return 'Current price is required';
     if (!formData.targetPrice) return 'Target price is required';
     if (!formData.description) return 'Description is required';
     if (!formData.rationale) return 'Rationale is required';
     if (formData.targetSubscriptions.length === 0) return 'Select at least one subscription';
-    
     return '';
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const validationError = validateForm();
     if (validationError) {
       setError(validationError);
       return;
     }
-    
+
     setLoading(true);
     setError('');
-    
+
     try {
-      // Convert string values to numbers
       const dataToSubmit = {
         ...formData,
         currentPrice: parseFloat(formData.currentPrice),
         targetPrice: parseFloat(formData.targetPrice),
-        stopLoss: formData.stopLoss ? parseFloat(formData.stopLoss) : undefined
+        stopLoss: formData.stopLoss ? parseFloat(formData.stopLoss) : undefined,
+        strike: formData.strike ? parseFloat(formData.strike) : undefined,
+        lotSize: formData.lotSize ? parseFloat(formData.lotSize) : undefined,
       };
-      
-      let response;
-      
-      if (recommendation) {
-        // Update existing recommendation
-        response = await stockRecommendationAPI.updateRecommendation(
-          recommendation._id,
-          dataToSubmit
-        );
-      } else {
-        // Create new recommendation
-        response = await stockRecommendationAPI.createRecommendation(dataToSubmit);
+
+      // Strip empty NFO fields so they don't pollute equity records
+      if (!isNFO) {
+        delete dataToSubmit.expiry;
+        delete dataToSubmit.strike;
+        delete dataToSubmit.lotSize;
+        delete dataToSubmit.instrumentType;
       }
-      
+
+      const response = recommendation
+        ? await stockRecommendationAPI.updateRecommendation(recommendation._id, dataToSubmit)
+        : await stockRecommendationAPI.createRecommendation(dataToSubmit);
+
       if (response.success) {
         onSuccess(response.data);
       } else {
@@ -266,7 +301,7 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
   return (
     <FormContainer>
       <h2>{recommendation ? 'Edit Stock Recommendation' : 'Create New Stock Recommendation'}</h2>
-      
+
       <Form onSubmit={handleSubmit}>
         <FormGroup>
           <Label htmlFor="title">Title</Label>
@@ -280,35 +315,107 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
             required
           />
         </FormGroup>
-        
+
+        {/* Symbol search + exchange row */}
         <div style={{ display: 'flex', gap: '16px' }}>
-          <FormGroup style={{ flex: 1 }}>
-            <Label htmlFor="stockSymbol">Stock Symbol</Label>
-            <Input
-              type="text"
-              id="stockSymbol"
-              name="stockSymbol"
+          <FormGroup style={{ flex: 2 }}>
+            <Label>Stock Symbol</Label>
+            <SymbolAutocomplete
               value={formData.stockSymbol}
-              onChange={handleChange}
-              placeholder="e.g., RELIANCE"
-              required
+              onChange={(val) => setFormData(prev => ({ ...prev, stockSymbol: val }))}
+              onSelect={handleSymbolSelect}
+              placeholder="Search NSE / BSE / NFO symbol…"
             />
           </FormGroup>
-          
-          <FormGroup style={{ flex: 2 }}>
-            <Label htmlFor="stockName">Stock Name</Label>
-            <Input
-              type="text"
-              id="stockName"
-              name="stockName"
-              value={formData.stockName}
+
+          <FormGroup style={{ flex: 1 }}>
+            <Label htmlFor="exchange">Exchange</Label>
+            <Select
+              id="exchange"
+              name="exchange"
+              value={formData.exchange}
               onChange={handleChange}
-              placeholder="e.g., Reliance Industries Ltd."
               required
-            />
+            >
+              <option value="NSE">NSE</option>
+              <option value="BSE">BSE</option>
+              <option value="NFO">NFO</option>
+              <option value="BFO">BFO</option>
+              <option value="CDS">CDS</option>
+              <option value="MCX">MCX</option>
+            </Select>
           </FormGroup>
         </div>
-        
+
+        <FormGroup>
+          <Label htmlFor="stockName">
+            Stock / Instrument Name
+            {isNFO && <NfoTag>F&O</NfoTag>}
+          </Label>
+          <Input
+            type="text"
+            id="stockName"
+            name="stockName"
+            value={formData.stockName}
+            onChange={handleChange}
+            placeholder="Auto-filled from symbol search"
+            required
+          />
+        </FormGroup>
+
+        {/* NFO detail fields — shown only when exchange is NFO/BFO/CDS/MCX */}
+        {isNFO && (
+          <div style={{ display: 'flex', gap: '16px', background: '#fffdf0', border: '1px solid #fde68a', borderRadius: 6, padding: '12px 16px' }}>
+            <FormGroup style={{ flex: 2 }}>
+              <Label htmlFor="expiry">Expiry Date</Label>
+              <Input
+                type="text"
+                id="expiry"
+                name="expiry"
+                value={formData.expiry}
+                onChange={handleChange}
+                placeholder="e.g. 26-DEC-2024"
+              />
+            </FormGroup>
+            <FormGroup style={{ flex: 1 }}>
+              <Label htmlFor="strike">Strike Price</Label>
+              <Input
+                type="text"
+                id="strike"
+                name="strike"
+                value={formData.strike}
+                onChange={handleNumberChange}
+                placeholder="e.g. 25000"
+              />
+            </FormGroup>
+            <FormGroup style={{ flex: 1 }}>
+              <Label htmlFor="lotSize">Lot Size</Label>
+              <Input
+                type="text"
+                id="lotSize"
+                name="lotSize"
+                value={formData.lotSize}
+                onChange={handleNumberChange}
+                placeholder="e.g. 50"
+              />
+            </FormGroup>
+            <FormGroup style={{ flex: 1 }}>
+              <Label htmlFor="instrumentType">Type</Label>
+              <Select
+                id="instrumentType"
+                name="instrumentType"
+                value={formData.instrumentType}
+                onChange={handleChange}
+              >
+                <option value="">Select</option>
+                <option value="CE">CE (Call)</option>
+                <option value="PE">PE (Put)</option>
+                <option value="FUT">FUT (Future)</option>
+              </Select>
+            </FormGroup>
+          </div>
+        )}
+
         <div style={{ display: 'flex', gap: '16px' }}>
           <FormGroup style={{ flex: 1 }}>
             <Label htmlFor="currentPrice">Current Price (₹)</Label>
@@ -322,7 +429,7 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
               required
             />
           </FormGroup>
-          
+
           <FormGroup style={{ flex: 1 }}>
             <Label htmlFor="targetPrice">Target Price (₹)</Label>
             <Input
@@ -335,7 +442,7 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
               required
             />
           </FormGroup>
-          
+
           <FormGroup style={{ flex: 1 }}>
             <Label htmlFor="stopLoss">Stop Loss (₹) (Optional)</Label>
             <Input
@@ -348,7 +455,7 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
             />
           </FormGroup>
         </div>
-        
+
         <div style={{ display: 'flex', gap: '16px' }}>
           <FormGroup style={{ flex: 1 }}>
             <Label htmlFor="recommendationType">Recommendation Type</Label>
@@ -364,7 +471,7 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
               <option value="hold">Hold</option>
             </Select>
           </FormGroup>
-          
+
           <FormGroup style={{ flex: 1 }}>
             <Label htmlFor="timeFrame">Time Frame</Label>
             <Select
@@ -379,7 +486,7 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
               <option value="long_term">Long Term</option>
             </Select>
           </FormGroup>
-          
+
           <FormGroup style={{ flex: 1 }}>
             <Label htmlFor="riskLevel">Risk Level</Label>
             <Select
@@ -395,7 +502,7 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
             </Select>
           </FormGroup>
         </div>
-        
+
         <FormGroup>
           <Label htmlFor="description">Description</Label>
           <TextArea
@@ -407,7 +514,7 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
             required
           />
         </FormGroup>
-        
+
         <FormGroup>
           <Label htmlFor="rationale">Rationale</Label>
           <TextArea
@@ -419,7 +526,7 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
             required
           />
         </FormGroup>
-        
+
         <FormGroup>
           <Label htmlFor="expiresAt">Expiration Date (Optional)</Label>
           <Input
@@ -430,15 +537,15 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
             onChange={handleChange}
           />
         </FormGroup>
-        
+
         <FormGroup>
           <Label>Target Subscriptions</Label>
           <SubscriptionSelector>
             <p>Select which subscription tiers should receive this recommendation:</p>
             <CheckboxGroup>
               {subscriptions.map(subscription => (
-                <CheckboxLabel 
-                  key={subscription._id} 
+                <CheckboxLabel
+                  key={subscription._id}
                   checked={formData.targetSubscriptions.includes(subscription._id)}
                 >
                   <input
@@ -452,7 +559,7 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
             </CheckboxGroup>
           </SubscriptionSelector>
         </FormGroup>
-        
+
         <FormGroup>
           <Label htmlFor="status">Status</Label>
           <Select
@@ -472,9 +579,9 @@ const StockRecommendationForm = ({ recommendation = null, onSuccess, onCancel })
             </p>
           )}
         </FormGroup>
-        
+
         {error && <ErrorMessage>{error}</ErrorMessage>}
-        
+
         <ButtonGroup>
           <Button type="button" onClick={onCancel} style={{ backgroundColor: '#f5f5f5', color: '#333' }}>
             Cancel

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api, { adminAPI } from '../../services/api';
@@ -45,6 +45,32 @@ const SettingsTab = () => {
   const [mailSending, setMailSending] = useState(false);
   const [mailResult, setMailResult] = useState(null);
   const [mailError, setMailError] = useState(null);
+
+  /* ── Symbol refresh state ── */
+  const [symBusy, setSymBusy] = useState(false);
+  const [symModalOpen, setSymModalOpen] = useState(false);
+  const [symLogs, setSymLogs] = useState([]);
+  const [symResult, setSymResult] = useState(null);
+  const symLogEndRef = useRef(null);
+  useEffect(() => { symLogEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [symLogs]);
+
+  const handleSymbolRefresh = async () => {
+    setSymBusy(true);
+    setSymLogs([{ level: 'info', msg: '▶ Starting mStock symbol fetch…' }]);
+    setSymResult(null);
+    setSymModalOpen(true);
+    try {
+      const { data } = await api.post('/admin/symbols/refresh');
+      setSymLogs(prev => [...prev, ...(data.logs || []), { level: 'info', msg: `✓ Done — ${data.total?.toLocaleString()} symbols upserted into MongoDB` }]);
+      setSymResult(data);
+    } catch (err) {
+      const errData = err.response?.data;
+      const serverLogs = errData?.logs || [];
+      const errMsg = errData?.error || err.message || 'Refresh failed';
+      setSymLogs(prev => [...prev, ...serverLogs, { level: 'error', msg: `✗ ${errMsg}` }]);
+    }
+    setSymBusy(false);
+  };
 
   /* ── Invoice generator state ── */
   const [invUserId, setInvUserId] = useState('');
@@ -297,6 +323,70 @@ const SettingsTab = () => {
           </button>
         </div>
       </div>
+
+      {/* ── Symbol Master Refresh ─────────────────────────────────────────── */}
+      <div style={card()}>
+        <h3 style={{ margin: '0 0 0.4rem', color: '#1e293b', fontSize: '1.05rem' }}>📦 Symbol Master Refresh</h3>
+        <p style={{ color: '#6c757d', fontSize: '0.875rem', margin: '0 0 1.25rem' }}>
+          Fetches the latest NSE, BSE, and NFO scrip list from mStock and upserts them into MongoDB. A live step-by-step log is shown so you can diagnose any issue.
+        </p>
+        <button
+          onClick={handleSymbolRefresh}
+          disabled={symBusy}
+          style={{ padding: '0.7rem 1.4rem', borderRadius: 8, border: 'none', background: symBusy ? '#94a3b8' : '#1e3a5f', color: '#fff', fontWeight: 700, fontSize: 13, cursor: symBusy ? 'not-allowed' : 'pointer' }}
+        >
+          {symBusy ? '⏳ Fetching from mStock…' : '🔄 Fetch & Download symbols.json'}
+        </button>
+      </div>
+
+      {/* ── Symbol Log Modal ──────────────────────────────────────────────── */}
+      {symModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ background: '#0f172a', borderRadius: 12, width: '100%', maxWidth: 680, maxHeight: '82vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 60px rgba(0,0,0,0.6)' }}>
+
+            {/* Header */}
+            <div style={{ padding: '0.875rem 1.25rem', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+              <span style={{ color: '#f8fafc', fontWeight: 700, fontSize: 14, fontFamily: 'monospace' }}>
+                {symBusy ? '⏳  mStock symbol fetch — running…' : symLogs.some(l => l.level === 'error') ? '✗  Fetch failed' : '✓  Fetch complete'}
+              </span>
+              {!symBusy && (
+                <button onClick={() => setSymModalOpen(false)} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: 18, cursor: 'pointer', lineHeight: 1, padding: 0 }}>✕</button>
+              )}
+            </div>
+
+            {/* Log body */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.25rem', fontFamily: 'monospace', fontSize: 12, lineHeight: 1.8, background: '#020617' }}>
+              {symLogs.map((entry, i) => (
+                <div key={i} style={{ color: entry.level === 'error' ? '#f87171' : '#4ade80', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                  <span style={{ color: '#475569', userSelect: 'none' }}>{String(i + 1).padStart(3, ' ')}  </span>
+                  {entry.msg}
+                </div>
+              ))}
+              {symBusy && (
+                <div style={{ color: '#94a3b8', marginTop: 4 }}>▌</div>
+              )}
+              <div ref={symLogEndRef} />
+            </div>
+
+            {/* Footer */}
+            {!symBusy && (
+              <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid #1e293b', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                {symResult && (
+                  <span style={{ color: '#4ade80', fontSize: 12, fontFamily: 'monospace', flex: 1 }}>
+                    {symResult.total?.toLocaleString()} symbols total · {Object.entries(symResult.counts || {}).map(([ex, n]) => `${ex}: ${n.toLocaleString()}`).join(' · ')}
+                  </span>
+                )}
+                <button
+                  onClick={() => setSymModalOpen(false)}
+                  style={{ padding: '0.45rem 1.1rem', borderRadius: 6, border: 'none', background: '#334155', color: '#f8fafc', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+                >
+                  Close
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );

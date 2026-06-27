@@ -370,8 +370,20 @@ const PlanAssignment = ({ userId, userSubscriptions: initialSubs }) => {
       setResult({ ok: res.success, msg: res.message || 'Plan assigned' });
       if (res.success) {
         setSelectedPlan(''); setSelectedOption(''); setStartDate(''); setEndDate('');
-        // reflect the new sub in local state
-        if (res.subscription) setSubs(prev => [...prev, { ...res.subscription, status: 'active' }]);
+        // Reflect the new sub in local state with the correct shape for display
+        if (res.subscription) {
+          const chosenPlan = plans.find(p => p._id === selectedPlan);
+          setSubs(prev => [...prev, {
+            _id: res.subscription.id,
+            status: 'active',
+            startDate: res.subscription.startDate,
+            endDate: res.subscription.endDate,
+            duration: `${res.subscription.months} month${res.subscription.months !== 1 ? 's' : ''}`,
+            price: 0,
+            serviceType: chosenPlan?.serviceType || '',
+            subscription: { _id: selectedPlan, name: res.subscription.plan, packageCode: chosenPlan?.packageCode || '' },
+          }]);
+        }
       }
     } catch (e) { setResult({ ok: false, msg: e.message }); }
     finally { setLoading(false); }

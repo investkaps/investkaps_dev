@@ -888,12 +888,6 @@ router.post('/users/:id/assign-plan', verifyToken, checkRole('admin'), async (re
       end.setMonth(end.getMonth() + months);
     }
 
-    // Cancel any existing active subscription for same serviceType
-    await UserSubscription.updateMany(
-      { user: user._id, serviceType: subscription.serviceType, status: 'active' },
-      { status: 'cancelled' }
-    );
-
     const userSub = new UserSubscription({
       user: user._id,
       subscription: subscription._id,
@@ -1621,6 +1615,44 @@ router.post('/invoices/create', verifyToken, checkRole('admin'), async (req, res
   } catch (err) {
     console.error('[ADMIN INVOICES] CREATE error:', err.message);
     return res.status(500).json({ success: false, error: err.message || 'Server error.' });
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   ADMIN — mStock symbol master refresh
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * POST /api/admin/symbols/refresh
+ * Delegates to the GCP LTP VM's /instruments/refresh endpoint,
+ * which logs in to mStock, fetches NSE/BSE/NFO scrip masters, and upserts MongoDB.
+ * Returns the step logs and counts so the admin modal can display them.
+ */
+router.post('/symbols/refresh', verifyToken, checkRole('admin'), async (req, res) => {
+  const ltpApiUrl = process.env.LTP_API_URL;
+  if (!ltpApiUrl) {
+    return res.status(500).json({ success: false, error: 'LTP_API_URL not configured', logs: [] });
+  }
+
+  try {
+    const response = await fetch(`${ltpApiUrl}/instruments/refresh`, { signal: AbortSignal.timeout(180_000) });
+    const data = await response.json();
+
+    if (!response.ok) {
+      const errMsg = data?.detail?.error || data?.error || `GCP returned ${response.status}`;
+      const logs = (data?.detail?.logs || data?.logs || []).map(l => ({ level: 'error', msg: l }));
+      return res.status(502).json({ success: false, error: errMsg, logs });
+    }
+
+    const logs = (data.logs || []).map(l => ({ level: l.startsWith('ERROR') || l.startsWith('FATAL') ? 'error' : 'info', msg: l }));
+    return res.json({ success: true, total: data.total, counts: data.counts, logs });
+  } catch (err) {
+    console.error('[SYMBOLS REFRESH] error:', err.message);
+    return res.status(500).json({
+      success: false,
+      error: err.message || 'Failed to reach GCP LTP service',
+      logs: [{ level: 'error', msg: err.message }],
+    });
   }
 });
 
