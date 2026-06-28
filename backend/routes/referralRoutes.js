@@ -157,7 +157,8 @@ router.post('/claim', verifyToken, async (req, res) => {
         endDate,
         price: 0,
         duration: 'monthly',
-        paymentMethod: 'referral',
+        durationMonths: unclaimedMonths,
+        paymentMethod: 'manual',
       });
       await referralSub.save();
 
@@ -186,7 +187,7 @@ router.post('/claim', verifyToken, async (req, res) => {
       data: { referralSub, claimedMonths: unclaimedMonths },
     });
   } catch (err) {
-    logger.error('[REFERRAL] claim error:', err.message);
+    logger.error('[REFERRAL] claim error:', err.message, err.errors || '');
     return res.status(500).json({ success: false, error: 'Server error.' });
   }
 });

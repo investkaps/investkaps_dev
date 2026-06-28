@@ -1457,6 +1457,67 @@ input.verified {
   letter-spacing: -0.02em;
 }
 
+.subscription-carousel-wrap {
+  position: relative;
+}
+
+.subscription-carousel-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.subscription-carousel-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.subscription-carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c7d2fe;
+  transition: background 0.2s;
+}
+
+.subscription-carousel-dot.active {
+  background: #4f46e5;
+  width: 20px;
+  border-radius: 4px;
+}
+
+.subscription-carousel-arrows {
+  display: flex;
+  gap: 8px;
+}
+
+.subscription-carousel-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid #c7d2fe;
+  background: #fff;
+  color: #4f46e5;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+  line-height: 1;
+}
+
+.subscription-carousel-btn:hover:not(:disabled) {
+  background: #eef2ff;
+  border-color: #4f46e5;
+}
+
+.subscription-carousel-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 .subscription-card {
   background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
   border: 1px solid #c7d2fe;

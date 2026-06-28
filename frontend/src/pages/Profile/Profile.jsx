@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { setupAPI, userAPI, esignAPI, referralAPI } from '../../services/api';
+import { setupAPI, userAPI, esignAPI, referralAPI, callAPI } from '../../services/api';
 import './Profile.css';
 
 const Profile = () => {
@@ -14,6 +14,7 @@ const Profile = () => {
   const [fetchError, setFetchError] = useState(null);
   const [referralInfo, setReferralInfo] = useState(null);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [freeCallBooking, setFreeCallBooking] = useState(null);
 
   useEffect(() => {
     if (!currentUser?.id) return;
@@ -91,6 +92,12 @@ const Profile = () => {
     fetchPaymentRequests();
     // Fetch referral info
     referralAPI.getMy().then(res => { if (res?.data) setReferralInfo(res.data); }).catch(() => {});
+    // Fetch free call booking (most recent isFreeCall booking)
+    callAPI.getMyBookings().then(res => {
+      const bookings = res?.data || [];
+      const free = bookings.find(b => b.isFreeCall);
+      if (free && mounted) setFreeCallBooking(free);
+    }).catch(() => {});
     return () => {
       mounted = false;
     };
@@ -240,14 +247,41 @@ const Profile = () => {
           <section className="pf-section">
             <h2 className="pf-section-title">Subscription</h2>
 
-            {!activeSub && pendingRequests.length === 0 && !userDetails?.userSubscriptions?.length && (
+            {!activeSub && pendingRequests.length === 0 && !userDetails?.userSubscriptions?.length && !freeCallBooking && (
               <div className="pf-card pf-no-sub">
                 <span className="pf-no-sub-icon">📋</span>
                 <p>No active subscription. <a href="/#pricing" className="pf-link">View plans →</a></p>
               </div>
             )}
 
-              {activeSub && (
+              {/* Show free call card OR subscription plan card — never both */}
+              {freeCallBooking ? (
+                <div className="pf-card pf-card-green pf-mb">
+                  <div className="pf-sub-header">
+                    <div>
+                      <h3 className="pf-sub-name">Free Consultation Call</h3>
+                      <span className="pf-badge sub-active">
+                        {freeCallBooking.status === 'confirmed' ? 'Confirmed' :
+                         freeCallBooking.status === 'completed' ? 'Completed' :
+                         freeCallBooking.status === 'cancelled' ? 'Cancelled' : 'Pending Review'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="pf-grid-2 pf-mt">
+                    <Row label="Plan"   value={freeCallBooking.callPlan?.name || 'Consultation'} />
+                    <Row label="Date"   value={freeCallBooking.slotDate} />
+                    <Row label="Time"   value={`${freeCallBooking.slotStartTime} – ${freeCallBooking.slotEndTime} IST`} />
+                    <Row label="Amount" value="FREE" />
+                  </div>
+                  {freeCallBooking.meetLink && (
+                    <div style={{ marginTop: '0.75rem' }}>
+                      <a href={freeCallBooking.meetLink} target="_blank" rel="noopener noreferrer" className="pf-link">
+                        Join Google Meet →
+                      </a>
+                    </div>
+                  )}
+                </div>
+              ) : activeSub ? (
                 <div className="pf-card pf-card-green pf-mb">
                   <div className="pf-sub-header">
                     <div>
@@ -266,7 +300,7 @@ const Profile = () => {
                     <Row label="End Date"   value={fmt(activeSub.endDate)} />
                   </div>
                 </div>
-              )}
+              ) : null}
 
               {pendingRequests.length > 0 && (
                 <div className="pf-card pf-mb">
@@ -281,7 +315,7 @@ const Profile = () => {
                           </span>
                         </div>
                         <span className={`pf-badge ${req.status}`}>
-                          {req.status === 'pending' ? '⏳ Pending' : '✕ Rejected'}
+                          {req.status === 'pending' ? '⏳ Pending' : '✕ Cancelled'}
                         </span>
                       </div>
                       <div className="pf-grid-2 pf-mt-sm">

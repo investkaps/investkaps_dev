@@ -1565,4 +1565,78 @@ export const referralAPI = {
   },
 };
 
+export const callAPI = {
+  getPlans: async () => {
+    const res = await api.get('/calls/plans');
+    return res.data;
+  },
+  getSlots: async (date) => {
+    const res = await api.get('/calls/slots', { params: { date } });
+    return res.data;
+  },
+  book: async (formData) => {
+    const res = await api.post('/calls/book', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  },
+  getMyBookings: async () => {
+    const res = await api.get('/calls/my');
+    return res.data;
+  },
+  // Admin
+  adminGetBookings: async (params = {}) => {
+    const res = await api.get('/calls/admin/bookings', { params });
+    return res.data;
+  },
+  adminConfirm: async (id, notes = '') => {
+    const res = await api.post(`/calls/admin/bookings/${id}/confirm`, { adminNotes: notes });
+    return res.data;
+  },
+  adminCancel: async (id, reason = '') => {
+    const res = await api.post(`/calls/admin/bookings/${id}/cancel`, { reason });
+    return res.data;
+  },
+  adminGetPlans: async () => {
+    const res = await api.get('/calls/admin/plans');
+    return res.data;
+  },
+  adminCreatePlan: async (data) => {
+    const res = await api.post('/calls/admin/plans', data);
+    return res.data;
+  },
+  adminUpdatePlan: async (id, data) => {
+    const res = await api.put(`/calls/admin/plans/${id}`, data);
+    return res.data;
+  },
+  adminDeletePlan: async (id) => {
+    const res = await api.delete(`/calls/admin/plans/${id}`);
+    return res.data;
+  },
+  adminGetSlots: async (date) => {
+    const res = await api.get('/calls/admin/slots', { params: date ? { date } : {} });
+    return res.data;
+  },
+  adminClearDay: async (dayId, date) => {
+    const res = await api.delete(`/calls/admin/slots/${dayId}`, { params: { date } });
+    return res.data;
+  },
+  adminDeleteSlot: async (dayId, slotId) => {
+    const res = await api.delete(`/calls/admin/slots/${dayId}/${slotId}`);
+    return res.data;
+  },
+  adminBulkCreateSlots: async (slots) => {
+    const res = await api.post('/calls/admin/slots/bulk', { slots });
+    return res.data;
+  },
+  getFreeCallStatus: async () => {
+    const res = await api.get('/calls/free-call-status');
+    return res.data;
+  },
+  claimFreeCall: async (data) => {
+    const res = await api.post('/calls/claim-free', data);
+    return res.data;
+  },
+};
+
 export default api;

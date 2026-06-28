@@ -411,13 +411,24 @@ const sendNewRecommendationEmail = async (user, recommendation, serviceType = 'R
               <p style="margin:4px 0 0;color:#fde68a;font-size:15px;font-weight:700;">₹${recommendation.buyingRangeLow || '—'} – ₹${recommendation.buyingRangeHigh || '—'}</p>
             </td>` : ''}
             <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 8px;">
-              <p style="margin:0;color:#bfdbfe;font-size:11px;font-weight:600;text-transform:uppercase;">Target</p>
+              <p style="margin:0;color:#bfdbfe;font-size:11px;font-weight:600;text-transform:uppercase;">Target 1</p>
               <p style="margin:4px 0 0;color:#6ee7b7;font-size:18px;font-weight:700;">₹${recommendation.targetPrice}</p>
             </td>
+            ${recommendation.targetPrice2 ? `
+            <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 8px;">
+              <p style="margin:0;color:#bfdbfe;font-size:11px;font-weight:600;text-transform:uppercase;">Target 2</p>
+              <p style="margin:4px 0 0;color:#6ee7b7;font-size:18px;font-weight:700;">₹${recommendation.targetPrice2}</p>
+            </td>` : ''}
+            ${recommendation.targetPrice3 ? `
+            <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 8px;">
+              <p style="margin:0;color:#bfdbfe;font-size:11px;font-weight:600;text-transform:uppercase;">Target 3</p>
+              <p style="margin:4px 0 0;color:#6ee7b7;font-size:18px;font-weight:700;">₹${recommendation.targetPrice3}</p>
+            </td>` : ''}
+            ${recommendation.stopLoss ? `
             <td style="text-align:center;padding:0 0 0 8px;">
               <p style="margin:0;color:#bfdbfe;font-size:11px;font-weight:600;text-transform:uppercase;">Stop Loss</p>
-              <p style="margin:4px 0 0;color:#fca5a5;font-size:18px;font-weight:700;">₹${recommendation.stopLoss || 'N/A'}</p>
-            </td>
+              <p style="margin:4px 0 0;color:#fca5a5;font-size:18px;font-weight:700;">₹${recommendation.stopLoss}</p>
+            </td>` : ''}
           </tr>
         </table>
       </td></tr>
@@ -465,18 +476,34 @@ const sendUpdatedRecommendationEmail = async (user, recommendation, serviceType 
         </table>
         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:18px;">
           <tr>
-            <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);">
+            <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 8px 0 0;">
               <p style="margin:0;color:#ddd6fe;font-size:11px;font-weight:600;text-transform:uppercase;">LTP</p>
               <p style="margin:4px 0 0;color:#ffffff;font-size:18px;font-weight:700;">₹${recommendation.currentPrice}</p>
             </td>
-            <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);">
-              <p style="margin:0;color:#ddd6fe;font-size:11px;font-weight:600;text-transform:uppercase;">Target</p>
+            ${recommendation.buyingRangeLow || recommendation.buyingRangeHigh ? `
+            <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 8px;">
+              <p style="margin:0;color:#ddd6fe;font-size:11px;font-weight:600;text-transform:uppercase;">Buy Range</p>
+              <p style="margin:4px 0 0;color:#fde68a;font-size:15px;font-weight:700;">₹${recommendation.buyingRangeLow || '—'} – ₹${recommendation.buyingRangeHigh || '—'}</p>
+            </td>` : ''}
+            <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 8px;">
+              <p style="margin:0;color:#ddd6fe;font-size:11px;font-weight:600;text-transform:uppercase;">Target 1</p>
               <p style="margin:4px 0 0;color:#6ee7b7;font-size:18px;font-weight:700;">₹${recommendation.targetPrice}</p>
             </td>
-            <td style="text-align:center;">
+            ${recommendation.targetPrice2 ? `
+            <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 8px;">
+              <p style="margin:0;color:#ddd6fe;font-size:11px;font-weight:600;text-transform:uppercase;">Target 2</p>
+              <p style="margin:4px 0 0;color:#6ee7b7;font-size:18px;font-weight:700;">₹${recommendation.targetPrice2}</p>
+            </td>` : ''}
+            ${recommendation.targetPrice3 ? `
+            <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 8px;">
+              <p style="margin:0;color:#ddd6fe;font-size:11px;font-weight:600;text-transform:uppercase;">Target 3</p>
+              <p style="margin:4px 0 0;color:#6ee7b7;font-size:18px;font-weight:700;">₹${recommendation.targetPrice3}</p>
+            </td>` : ''}
+            ${recommendation.stopLoss ? `
+            <td style="text-align:center;padding:0 0 0 8px;">
               <p style="margin:0;color:#ddd6fe;font-size:11px;font-weight:600;text-transform:uppercase;">Stop Loss</p>
-              <p style="margin:4px 0 0;color:#fca5a5;font-size:18px;font-weight:700;">₹${recommendation.stopLoss || 'N/A'}</p>
-            </td>
+              <p style="margin:4px 0 0;color:#fca5a5;font-size:18px;font-weight:700;">₹${recommendation.stopLoss}</p>
+            </td>` : ''}
           </tr>
         </table>
       </td></tr>
@@ -529,6 +556,207 @@ const sendOnboardingReminderEmail = async (user, serviceType = 'RA', pendingStep
   });
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 6. Price alert — target hit / stop loss hit
+// ─────────────────────────────────────────────────────────────────────────────
+const sendPriceAlertEmail = async (user, recommendation, alertType, ltp, serviceType = 'RA', options = {}) => {
+  const normalizedServiceType = normalizeServiceType(serviceType);
+
+  // alertType: 'target1' | 'target2' | 'target3' | 'stopLoss'
+  const isStopLoss = alertType === 'stopLoss';
+  const alertPrice = isStopLoss
+    ? recommendation.stopLoss
+    : alertType === 'target1' ? recommendation.targetPrice
+    : alertType === 'target2' ? recommendation.targetPrice2
+    : recommendation.targetPrice3;
+
+  const alertLabel = isStopLoss ? 'Stop Loss Hit' : alertType === 'target1' ? 'Target 1 Achieved' : alertType === 'target2' ? 'Target 2 Achieved' : 'Target 3 Achieved';
+  const headerGradient = isStopLoss
+    ? 'linear-gradient(135deg,#7f1d1d 0%,#dc2626 100%)'
+    : 'linear-gradient(135deg,#064e3b 0%,#10b981 100%)';
+  const accentColor = isStopLoss ? '#fca5a5' : '#6ee7b7';
+
+  const html = wrap(`
+    <div style="background:${headerGradient};border-radius:12px 12px 0 0;padding:28px 32px 24px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+        <span style="background:${isStopLoss ? '#fca5a5' : '#6ee7b7'};color:${isStopLoss ? '#7f1d1d' : '#064e3b'};font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:20px;">${alertLabel}</span>
+      </div>
+      <h2 style="margin:10px 0 4px;color:#ffffff;font-size:22px;font-weight:700;">
+        ${recommendation.stockName} <span style="opacity:.7;font-size:16px;">(${recommendation.stockSymbol})</span>
+      </h2>
+      <p style="margin:0;color:rgba(255,255,255,.75);font-size:13px;">${recommendation.exchange || 'NSE'} · ${recommendation.recommendationType?.toUpperCase()}</p>
+    </div>
+
+    <div style="background:#0f172a;border-radius:0 0 12px 12px;padding:24px 32px 28px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">
+        <tr>
+          <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 16px 0 0;">
+            <p style="margin:0;color:#94a3b8;font-size:11px;font-weight:600;text-transform:uppercase;">Current LTP</p>
+            <p style="margin:4px 0 0;color:#ffffff;font-size:22px;font-weight:700;">₹${Number(ltp).toFixed(2)}</p>
+          </td>
+          <td style="text-align:center;padding:0 0 0 16px;">
+            <p style="margin:0;color:#94a3b8;font-size:11px;font-weight:600;text-transform:uppercase;">${alertLabel}</p>
+            <p style="margin:4px 0 0;color:${accentColor};font-size:22px;font-weight:700;">₹${Number(alertPrice).toFixed(2)}</p>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <p style="margin:24px 0 8px;color:#1e293b;font-size:15px;line-height:1.7;">
+      ${isStopLoss
+        ? `The stop loss of <strong>₹${Number(alertPrice).toFixed(2)}</strong> has been triggered for <strong>${recommendation.stockName}</strong>. Please review your position.`
+        : `${recommendation.stockName} has reached <strong>${alertLabel}</strong> of <strong>₹${Number(alertPrice).toFixed(2)}</strong>. You may consider booking profits.`}
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;">
+      <tr>
+        <td style="padding:16px 20px;">
+          <table width="100%" cellpadding="0" cellspacing="4">
+            <tr>
+              <td style="color:#64748b;font-size:13px;padding:4px 0;">Entry Price</td>
+              <td style="color:#1e293b;font-size:13px;font-weight:600;text-align:right;">₹${Number(recommendation.currentPrice).toFixed(2)}</td>
+            </tr>
+            ${recommendation.targetPrice ? `<tr><td style="color:#64748b;font-size:13px;padding:4px 0;">Target 1</td><td style="color:#15803d;font-size:13px;font-weight:600;text-align:right;">₹${Number(recommendation.targetPrice).toFixed(2)}</td></tr>` : ''}
+            ${recommendation.targetPrice2 ? `<tr><td style="color:#64748b;font-size:13px;padding:4px 0;">Target 2</td><td style="color:#15803d;font-size:13px;font-weight:600;text-align:right;">₹${Number(recommendation.targetPrice2).toFixed(2)}</td></tr>` : ''}
+            ${recommendation.targetPrice3 ? `<tr><td style="color:#64748b;font-size:13px;padding:4px 0;">Target 3</td><td style="color:#15803d;font-size:13px;font-weight:600;text-align:right;">₹${Number(recommendation.targetPrice3).toFixed(2)}</td></tr>` : ''}
+            ${recommendation.stopLoss ? `<tr><td style="color:#64748b;font-size:13px;padding:4px 0;">Stop Loss</td><td style="color:#dc2626;font-size:13px;font-weight:600;text-align:right;">₹${Number(recommendation.stopLoss).toFixed(2)}</td></tr>` : ''}
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <p style="margin:0;color:#64748b;font-size:12px;line-height:1.7;">
+      This alert was generated automatically when the live price crossed your ${alertLabel.toLowerCase()}. Past performance is not indicative of future results. Please consult your advisor before taking any action.
+    </p>
+  `);
+
+  return sendEmail({
+    to: user.email,
+    subject: `[InvestKaps Alert] ${alertLabel} — ${recommendation.stockSymbol} @ ₹${Number(ltp).toFixed(2)}`,
+    html,
+    serviceType: normalizedServiceType,
+    allowUnsubscribed: options.allowUnsubscribed
+  });
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Call Booking emails  (all sent from IA account — investkaps_ia@gmail.com)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const sendCallBookingEmail = async (user, plan, slot, isFreeCall = false) => {
+  const html = wrap(`
+    <h2 style="margin:0 0 6px;color:#1e293b;font-size:20px;">
+      ${isFreeCall ? '🎁 Your Free Consultation Call Request Received!' : 'Call Booking Request Received'}
+    </h2>
+    <p style="margin:0 0 20px;color:#64748b;font-size:14px;">
+      Hi ${user.name || user.email},
+      ${isFreeCall
+        ? ' congratulations on claiming your <strong style="color:#059669;">complimentary first consultation call</strong>! Our team will review your request and confirm your slot shortly — no payment required.'
+        : " we've received your payment for the consultation call. Our team will verify your payment and confirm your slot shortly."
+      }
+    </p>
+    ${isFreeCall ? `<div style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#065f46;font-weight:600;">✅ This is your first free call — no payment needed.</div>` : ''}
+    <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:20px;">
+      <tr style="background:#f8fafc;">
+        <td style="padding:10px 16px;font-size:13px;color:#64748b;font-weight:600;">Plan</td>
+        <td style="padding:10px 16px;font-size:14px;color:#0f172a;font-weight:700;">${plan.name}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;font-size:13px;color:#64748b;font-weight:600;">Duration</td>
+        <td style="padding:10px 16px;font-size:14px;color:#0f172a;">${plan.durationMinutes} minutes</td>
+      </tr>
+      <tr style="background:#f8fafc;">
+        <td style="padding:10px 16px;font-size:13px;color:#64748b;font-weight:600;">Date</td>
+        <td style="padding:10px 16px;font-size:14px;color:#0f172a;">${slot.date}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;font-size:13px;color:#64748b;font-weight:600;">Time (IST)</td>
+        <td style="padding:10px 16px;font-size:14px;color:#0f172a;">${slot.startTime} – ${slot.endTime}</td>
+      </tr>
+      <tr style="background:#f8fafc;">
+        <td style="padding:10px 16px;font-size:13px;color:#64748b;font-weight:600;">Amount</td>
+        <td style="padding:10px 16px;font-size:14px;font-weight:700;${isFreeCall ? 'color:#059669;' : 'color:#0f172a;'}">${isFreeCall ? 'FREE' : `₹${plan.price}`}</td>
+      </tr>
+    </table>
+    <p style="font-size:13px;color:#64748b;">You will receive a Google Meet link once your ${isFreeCall ? 'request is approved' : 'payment is approved'}. If you have any questions, reply to this email.</p>
+  `);
+  return sendEmail({ to: user.email, subject: `InvestKaps — ${isFreeCall ? 'Free Consultation Call Request Received 🎁' : 'Consultation Call Booking Received'}`, html, serviceType: 'IA' });
+};
+
+const sendCallConfirmedEmail = async (user, plan, slot, meetLink, invoiceAttachment = null, isFreeCall = false) => {
+  const html = wrap(`
+    <h2 style="margin:0 0 6px;color:#1e293b;font-size:20px;">
+      ${isFreeCall ? '🎁 Your Free Consultation Call is Confirmed!' : 'Your Call is Confirmed! 🎉'}
+    </h2>
+    <p style="margin:0 0 20px;color:#64748b;font-size:14px;">
+      Hi ${user.name || user.email},
+      ${isFreeCall
+        ? ' your <strong style="color:#059669;">complimentary first consultation call</strong> has been confirmed by our team. Here are your details:'
+        : ' your consultation call has been confirmed. Here are your details:'
+      }
+    </p>
+    ${isFreeCall ? `<div style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#065f46;font-weight:600;">🎁 First Free Call — No charges applied.</div>` : ''}
+    <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:20px;">
+      <tr style="background:#f8fafc;">
+        <td style="padding:10px 16px;font-size:13px;color:#64748b;font-weight:600;">Plan</td>
+        <td style="padding:10px 16px;font-size:14px;color:#0f172a;font-weight:700;">${plan.name}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;font-size:13px;color:#64748b;font-weight:600;">Duration</td>
+        <td style="padding:10px 16px;font-size:14px;color:#0f172a;">${plan.durationMinutes} minutes</td>
+      </tr>
+      <tr style="background:#f8fafc;">
+        <td style="padding:10px 16px;font-size:13px;color:#64748b;font-weight:600;">Date</td>
+        <td style="padding:10px 16px;font-size:14px;color:#0f172a;">${slot.date}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;font-size:13px;color:#64748b;font-weight:600;">Time (IST)</td>
+        <td style="padding:10px 16px;font-size:14px;color:#0f172a;">${slot.startTime} – ${slot.endTime}</td>
+      </tr>
+      <tr style="background:#f8fafc;">
+        <td style="padding:10px 16px;font-size:13px;color:#64748b;font-weight:600;">Amount Charged</td>
+        <td style="padding:10px 16px;font-size:14px;font-weight:700;${isFreeCall ? 'color:#059669;' : 'color:#0f172a;'}">${isFreeCall ? 'FREE (₹0.00)' : `₹${plan.price}`}</td>
+      </tr>
+      ${meetLink ? `
+      <tr style="background:#eff6ff;">
+        <td style="padding:10px 16px;font-size:13px;color:#1d4ed8;font-weight:700;">Google Meet Link</td>
+        <td style="padding:10px 16px;"><a href="${meetLink}" style="color:#2563eb;font-weight:700;font-size:14px;">${meetLink}</a></td>
+      </tr>` : ''}
+    </table>
+    ${meetLink ? `<a href="${meetLink}" style="display:inline-block;margin-top:4px;padding:12px 28px;background:#2563eb;color:#ffffff;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;">Join Google Meet</a>` : ''}
+    <p style="margin-top:20px;font-size:13px;color:#64748b;">A calendar invite has also been sent to your email. Please join on time. If you need to reschedule, contact us at least 24 hours before.</p>
+    ${invoiceAttachment ? `<p style="margin-top:8px;font-size:13px;color:#64748b;">Your invoice is attached to this email for your records.</p>` : ''}
+  `);
+  const attachments = invoiceAttachment
+    ? [{ filename: invoiceAttachment.filename, content: invoiceAttachment.buffer, contentType: 'application/pdf' }]
+    : [];
+  return sendEmail({ to: user.email, subject: `InvestKaps — ${isFreeCall ? 'Free Consultation Call Confirmed 🎁' : 'Consultation Call Confirmed ✅'}`, html, serviceType: 'IA', attachments });
+};
+
+const sendCallCancelledEmail = async (user, plan, slot, reason) => {
+  const html = wrap(`
+    <h2 style="margin:0 0 6px;color:#1e293b;font-size:20px;">Consultation Call Cancelled</h2>
+    <p style="margin:0 0 20px;color:#64748b;font-size:14px;">Hi ${user.name || user.email}, unfortunately your consultation call booking has been cancelled.</p>
+    <table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;margin-bottom:20px;">
+      <tr style="background:#f8fafc;">
+        <td style="padding:10px 16px;font-size:13px;color:#64748b;font-weight:600;">Plan</td>
+        <td style="padding:10px 16px;font-size:14px;color:#0f172a;">${plan.name}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;font-size:13px;color:#64748b;font-weight:600;">Date</td>
+        <td style="padding:10px 16px;font-size:14px;color:#0f172a;">${slot.date}</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px;font-size:13px;color:#64748b;font-weight:600;">Time (IST)</td>
+        <td style="padding:10px 16px;font-size:14px;color:#0f172a;">${slot.startTime} – ${slot.endTime}</td>
+      </tr>
+      ${reason ? `<tr style="background:#fef2f2;"><td style="padding:10px 16px;font-size:13px;color:#dc2626;font-weight:600;">Reason</td><td style="padding:10px 16px;font-size:14px;color:#0f172a;">${reason}</td></tr>` : ''}
+    </table>
+    <p style="font-size:13px;color:#64748b;">If a payment was made, a refund will be processed. Please contact us at investkaps_ia@gmail.com for any queries.</p>
+  `);
+  return sendEmail({ to: user.email, subject: 'InvestKaps — Consultation Call Cancelled', html, serviceType: 'IA' });
+};
+
 export {
   sendEmail,
   sendPaymentRequestReceivedEmail,
@@ -537,5 +765,9 @@ export {
   sendPaymentRejectedEmail,
   sendNewRecommendationEmail,
   sendUpdatedRecommendationEmail,
-  sendOnboardingReminderEmail
+  sendOnboardingReminderEmail,
+  sendPriceAlertEmail,
+  sendCallBookingEmail,
+  sendCallConfirmedEmail,
+  sendCallCancelledEmail,
 };

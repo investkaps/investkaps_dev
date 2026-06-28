@@ -10,7 +10,6 @@ import Footer from './components/Footer/Footer';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import AdminRoute from './components/guards/AdminRoute'; // Admin route guard
 import PWAInstallPrompt from './components/PWAInstallPrompt/PWAInstallPrompt';
-import WhatsAppButton from './components/WhatsAppButton/WhatsAppButton';
 
 // Pages
 import Home from './pages/Home/Home';
@@ -24,7 +23,16 @@ import UserRecommendations from './pages/Dashboard/UserRecommendations';
 import PaymentSuccess from './pages/Payment/PaymentSuccess';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import Profile from './pages/Profile/Profile';
-import LegalCenter from './pages/LegalCenter/LegalCenter';
+import PrivacyPolicy from './pages/LegalCenter/PrivacyPolicy';
+import Disclaimers from './pages/LegalCenter/Disclaimers';
+import TermsAndConditions from './pages/LegalCenter/TermsAndConditions';
+import InvestorCharter from './pages/LegalCenter/InvestorCharter';
+import ValidUPI from './pages/LegalCenter/ValidUPI';
+import FAQs from './pages/LegalCenter/FAQs';
+import ComplaintsAndAudit from './pages/LegalCenter/ComplaintsAndAudit';
+import CancellationsAndRefunds from './pages/LegalCenter/CancellationsAndRefunds';
+import GrievanceRedressal from './pages/LegalCenter/GrievanceRedressal';
+import CodeOfConduct from './pages/LegalCenter/CodeOfConduct';
 import AuditReport from './pages/AuditReport/AuditReport';
 import AuditReport2 from './pages/AuditReport2/AuditReport2';
 import Subscribe from './pages/Subscribe/Subscribe';
@@ -79,7 +87,6 @@ const AppLayout = ({ children, scrolled }) => {
         {children}
       </main>
       {!isAdminRoute && <Footer />}
-      {!isAdminRoute && <WhatsAppButton />}
     </div>
   );
 };
@@ -132,26 +139,22 @@ function App() {
                     {/* Public routes */}
                     <Route path="/" element={<Home />} />
                     <Route path="/about" element={<About />} />
-                    <Route path="/contact" element={<Navigate to="/legal#contact-us" replace />} />
+                    <Route path="/contact" element={<Navigate to="/grievance-redressal" replace />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
-                    
-                    {/* Consolidated Policy and Legal Page */}
-                    <Route path="legal" element={<LegalCenter />} />
-                    <Route path="legal/*" element={<LegalCenter />} />
 
-                    {/* Legacy links redirected to section anchors in the consolidated page */}
-                    <Route path="privacy-policy" element={<Navigate to="/legal#privacy-policy" replace />} />
-                    <Route path="disclaimers" element={<Navigate to="/legal#disclaimers" replace />} />
-                    <Route path="terms-and-conditions" element={<Navigate to="/legal#terms-and-conditions" replace />} />
-                    <Route path="investor-charter" element={<Navigate to="/legal#investor-charter" replace />} />
-                    <Route path="valid-upi" element={<Navigate to="/legal#valid-upi" replace />} />
-                    <Route path="faqs" element={<Navigate to="/legal#faqs" replace />} />
-                    <Route path="complaints-and-audit" element={<Navigate to="/legal#complaints-and-audit" replace />} />
-                    <Route path="complaints-data" element={<Navigate to="/legal#complaints-and-audit" replace />} />
-                    <Route path="cancellations-and-refunds" element={<Navigate to="/legal#cancellations-and-refunds" replace />} />
-                    <Route path="grievance-redressal" element={<Navigate to="/legal#grievance-redressal" replace />} />
-                    <Route path="code-of-conduct" element={<Navigate to="/legal#code-of-conduct" replace />} />
+                    {/* Legal pages */}
+                    <Route path="privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="disclaimers" element={<Disclaimers />} />
+                    <Route path="terms-and-conditions" element={<TermsAndConditions />} />
+                    <Route path="investor-charter" element={<InvestorCharter />} />
+                    <Route path="valid-upi" element={<ValidUPI />} />
+                    <Route path="faqs" element={<FAQs />} />
+                    <Route path="complaints-and-audit" element={<ComplaintsAndAudit />} />
+                    <Route path="complaints-data" element={<Navigate to="/complaints-and-audit" replace />} />
+                    <Route path="cancellations-and-refunds" element={<CancellationsAndRefunds />} />
+                    <Route path="grievance-redressal" element={<GrievanceRedressal />} />
+                    <Route path="code-of-conduct" element={<CodeOfConduct />} />
 
                     <Route path="/audit-report" element={<AuditReport />} />
                     <Route path="/audit-report-2" element={<AuditReport2 />} />

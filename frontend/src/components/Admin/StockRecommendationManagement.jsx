@@ -132,83 +132,54 @@ const StockRecommendationManagement = () => {
   };
 
   const updateAllPrices = async () => {
-    if (recommendations.length === 0) {
-      return;
-    }
+    if (recommendations.length === 0) return;
 
     try {
       setUpdatingPrices(true);
       setRefreshMessage(null);
-      
-      // Group recommendations by exchange for efficient batch fetching
-      const byExchange = {};
-      recommendations.forEach(rec => {
-        const exchange = rec.exchange || 'NSE';
-        if (!byExchange[exchange]) {
-          byExchange[exchange] = [];
-        }
-        byExchange[exchange].push(rec);
-      });
+
+      // Use the dedicated recommendations endpoint — handles NSE, BSE, NFO, BFO, CDS, MCX
+      const response = await adminAPI.fetchRecommendationPrices(
+        recommendations.map(r => ({ stockSymbol: r.stockSymbol, exchange: r.exchange || 'NSE' }))
+      );
+
+      // Response shape: { success, prices: { "SYMBOL": ltp, ... } }
+      // For NFO the key is the full trading symbol e.g. "NIFTY25JAN25C23000"
+      const prices = response.prices || {};
+      console.log('[updateAllPrices] prices returned:', prices);
 
       let totalUpdated = 0;
-      let errors = [];
+      const errors = [];
 
-      // Fetch prices for each exchange
-      for (const [exchange, recs] of Object.entries(byExchange)) {
-        try {
-          const symbols = recs.map(r => r.stockSymbol);
-          const response = await adminAPI.fetchBatchPrices(exchange, symbols);
-          
-          if (response.success && response.data.prices) {
-            // Update recommendations in database
-            for (const rec of recs) {
-              const newPrice = response.data.prices[rec.stockSymbol];
-              if (newPrice && newPrice !== rec.currentPrice) {
-                try {
-                  await adminAPI.updateStockRecommendation(rec._id, {
-                    ...rec,
-                    currentPrice: newPrice
-                  });
-                  totalUpdated++;
-                } catch (updateErr) {
-                  console.error(`Failed to update ${rec.stockSymbol}:`, updateErr);
-                  errors.push(rec.stockSymbol);
-                }
-              }
-            }
+      for (const rec of recommendations) {
+        // prices keys are uppercase; rec.stockSymbol may be mixed case
+        const newPrice = prices[rec.stockSymbol] ?? prices[rec.stockSymbol?.toUpperCase()];
+        console.log(`[updateAllPrices] ${rec.stockSymbol}: stored=${rec.currentPrice}, fetched=${newPrice}`);
+        if (newPrice != null) {
+          try {
+            await adminAPI.updateStockRecommendation(rec._id, { currentPrice: newPrice, lastPriceUpdate: new Date().toISOString() });
+            totalUpdated++;
+          } catch (updateErr) {
+            console.error(`Failed to update ${rec.stockSymbol}:`, updateErr);
+            errors.push(rec.stockSymbol);
           }
-        } catch (exchangeErr) {
-          console.error(`Error fetching prices for ${exchange}:`, exchangeErr);
-          errors.push(`${exchange} exchange`);
         }
       }
 
-      // Refresh recommendations list
       await fetchRecommendations();
-      
       setLastPriceUpdate(new Date());
-      
+
       if (errors.length > 0) {
-        setRefreshMessage({
-          type: 'warning',
-          text: `Updated ${totalUpdated} prices. Failed: ${errors.join(', ')}`
-        });
+        setRefreshMessage({ type: 'warning', text: `Updated ${totalUpdated} prices. Failed: ${errors.join(', ')}` });
       } else {
-        setRefreshMessage({
-          type: 'success',
-          text: `✓ Updated ${totalUpdated} stock prices at ${new Date().toLocaleTimeString()}`
-        });
+        setRefreshMessage({ type: 'success', text: `✓ Updated ${totalUpdated} stock prices at ${new Date().toLocaleTimeString()}` });
       }
 
-      // Clear message after 5 seconds
       setTimeout(() => setRefreshMessage(null), 5000);
 
     } catch (err) {
       console.error('Error updating all prices:', err);
-      setRefreshMessage({
-        type: 'error',
-        text: `Failed to update prices: ${err.message}`
-      });
+      setRefreshMessage({ type: 'error', text: `Failed to update prices: ${err.message}` });
     } finally {
       setUpdatingPrices(false);
     }
@@ -1056,9 +1027,10 @@ const StockRecommendationManagement = () => {
                     ₹{recommendation.targetPrice}
                     <br />
                     <small className={recommendation.recommendationType === 'buy' ? 'profit' : 'loss'}>
-                      {recommendation.recommendationType === 'buy' 
-                        ? `+${(((recommendation.targetPrice - recommendation.currentPrice) / recommendation.currentPrice) * 100).toFixed(2)}%`
-                        : `${(((recommendation.targetPrice - recommendation.currentPrice) / recommendation.currentPrice) * 100).toFixed(2)}%`}
+                      {(() => {
+                        const pct = ((recommendation.targetPrice - recommendation.currentPrice) / recommendation.currentPrice) * 100;
+                        return (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+                      })()}
                     </small>
                   </td>
                   <td>
@@ -1168,9 +1140,10 @@ const StockRecommendationManagement = () => {
                   <div className="price-item">
                     <span className="price-label">Potential</span>
                     <span className={`price-value ${selectedRecommendation.recommendationType === 'buy' ? 'profit' : 'loss'}`}>
-                      {selectedRecommendation.recommendationType === 'buy' 
-                        ? `+${(((selectedRecommendation.targetPrice - selectedRecommendation.currentPrice) / selectedRecommendation.currentPrice) * 100).toFixed(2)}%`
-                        : `${(((selectedRecommendation.targetPrice - selectedRecommendation.currentPrice) / selectedRecommendation.currentPrice) * 100).toFixed(2)}%`}
+                      {(() => {
+                        const pct = ((selectedRecommendation.targetPrice - selectedRecommendation.currentPrice) / selectedRecommendation.currentPrice) * 100;
+                        return (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+                      })()}
                     </span>
                   </div>
                 </div>

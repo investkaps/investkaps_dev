@@ -19,6 +19,89 @@ import ServiceSelector from '../../components/OnboardingFlow/ServiceSelector';
 import './Dashboard.css';
 import UserTestimonial from '../../components/UserTestimonial/UserTestimonial';
 
+function SubscriptionCarousel({ subscriptions }) {
+  const [idx, setIdx] = React.useState(0);
+  const sub = subscriptions[idx];
+  return (
+    <div className="current-subscription-section">
+      <div className="subscription-carousel-nav">
+        <h2 style={{ margin: 0 }}>Your Current Plan{subscriptions.length > 1 ? 's' : ''}</h2>
+        {subscriptions.length > 1 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div className="subscription-carousel-dots">
+              {subscriptions.map((_, i) => (
+                <div key={i} className={`subscription-carousel-dot${i === idx ? ' active' : ''}`} />
+              ))}
+            </div>
+            <div className="subscription-carousel-arrows">
+              <button className="subscription-carousel-btn" disabled={idx === 0} onClick={() => setIdx(i => i - 1)}>&#8592;</button>
+              <button className="subscription-carousel-btn" disabled={idx === subscriptions.length - 1} onClick={() => setIdx(i => i + 1)}>&#8594;</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="subscription-card">
+        {sub.status === 'pending' && (
+          <div style={{
+            marginBottom: '1rem', padding: '1rem 1.2rem',
+            background: '#fffbeb', border: '2px solid #fcd34d',
+            borderRadius: '12px', color: '#92400e',
+            fontSize: '0.875rem', lineHeight: '1.6',
+          }}>
+            <strong>Subscription On Hold</strong><br />
+            Your payment has been received and verified. Your subscription will start automatically as soon as you complete all remaining onboarding steps below.
+          </div>
+        )}
+        <div className="subscription-header">
+          <div className="plan-info">
+            <h3>{sub.subscription?.name || 'N/A'}</h3>
+            <span className="plan-badge">{sub.subscription?.packageCode || 'PLAN'}</span>
+          </div>
+          <div className="plan-status">
+            <span className={`status-badge ${sub.status}`}>
+              {sub.status === 'active' ? 'Active' : sub.status === 'pending' ? 'On Hold' : sub.status}
+            </span>
+          </div>
+        </div>
+        <div className="subscription-details">
+          <div className="detail-item">
+            <span className="detail-label">Duration:</span>
+            <span className="detail-value">
+              {sub.duration === 'monthly' ? 'Monthly' :
+               sub.duration === 'sixMonth' ? '6 Months' :
+               sub.duration === 'yearly' ? 'Yearly' : sub.duration}
+            </span>
+          </div>
+          <div className="detail-item">
+            <span className="detail-label">Start Date:</span>
+            <span className="detail-value">{sub.startDate ? new Date(sub.startDate).toLocaleDateString() : 'Pending activation'}</span>
+          </div>
+          <div className="detail-item">
+            <span className="detail-label">End Date:</span>
+            <span className="detail-value">{new Date(sub.endDate).toLocaleDateString()}</span>
+          </div>
+          <div className="detail-item">
+            <span className="detail-label">Days Remaining:</span>
+            <span className="detail-value highlight">
+              {Math.max(0, Math.ceil((new Date(sub.endDate) - new Date()) / (1000 * 60 * 60 * 24)))} days
+            </span>
+          </div>
+        </div>
+        <div className="subscription-tip">
+          <div className="tip-content">
+            <strong>Maximize your access.</strong> Purchase multiple plans to access more strategies.
+            <Link to="/pricing" className="tip-link">Explore Plans →</Link>
+          </div>
+        </div>
+        <div className="subscription-actions">
+          <Link to="/pricing" className="view-plans-btn">View All Plans</Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const Dashboard = () => {
   const { currentUser, logout, loading: authLoading, userReady } = useAuth();
   const { isAdmin } = useRole();
@@ -205,6 +288,7 @@ const Dashboard = () => {
   // eSign state - will fetch from MongoDB
   // Subscription and stock recommendations state
   const [activeSubscription, setActiveSubscription] = useState(null);
+  const [allSubscriptions, setAllSubscriptions] = useState([]);
   const [stockRecommendations, setStockRecommendations] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [modelPortfolio, setModelPortfolio] = useState(null);
@@ -499,6 +583,7 @@ const Dashboard = () => {
               if (subResponse.success && subResponse.data) {
                 const subscriptions = Array.isArray(subResponse.data) ? subResponse.data : [subResponse.data];
                 if (subscriptions.length > 0) {
+                  setAllSubscriptions(subscriptions);
                   setActiveSubscription(subscriptions[0]);
                   setSteps(prev => ({ ...prev, payment: { ...prev.payment, completed: true, active: true } }));
                   const raSubscription = subscriptions.find((entry) => {
@@ -1381,11 +1466,11 @@ const Dashboard = () => {
           </div>
         )}
 
-        {pendingPaymentRequests.length > 0 && (
+        {pendingPaymentRequests.filter(r => r.status !== 'approved').length > 0 && (
           <div className="payment-requests-section" ref={paymentRequestsRef}>
             <h2>QR / Manual Payment Status</h2>
             <div className="payment-requests-list">
-              {pendingPaymentRequests.map(req => (
+              {pendingPaymentRequests.filter(r => r.status !== 'approved').map(req => (
                 <div key={req._id} className="payment-request-card">
                   <div className="pr-info">
                     <span className="pr-plan">{req.planName || 'Plan'}</span>
@@ -1393,13 +1478,13 @@ const Dashboard = () => {
                     <span className="pr-date">{new Date(req.createdAt).toLocaleDateString()}</span>
                   </div>
                   <span className={`pr-status-badge pr-status-${req.status}`}>
-                    {req.status === 'pending' ? 'Pending Review' : req.status === 'approved' ? 'Approved' : 'Rejected'}
+                    {req.status === 'pending' ? 'Pending Review' : 'Cancelled'}
                   </span>
                   {req.status === 'pending' && (
                     <p className="pr-note">Your payment has been submitted. An admin will review shortly.</p>
                   )}
-                  {req.status === 'rejected' && req.rejectionReason && (
-                    <p className="pr-note pr-rejected-note">Reason: {req.rejectionReason}</p>
+                  {req.status === 'rejected' && req.adminNotes && (
+                    <p className="pr-note pr-rejected-note">Reason: {req.adminNotes}</p>
                   )}
                 </div>
               ))}
@@ -1407,78 +1492,13 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Current Subscription Plan */}
-        {activeSubscription && (
-          <div className="current-subscription-section">
-            <h2>Your Current Plan</h2>
-
-            {activeSubscription.status === 'pending' && (
-              <div style={{
-                marginBottom: '1rem',
-                padding: '1rem 1.2rem',
-                background: '#fffbeb',
-                border: '2px solid #fcd34d',
-                borderRadius: '12px',
-                color: '#92400e',
-                fontSize: '0.875rem',
-                lineHeight: '1.6',
-              }}>
-                <strong>Subscription On Hold</strong><br />
-                Your payment has been received and verified. Your subscription will start automatically as soon as you complete all remaining onboarding steps below.
-              </div>
-            )}
-
-            <div className="subscription-card">
-              <div className="subscription-header">
-                <div className="plan-info">
-                  <h3>{activeSubscription.subscription?.name || 'N/A'}</h3>
-                  <span className="plan-badge">{activeSubscription.subscription?.packageCode || 'PLAN'}</span>
-                </div>
-                <div className="plan-status">
-                  <span className={`status-badge ${activeSubscription.status}`}>
-                    {activeSubscription.status === 'active' ? 'Active' : activeSubscription.status === 'pending' ? 'On Hold' : activeSubscription.status}
-                  </span>
-                </div>
-              </div>
-              <div className="subscription-details">
-                <div className="detail-item">
-                  <span className="detail-label">Duration:</span>
-                  <span className="detail-value">
-                    {activeSubscription.duration === 'monthly' ? 'Monthly' :
-                     activeSubscription.duration === 'sixMonth' ? '6 Months' :
-                     activeSubscription.duration === 'yearly' ? 'Yearly' : activeSubscription.duration}
-                  </span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Start Date:</span>
-                  <span className="detail-value">{activeSubscription.startDate ? new Date(activeSubscription.startDate).toLocaleDateString() : 'Pending activation'}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">End Date:</span>
-                  <span className="detail-value">{new Date(activeSubscription.endDate).toLocaleDateString()}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Days Remaining:</span>
-                  <span className="detail-value highlight">
-                    {Math.max(0, Math.ceil((new Date(activeSubscription.endDate) - new Date()) / (1000 * 60 * 60 * 24)))} days
-                  </span>
-                </div>
-              </div>
-              <div className="subscription-tip">
-                <div className="tip-content">
-                  <strong>Maximize your access.</strong> Purchase multiple plans to access more strategies.
-                  <Link to="/pricing" className="tip-link">Explore Plans →</Link>
-                </div>
-              </div>
-              <div className="subscription-actions">
-                <Link to="/pricing" className="view-plans-btn">View All Plans</Link>
-              </div>
-            </div>
-          </div>
+        {/* Current Subscription Plans — carousel, one card visible at a time */}
+        {allSubscriptions.length > 0 && (
+          <SubscriptionCarousel subscriptions={allSubscriptions} />
         )}
 
         {/* No Subscription */}
-        {!activeSubscription && !isAdminUser && (
+        {allSubscriptions.length === 0 && !activeSubscription && !isAdminUser && (
           <div className="no-subscription-section">
             <div className="no-subscription-card">
               <h3>No Active Subscription</h3>

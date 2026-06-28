@@ -6,8 +6,9 @@ export function TestimonialsMarquee({ title, description, testimonials, classNam
   const cards = (testimonials || []).filter(t => !t.empty);
   const trackRef = useRef(null);
 
-  // Duplicate cards so the loop is seamless
-  const items = [...cards, ...cards];
+  // Interleave a blank spacer after every real card, then duplicate for seamless loop
+  const withSpacers = cards.flatMap(c => [c, { spacer: true }]);
+  const items = [...withSpacers, ...withSpacers];
 
   if (cards.length === 0) return null;
 
@@ -24,10 +25,13 @@ export function TestimonialsMarquee({ title, description, testimonials, classNam
           <div className="tsec-track" ref={trackRef}>
             {items.map((t, i) => (
               <div className="tsec-item" key={i}>
-                <TestimonialCard
-                  author={{ name: t.name, avatar: t.avatar || null, handle: t.occupation || null }}
-                  text={t.text}
-                />
+                {t.spacer
+                  ? <div className="tsec-spacer-card" aria-hidden="true" />
+                  : <TestimonialCard
+                      author={{ name: t.name, avatar: t.avatar || null, handle: t.occupation || null }}
+                      text={t.text}
+                    />
+                }
               </div>
             ))}
           </div>

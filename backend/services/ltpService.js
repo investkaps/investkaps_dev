@@ -46,14 +46,34 @@ class LTPService {
       return { exchange: exch, prices: mapped };
     }
 
-    const response = await axios.get(`${this.baseURL}/ltp/multi`, {
-      params: { items: syms.map(s => `${exch}:${s}`).join(',') },
-      timeout: this.timeout,
-    });
+    let rawPrices = {};
+    try {
+      const response = await axios.get(`${this.baseURL}/ltp/multi`, {
+        params: { items: syms.map(s => `${exch}:${s}`).join(',') },
+        timeout: this.timeout,
+      });
+      rawPrices = response.data.prices || {};
+    } catch (err) {
+      const status = err.response?.status;
+      const detail = err.response?.data?.detail || err.message;
+      logger.warn(`fetchBatchPrices(${exch}) failed with ${status}: ${detail} — returning nulls`);
+      // Return nulls for all symbols rather than crashing the whole update
+      const prices = {};
+      syms.forEach(s => { prices[s] = null; });
+      return { exchange: exch, prices };
+    }
 
+    // Response keys from app.py use make_key() so BSE gives "BSE:SYM-A", NSE gives "NSE:SYM-EQ".
+    // Find each symbol's price by scanning the response keys for a match on the symbol part.
     const prices = {};
     for (const sym of syms) {
-      prices[sym] = response.data.prices?.[`${exch}:${sym}`] ?? null;
+      const exactKey = `${exch}:${sym}`;
+      if (rawPrices[exactKey] != null) {
+        prices[sym] = rawPrices[exactKey];
+      } else {
+        const matchingKey = Object.keys(rawPrices).find(k => k.startsWith(`${exch}:`) && k.split(':')[1]?.startsWith(sym));
+        prices[sym] = matchingKey != null ? rawPrices[matchingKey] : null;
+      }
     }
     return { exchange: exch, prices };
   }
@@ -70,11 +90,25 @@ class LTPService {
 
     if (equity.length) {
       const itemsParam = equity.map(i => `${i.exchange.toUpperCase()}:${i.symbol.toUpperCase()}`).join(',');
-      const response   = await axios.get(`${this.baseURL}/ltp/multi`, {
-        params: { items: itemsParam },
-        timeout: this.timeout,
-      });
-      Object.assign(results, response.data.prices || {});
+      let rawPrices = {};
+      try {
+        const response = await axios.get(`${this.baseURL}/ltp/multi`, {
+          params: { items: itemsParam },
+          timeout: this.timeout,
+        });
+        rawPrices = response.data.prices || {};
+      } catch (err) {
+        const status = err.response?.status;
+        const detail = err.response?.data?.detail || err.message;
+        logger.warn(`fetchMultiExchangePrices equity leg failed with ${status}: ${detail} — returning nulls for equity items`);
+      }
+      // Normalize app.py response keys (e.g. "NSE:TCS-EQ", "BSE:TCS-A") back to "EXCHANGE:SYMBOL"
+      for (const item of equity) {
+        const exch = item.exchange.toUpperCase();
+        const sym  = item.symbol.toUpperCase();
+        const matchingKey = Object.keys(rawPrices).find(k => k.startsWith(`${exch}:`) && k.split(':')[1]?.startsWith(sym));
+        results[`${exch}:${sym}`] = matchingKey != null ? rawPrices[matchingKey] : null;
+      }
     }
 
     if (nfo.length) {
@@ -118,23 +152,34 @@ class LTPService {
   /**
    * Prices for a list of recommendation objects.
    * recommendations: [{ stockSymbol, exchange? }]
-   * Returns: { SYMBOL: price }  (simple format for backwards compat)
+   * Returns: { SYMBOL: price }
+   * Key is the raw stockSymbol (trading symbol) — works for equity and NFO.
+   * If two recs share a symbol on different exchanges the last one wins,
+   * but that is an edge case and both prices should be identical anyway.
    */
   async fetchRecommendationPrices(recommendations) {
-    const items = recommendations.map(r => ({
-      exchange: (r.exchange || 'NSE').toUpperCase(),
-      symbol:   r.stockSymbol.toUpperCase(),
-    }));
+    const items = recommendations.map(r => {
+      let exch = (r.exchange || 'NSE').toUpperCase();
+      const sym = r.stockSymbol.toUpperCase();
+      // If the exchange is equity (NSE/BSE) but the symbol looks like a derivative,
+      // reroute to the appropriate F&O exchange so it hits /ltp/nfo instead of /ltp/multi.
+      // Patterns caught: expiry codes (26AUG, 25JAN25) and FUT/CE/PE suffixes.
+      if ((exch === 'NSE' || exch === 'BSE') && /(\d{2}[A-Z]{3}(\d{2})?|FUT$|CE$|PE$)/.test(sym)) {
+        exch = exch === 'BSE' ? 'BFO' : 'NFO';
+      }
+      return { exchange: exch, symbol: sym };
+    });
 
     const prices = await this.smartFetch(items);
 
-    // Convert "NSE:TCS" → "TCS"
-    const simple = {};
+    // smartFetch returns { "EXCHANGE:SYMBOL": price }.
+    // Build a map keyed by the raw symbol so the frontend can do prices[rec.stockSymbol].
+    const bySymbol = {};
     for (const [key, price] of Object.entries(prices)) {
-      const sym = key.includes(':') ? key.split(':')[1] : key;
-      simple[sym] = price;
+      const sym = key.includes(':') ? key.split(':').slice(1).join(':') : key;
+      bySymbol[sym] = price;
     }
-    return simple;
+    return bySymbol;
   }
 
   groupByExchange(items) {

@@ -220,7 +220,7 @@ const Navbar = ({ scrolled }) => {
             </>
           )}
           <li className="nav-item">
-            <Link to="/legal#contact-us" className={`nav-link ${location.pathname === '/legal' && location.hash === '#contact-us' ? 'active' : ''}`} onClick={() => setMenuOpen(false)}>Contact</Link>
+            <Link to="/grievance-redressal" className={`nav-link ${location.pathname === '/grievance-redressal' ? 'active' : ''}`} onClick={() => setMenuOpen(false)}>Contact</Link>
           </li>
 
           {/* Mobile language and contrast controls */}

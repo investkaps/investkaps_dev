@@ -213,6 +213,11 @@ export const getRecommendationPrices = async (req, res) => {
 
     const prices = await ltpService.fetchRecommendationPrices(recommendations);
 
+    // Fire-and-forget: check if any target/stop-loss was crossed
+    import('../services/priceAlertService.js')
+      .then(m => m.checkPriceAlerts(prices))
+      .catch(err => logger.error('checkPriceAlerts error (non-blocking):', err));
+
     return res.status(200).json({
       success: true,
       prices: prices

@@ -9,7 +9,9 @@
       "Read(//c/Users/aiman/AppData/Local/Temp/**)",
       "Bash(python3 -c ' *)",
       "Bash(node -e ' *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(xargs grep -l -i \"referral\")",
+      "Bash(npm install *)"
     ]
   }
 }

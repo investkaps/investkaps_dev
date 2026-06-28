@@ -143,6 +143,13 @@ const StockRecommendationSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  // Alert flags — set to true once the alert email has been sent, so we don't re-send
+  alertFlags: {
+    target1Hit:  { type: Boolean, default: false },
+    target2Hit:  { type: Boolean, default: false },
+    target3Hit:  { type: Boolean, default: false },
+    stopLossHit: { type: Boolean, default: false }
+  },
   createdAt: {
     type: Date,
     default: Date.now

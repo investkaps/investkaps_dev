@@ -7,6 +7,7 @@ import userSubscriptionAPI from '../../services/userSubscriptionAPI';
 import { referralAPI } from '../../services/api';
 import { FaArrowRight, FaTimes as FaClose } from 'react-icons/fa';
 import QRPaymentModal from '../../components/QRPaymentModal/QRPaymentModal';
+import BookACall from '../../components/BookACall/BookACall';
 
 
 const PlanCard = ({ plan, idx, totalPlans, active, onSelect, ctaLabel }) => {
@@ -365,6 +366,7 @@ const Pricing = () => {
     { key: 'ra', label: 'Research Analyst', icon: '📊' },
     { key: 'mp', label: 'Model Portfolios', icon: '🗂️' },
     { key: 'referral', label: 'Referral', icon: '🎁' },
+    { key: 'book-meeting', label: 'Book a Meeting', icon: '📞' },
   ];
 
   return (
@@ -497,6 +499,12 @@ const Pricing = () => {
                 </div>
               </>
             )}
+          </section>
+        )}
+
+        {pricingTab === 'book-meeting' && (
+          <section className="px-section">
+            <BookACall />
           </section>
         )}
       </div>

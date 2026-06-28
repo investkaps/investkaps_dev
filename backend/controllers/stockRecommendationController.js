@@ -6,7 +6,6 @@ import logger from '../utils/logger.js';
 import { generateStockReportPDF  } from '../utils/pdfGenerator.js';
 import { uploadPDF, deletePDF  } from '../config/cloudinary.js';
 import { sendRecommendationToTelegram, sendUpdatedRecommendationToTelegram  } from '../services/telegramService.js';
-import { sendRecommendationToWhatsApp  } from '../services/whatsappService.js';
 import { sendNewRecommendationEmail, sendUpdatedRecommendationEmail } from '../utils/emailService.js';
 import { isEmailUnsubscribed } from '../services/emailPreferenceService.js';
 import Subscription from '../model/Subscription.js';
@@ -91,19 +90,6 @@ const createRecommendation = async (req, res) => {
         }
       } catch (telegramError) {
         logger.error('Failed to send to Telegram:', telegramError);
-      }
-
-      // WhatsApp
-      try {
-        const users = userSubscriptions
-          .map(us => us.user)
-          .filter(user => user?.profile?.phone && user?.profile?.phoneVerified);
-        for (const user of users) {
-          await sendRecommendationToWhatsApp(recommendation, user);
-          logger.info(`Recommendation sent to WhatsApp ${user.profile.phone}: ${recommendation.stockSymbol}`);
-        }
-      } catch (whatsappError) {
-        logger.error('Failed to send to WhatsApp:', whatsappError);
       }
 
       // Email — single email per user via the standard template
@@ -272,19 +258,6 @@ const updateRecommendation = async (req, res) => {
         }
       } catch (telegramError) {
         logger.error('Failed to send to Telegram:', telegramError);
-      }
-
-      // WhatsApp
-      try {
-        const users = userSubscriptions
-          .map(us => us.user)
-          .filter(user => user?.profile?.phone && user?.profile?.phoneVerified);
-        for (const user of users) {
-          await sendRecommendationToWhatsApp(recommendation, user);
-          logger.info(`Recommendation sent to WhatsApp ${user.profile.phone}: ${recommendation.stockSymbol}`);
-        }
-      } catch (whatsappError) {
-        logger.error('Failed to send to WhatsApp:', whatsappError);
       }
 
       // Email — single email per user via the standard template

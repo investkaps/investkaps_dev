@@ -33,6 +33,7 @@ import ltpRoutes from './routes/ltpRoutes.js';
 import questionnaireRoutes from './routes/questionnaireRoutes.js';
 import testimonialRoutes from './routes/testimonialRoutes.js';
 import referralRoutes from './routes/referralRoutes.js';
+import callRoutes from './routes/callRoutes.js';
 
 // Connect to MongoDB
 connectDB();
@@ -126,6 +127,7 @@ app.use('/api/ltp', ltpRoutes);
 app.use('/api/questionnaire', questionnaireRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/referrals', referralRoutes);
+app.use('/api/calls', callRoutes);
 
 // ─── Ensure directories exist ───
 for (const dir of ['uploads']) {
@@ -167,6 +169,29 @@ app.listen(PORT, () => {
       logger.info('Onboarding reminders completed', result);
     } catch (error) {
       logger.error('Error in onboarding reminders scheduled task:', error);
+    }
+  });
+
+  // Check price alerts every 5 minutes on weekdays (market hours check is inside the service)
+  cron.schedule('*/5 * * * 1-5', async () => {
+    try {
+      // Fetch current prices for all published recommendations then check alerts
+      const StockRecommendation = (await import('./model/StockRecommendation.js')).default;
+      const ltpService = (await import('./services/ltpService.js')).default;
+
+      const recs = await StockRecommendation.find({ status: 'published' })
+        .select('stockSymbol exchange');
+
+      if (!recs.length) return;
+
+      const prices = await ltpService.fetchRecommendationPrices(
+        recs.map(r => ({ stockSymbol: r.stockSymbol, exchange: r.exchange || 'NSE' }))
+      );
+
+      const { checkPriceAlerts } = await import('./services/priceAlertService.js');
+      await checkPriceAlerts(prices);
+    } catch (error) {
+      logger.error('Error in price alert scheduled task:', error);
     }
   });
 });
