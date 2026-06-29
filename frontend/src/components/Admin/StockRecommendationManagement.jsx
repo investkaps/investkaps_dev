@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { adminAPI } from '../../services/api';
 import stockRecommendationAPI from '../../services/stockRecommendationAPI';
@@ -42,6 +42,8 @@ const StockRecommendationManagement = () => {
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
   const [formSuccessMessage, setFormSuccessMessage] = useState('');
   const [uploadingPdfId, setUploadingPdfId] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const menuRef = useRef(null);
   const uploadPdfInputRef = React.useRef(null);
   const uploadPdfTargetRec = React.useRef(null);
   
@@ -79,6 +81,18 @@ const StockRecommendationManagement = () => {
     fetchRecommendations();
     fetchStrategies();
   }, []);
+
+  // Close three-dot menu when clicking outside
+  useEffect(() => {
+    if (!openMenuId) return;
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [openMenuId]);
 
   // Auto-update prices every 5 minutes
   useEffect(() => {
@@ -131,30 +145,26 @@ const StockRecommendationManagement = () => {
     }
   };
 
-  const updateAllPrices = async () => {
-    if (recommendations.length === 0) return;
+  // recList is optional — pass it to avoid stale closure when called right after fetchRecommendations
+  const updateAllPrices = async (recList) => {
+    const list = Array.isArray(recList) ? recList : Array.isArray(recommendations) ? recommendations : [];
+    if (list.length === 0) return;
 
     try {
       setUpdatingPrices(true);
       setRefreshMessage(null);
 
-      // Use the dedicated recommendations endpoint — handles NSE, BSE, NFO, BFO, CDS, MCX
       const response = await adminAPI.fetchRecommendationPrices(
-        recommendations.map(r => ({ stockSymbol: r.stockSymbol, exchange: r.exchange || 'NSE' }))
+        list.map(r => ({ stockSymbol: r.stockSymbol, exchange: r.exchange || 'NSE' }))
       );
 
-      // Response shape: { success, prices: { "SYMBOL": ltp, ... } }
-      // For NFO the key is the full trading symbol e.g. "NIFTY25JAN25C23000"
       const prices = response.prices || {};
-      console.log('[updateAllPrices] prices returned:', prices);
 
       let totalUpdated = 0;
       const errors = [];
 
-      for (const rec of recommendations) {
-        // prices keys are uppercase; rec.stockSymbol may be mixed case
+      for (const rec of list) {
         const newPrice = prices[rec.stockSymbol] ?? prices[rec.stockSymbol?.toUpperCase()];
-        console.log(`[updateAllPrices] ${rec.stockSymbol}: stored=${rec.currentPrice}, fetched=${newPrice}`);
         if (newPrice != null) {
           try {
             await adminAPI.updateStockRecommendation(rec._id, { currentPrice: newPrice, lastPriceUpdate: new Date().toISOString() });
@@ -192,9 +202,11 @@ const StockRecommendationManagement = () => {
       setLoading(true);
       setError(null);
       const response = await adminAPI.getAllStockRecommendations();
-      
+
       if (response.success) {
-        setRecommendations(response.data || []);
+        const list = response.data || [];
+        setRecommendations(list);
+        return list;
       } else {
         setError(response.error || 'Failed to fetch recommendations');
       }
@@ -204,6 +216,7 @@ const StockRecommendationManagement = () => {
     } finally {
       setLoading(false);
     }
+    return [];
   };
 
   const fetchStrategies = async () => {
@@ -354,7 +367,8 @@ const StockRecommendationManagement = () => {
           setFormSuccessMessage('');
           setIsFormVisible(false);
         }, 1800);
-        fetchRecommendations();
+        // Fetch fresh list then immediately update prices so the new/edited rec shows live price
+        fetchRecommendations().then(list => { if (list?.length) updateAllPrices(list); });
       } else {
         setError(response.error || 'Failed to save recommendation');
       }
@@ -992,13 +1006,19 @@ const StockRecommendationManagement = () => {
                 <th>Type</th>
                 <th>Current Price</th>
                 <th>Target Price</th>
+                <th>Alert</th>
                 <th>Status</th>
                 <th>Created</th>
-                <th>Actions</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              {recommendations.map((recommendation) => (
+              {recommendations.map((recommendation) => {
+                const flags = recommendation.alertFlags || {};
+                const targetHit = flags.target1Hit || flags.target2Hit || flags.target3Hit;
+                const slHit = flags.stopLossHit;
+                const isMenuOpen = openMenuId === recommendation._id;
+                return (
                 <tr key={recommendation._id}>
                   <td>{recommendation.title}</td>
                   <td>
@@ -1015,10 +1035,10 @@ const StockRecommendationManagement = () => {
                     <strong>₹{recommendation.currentPrice}</strong>
                     <br />
                     <small style={{ color: '#666', fontSize: '0.85em' }}>
-                      {recommendation.lastPriceUpdate 
-                        ? `Updated: ${new Date(recommendation.lastPriceUpdate).toLocaleTimeString('en-IN', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
+                      {recommendation.lastPriceUpdate
+                        ? `Updated: ${new Date(recommendation.lastPriceUpdate).toLocaleTimeString('en-IN', {
+                            hour: '2-digit',
+                            minute: '2-digit'
                           })}`
                         : 'Not updated'}
                     </small>
@@ -1026,12 +1046,26 @@ const StockRecommendationManagement = () => {
                   <td>
                     ₹{recommendation.targetPrice}
                     <br />
-                    <small className={recommendation.recommendationType === 'buy' ? 'profit' : 'loss'}>
-                      {(() => {
-                        const pct = ((recommendation.targetPrice - recommendation.currentPrice) / recommendation.currentPrice) * 100;
-                        return (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-                      })()}
-                    </small>
+                    {(() => {
+                      const isSell = recommendation.recommendationType === 'sell';
+                      // For buy: positive % = good (price needs to rise to target)
+                      // For sell: positive % = good (price needs to fall to target)
+                      const pct = isSell
+                        ? ((recommendation.currentPrice - recommendation.targetPrice) / recommendation.currentPrice) * 100
+                        : ((recommendation.targetPrice - recommendation.currentPrice) / recommendation.currentPrice) * 100;
+                      return (
+                        <small className={pct >= 0 ? 'profit' : 'loss'}>
+                          {(pct >= 0 ? '+' : '') + pct.toFixed(2) + '%'}
+                        </small>
+                      );
+                    })()}
+                  </td>
+                  <td className="alert-cell">
+                    {slHit
+                      ? <span className="admin-price-hit-badge admin-sl-hit">Stop Loss Hit</span>
+                      : targetHit
+                      ? <span className="admin-price-hit-badge admin-target-hit">Target Hit</span>
+                      : <span className="alert-none">—</span>}
                   </td>
                   <td>
                     <span className={getStatusBadgeClass(recommendation.status)}>
@@ -1039,56 +1073,45 @@ const StockRecommendationManagement = () => {
                     </span>
                   </td>
                   <td>{formatDate(recommendation.createdAt)}</td>
-                  <td>
-                    <div className="action-buttons">
+                  <td className="actions-cell">
+                    <div className="rec-menu-wrap" ref={isMenuOpen ? menuRef : null}>
                       <button
-                        className="admin-action-button view"
-                        onClick={() => handleViewDetails(recommendation)}
+                        className="rec-three-dot-btn"
+                        onClick={() => setOpenMenuId(isMenuOpen ? null : recommendation._id)}
+                        aria-label="Actions"
                       >
-                        View
+                        &#8942;
                       </button>
-                      <button
-                        className="admin-action-button edit"
-                        onClick={() => handleEdit(recommendation)}
-                      >
-                        Edit
-                      </button>
-                      {recommendation.pdfReport && recommendation.pdfReport.url ? (
-                        <button
-                          className="admin-action-button pdf"
-                          onClick={() => window.open(recommendation.pdfReport.url, '_blank')}
-                          title="View PDF"
-                        >
-                          View PDF
-                        </button>
-                      ) : (
-                        <button
-                          className="admin-action-button pdf"
-                          onClick={() => handleGeneratePDF(recommendation)}
-                          title="Generate PDF"
-                        >
-                          Gen PDF
-                        </button>
+                      {isMenuOpen && (
+                        <div className="rec-dropdown-menu">
+                          <button onClick={() => { handleViewDetails(recommendation); setOpenMenuId(null); }}>
+                            View
+                          </button>
+                          <button onClick={() => { handleEdit(recommendation); setOpenMenuId(null); }}>
+                            Edit
+                          </button>
+                          {recommendation.pdfReport?.url ? (
+                            <button onClick={() => { window.open(recommendation.pdfReport.url, '_blank'); setOpenMenuId(null); }}>
+                              View PDF
+                            </button>
+                          ) : (
+                            <button onClick={() => { handleGeneratePDF(recommendation); setOpenMenuId(null); }}>
+                              Generate PDF
+                            </button>
+                          )}
+                          <button onClick={() => { handleUploadPDF(recommendation); setOpenMenuId(null); }} disabled={uploadingPdfId === recommendation._id}>
+                            {uploadingPdfId === recommendation._id ? 'Uploading…' : 'Upload PDF'}
+                          </button>
+                          <button className="rec-menu-delete" onClick={() => { handleDelete(recommendation._id); setOpenMenuId(null); }}>
+                            Delete
+                          </button>
+                        </div>
                       )}
-                      <button
-                        className="admin-action-button pdf"
-                        onClick={() => handleUploadPDF(recommendation)}
-                        disabled={uploadingPdfId === recommendation._id}
-                        title="Upload Signed PDF"
-                        style={{ backgroundColor: '#6366f1', color: 'white' }}
-                      >
-                        {uploadingPdfId === recommendation._id ? '⏳ Uploading...' : '⬆ Upload PDF'}
-                      </button>
-                      <button
-                        className="admin-action-button delete"
-                        onClick={() => handleDelete(recommendation._id)}
-                      >
-                        Delete
-                      </button>
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

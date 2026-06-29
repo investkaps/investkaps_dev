@@ -32,6 +32,7 @@ import FAQs from './pages/LegalCenter/FAQs';
 import ComplaintsAndAudit from './pages/LegalCenter/ComplaintsAndAudit';
 import CancellationsAndRefunds from './pages/LegalCenter/CancellationsAndRefunds';
 import GrievanceRedressal from './pages/LegalCenter/GrievanceRedressal';
+import Contact from './pages/Contact/Contact';
 import CodeOfConduct from './pages/LegalCenter/CodeOfConduct';
 import AuditReport from './pages/AuditReport/AuditReport';
 import AuditReport2 from './pages/AuditReport2/AuditReport2';
@@ -139,7 +140,7 @@ function App() {
                     {/* Public routes */}
                     <Route path="/" element={<Home />} />
                     <Route path="/about" element={<About />} />
-                    <Route path="/contact" element={<Navigate to="/grievance-redressal" replace />} />
+                    <Route path="/contact" element={<Contact />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
 

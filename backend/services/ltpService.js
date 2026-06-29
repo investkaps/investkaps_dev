@@ -46,33 +46,15 @@ class LTPService {
       return { exchange: exch, prices: mapped };
     }
 
-    let rawPrices = {};
-    try {
-      const response = await axios.get(`${this.baseURL}/ltp/multi`, {
-        params: { items: syms.map(s => `${exch}:${s}`).join(',') },
-        timeout: this.timeout,
-      });
-      rawPrices = response.data.prices || {};
-    } catch (err) {
-      const status = err.response?.status;
-      const detail = err.response?.data?.detail || err.message;
-      logger.warn(`fetchBatchPrices(${exch}) failed with ${status}: ${detail} — returning nulls`);
-      // Return nulls for all symbols rather than crashing the whole update
-      const prices = {};
-      syms.forEach(s => { prices[s] = null; });
-      return { exchange: exch, prices };
-    }
-
-    // Response keys from app.py use make_key() so BSE gives "BSE:SYM-A", NSE gives "NSE:SYM-EQ".
-    // Find each symbol's price by scanning the response keys for a match on the symbol part.
+    // Fetch each symbol individually — sequential per exchange to avoid overloading the LTP API
     const prices = {};
     for (const sym of syms) {
-      const exactKey = `${exch}:${sym}`;
-      if (rawPrices[exactKey] != null) {
-        prices[sym] = rawPrices[exactKey];
-      } else {
-        const matchingKey = Object.keys(rawPrices).find(k => k.startsWith(`${exch}:`) && k.split(':')[1]?.startsWith(sym));
-        prices[sym] = matchingKey != null ? rawPrices[matchingKey] : null;
+      try {
+        const result = await this.fetchSinglePrice(exch, sym);
+        prices[sym] = result.ltp ?? null;
+      } catch (err) {
+        logger.warn(`fetchSinglePrice failed for ${exch}:${sym}: ${err.message}`);
+        prices[sym] = null;
       }
     }
     return { exchange: exch, prices };
@@ -126,27 +108,18 @@ class LTPService {
   async smartFetch(items) {
     if (!items || items.length === 0) throw new Error('Items array cannot be empty');
 
-    if (items.length === 1) {
-      const { exchange, symbol } = items[0];
-      const result = await this.fetchSinglePrice(exchange, symbol);
-      return { [`${exchange.toUpperCase()}:${symbol.toUpperCase()}`]: result.ltp };
-    }
+    // Group by exchange and fetch each exchange sequentially — one at a time
+    const grouped = this.groupByExchange(items);
+    const normalized = {};
 
-    const grouped   = this.groupByExchange(items);
-    const exchanges = Object.keys(grouped);
-
-    if (exchanges.length === 1) {
-      const exchange = exchanges[0];
-      const result   = await this.fetchBatchPrices(exchange, grouped[exchange]);
-      const normalized = {};
+    for (const [exchange, symbols] of Object.entries(grouped)) {
+      const result = await this.fetchBatchPrices(exchange, symbols);
       for (const [sym, price] of Object.entries(result.prices)) {
         normalized[`${exchange}:${sym}`] = price;
       }
-      return normalized;
     }
 
-    const result = await this.fetchMultiExchangePrices(items);
-    return result.prices;
+    return normalized;
   }
 
   /**

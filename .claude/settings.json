@@ -11,7 +11,13 @@
       "Bash(node -e ' *)",
       "Bash(npm run *)",
       "Bash(xargs grep -l -i \"referral\")",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(mkdir -p \"c:\\\\Users\\\\aiman\\\\Desktop\\\\Projects\\\\investkaps_dev\\\\frontend\\\\src\\\\pages\\\\Contact\" 2>/dev/null; echo \"done\")",
+      "Bash(xargs grep -l -i \"call\\\\|booking\")",
+      "Bash(xargs ls -la)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\aiman\\Desktop\\Projects\\investkaps_dev\\frontend\\src\\pages\\Contact"
     ]
   }
 }

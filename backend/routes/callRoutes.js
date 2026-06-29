@@ -142,12 +142,18 @@ router.post('/book', verifyToken, upload.single('screenshot'), async (req, res) 
 router.get('/free-call-status', verifyToken, async (req, res) => {
   try {
     const userId = req.user._id;
+    const today = new Date().toISOString().slice(0, 10);
     const [user, pendingBooking] = await Promise.all([
       User.findById(userId).select('freeCallClaimed').lean(),
       CallBooking.findOne({
         user: userId,
         status: { $in: ['awaiting_payment', 'payment_submitted', 'confirmed'] },
-      }).select('_id status isFreeCall slotDate slotStartTime slotEndTime').lean(),
+        // Don't block the user if a confirmed booking's slot has already passed
+        $or: [
+          { status: { $in: ['awaiting_payment', 'payment_submitted'] } },
+          { status: 'confirmed', slotDate: { $gte: today } },
+        ],
+      }).select('_id status isFreeCall slotDate slotStartTime slotEndTime meetLink').lean(),
     ]);
 
     res.json({
@@ -275,6 +281,7 @@ router.post('/admin/bookings/:id/confirm', verifyToken, requireAdmin, async (req
 
     if (!booking) return res.status(404).json({ success: false, error: 'Booking not found' });
     if (booking.status === 'confirmed') return res.status(400).json({ success: false, error: 'Already confirmed' });
+    if (!booking.callPlan) return res.status(400).json({ success: false, error: 'Call plan not found — booking may reference a deleted plan.' });
 
     const slot = slotFromBooking(booking);
     let meetLink = null, googleEventId = null;

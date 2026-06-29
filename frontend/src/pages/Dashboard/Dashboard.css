@@ -1518,6 +1518,131 @@ input.verified {
   cursor: default;
 }
 
+/* ── Referral Plan Card ─────────────────────────────────────── */
+.referral-card {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef9ee 100%);
+  border: 1px solid #fcd34d;
+  border-radius: 20px;
+  padding: 1.5rem 1.75rem;
+  margin-top: 1.25rem;
+}
+
+.referral-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.referral-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.referral-card-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.referral-card-title h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.plan-badge.inactive {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.referral-card-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.referral-stat {
+  flex: 1;
+  text-align: center;
+}
+
+.referral-stat-value {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1.1;
+}
+
+.referral-stat-value.highlight {
+  color: #d97706;
+}
+
+.referral-stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.referral-stat-divider {
+  width: 1px;
+  height: 40px;
+  background: #fde68a;
+  flex-shrink: 0;
+  margin: 0 0.5rem;
+}
+
+.referral-card-dates {
+  font-size: 0.82rem;
+  color: #78350f;
+  margin-bottom: 0.75rem;
+}
+
+.referral-card-action {
+  border-top: 1px solid #fde68a;
+  padding-top: 1rem;
+  margin-top: 0.25rem;
+}
+
+.referral-claim-note {
+  font-size: 0.82rem;
+  color: #78350f;
+  margin: 0 0 0.75rem;
+}
+
+.referral-claim-btn {
+  background: #f59e0b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.25rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.referral-claim-btn:hover:not(:disabled) {
+  background: #d97706;
+}
+
+.referral-claim-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Subscription Card ─────────────────────────────────────── */
 .subscription-card {
   background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
   border: 1px solid #c7d2fe;
@@ -1872,6 +1997,38 @@ input.verified {
 
 .price-cell.buy-range {
   white-space: nowrap;
+}
+
+.price-hit-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-top: 4px;
+  white-space: nowrap;
+}
+
+.price-hit-badge.target-hit {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.price-hit-badge.stop-loss-hit {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.rec-row-target-hit {
+  background: rgba(209, 250, 229, 0.25);
+}
+
+.rec-row-sl-hit {
+  background: rgba(254, 226, 226, 0.25);
 }
 
 .buy-range-badge {

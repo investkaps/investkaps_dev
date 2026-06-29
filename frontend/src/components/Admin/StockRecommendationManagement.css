@@ -156,6 +156,30 @@
   color: #664d03;
 }
 
+.admin-price-hit-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-top: 3px;
+  white-space: nowrap;
+}
+
+.admin-price-hit-badge.admin-target-hit {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.admin-price-hit-badge.admin-sl-hit {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
 .status-badge {
   display: inline-block;
   padding: 4px 8px;
@@ -191,6 +215,86 @@
   display: flex;
   gap: 5px;
   flex-wrap: wrap;
+}
+
+/* Three-dot menu */
+.actions-cell {
+  text-align: center;
+  width: 40px;
+}
+
+.alert-cell {
+  text-align: center;
+}
+
+.alert-none {
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.rec-menu-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.rec-three-dot-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #475569;
+  transition: background 0.15s;
+}
+
+.rec-three-dot-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.rec-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 100;
+  min-width: 148px;
+  overflow: hidden;
+}
+
+.rec-dropdown-menu button {
+  display: block;
+  width: 100%;
+  padding: 9px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #1e293b;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.rec-dropdown-menu button:hover {
+  background: #f8fafc;
+}
+
+.rec-dropdown-menu button:disabled {
+  color: #94a3b8;
+  cursor: default;
+}
+
+.rec-dropdown-menu button + button {
+  border-top: 1px solid #f1f5f9;
+}
+
+.rec-menu-delete {
+  color: #dc2626 !important;
 }
 
 .admin-action-button {

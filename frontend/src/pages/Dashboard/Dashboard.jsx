@@ -19,6 +19,75 @@ import ServiceSelector from '../../components/OnboardingFlow/ServiceSelector';
 import './Dashboard.css';
 import UserTestimonial from '../../components/UserTestimonial/UserTestimonial';
 
+function ReferralCard({ referralData, onClaim, claiming }) {
+  const sub = referralData.referralPlanSub;
+  const claimed = (referralData.totalRewarded || 0) - (referralData.unclaimedMonths || 0);
+  const unclaimed = referralData.unclaimedMonths || 0;
+  const planActive = sub && sub.status === 'active' && new Date(sub.endDate) > new Date();
+  const daysLeft = planActive
+    ? Math.max(0, Math.ceil((new Date(sub.endDate) - new Date()) / (1000 * 60 * 60 * 24)))
+    : 0;
+
+  return (
+    <div className="referral-card">
+      <div className="referral-card-header">
+        <div className="referral-card-title">
+          <span className="referral-card-icon">🎁</span>
+          <div>
+            <h3>Referral Plan</h3>
+            <span className={`plan-badge${planActive ? '' : ' inactive'}`}>
+              {planActive ? 'Active' : unclaimed > 0 ? 'Claim Available' : 'No Active Plan'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="referral-card-stats">
+        <div className="referral-stat">
+          <span className="referral-stat-value">{claimed}</span>
+          <span className="referral-stat-label">Month{claimed !== 1 ? 's' : ''} Claimed</span>
+        </div>
+        <div className="referral-stat-divider" />
+        <div className="referral-stat">
+          <span className={`referral-stat-value${unclaimed > 0 ? ' highlight' : ''}`}>{unclaimed}</span>
+          <span className="referral-stat-label">Month{unclaimed !== 1 ? 's' : ''} to Claim</span>
+        </div>
+        {planActive && (
+          <>
+            <div className="referral-stat-divider" />
+            <div className="referral-stat">
+              <span className="referral-stat-value highlight">{daysLeft}</span>
+              <span className="referral-stat-label">Days Remaining</span>
+            </div>
+          </>
+        )}
+      </div>
+
+      {planActive && (
+        <div className="referral-card-dates">
+          <span>Plan active until <strong>{new Date(sub.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</strong></span>
+        </div>
+      )}
+
+      {unclaimed > 0 && (
+        <div className="referral-card-action">
+          <p className="referral-claim-note">
+            {unclaimed} friend{unclaimed !== 1 ? 's' : ''} joined using your referral code.
+            {planActive ? ' Claiming will extend your plan.' : ' Claim to activate your free plan.'}
+          </p>
+          <button
+            className="referral-claim-btn"
+            onClick={onClaim}
+            disabled={claiming}
+          >
+            {claiming ? 'Claiming…' : `Claim ${unclaimed} Free Month${unclaimed !== 1 ? 's' : ''}`}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SubscriptionCarousel({ subscriptions }) {
   const [idx, setIdx] = React.useState(0);
   const sub = subscriptions[idx];
@@ -1383,52 +1452,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Referral reward banner */}
-        {!isAdminUser && referralData?.unclaimedMonths > 0 && (
-          <div style={{
-            background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-            border: '1.5px solid #f59e0b',
-            borderRadius: 12,
-            padding: '1rem 1.25rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            flexWrap: 'wrap',
-            marginBottom: '0.5rem',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <span style={{ fontSize: '1.5rem' }}>🎁</span>
-              <div>
-                <div style={{ fontWeight: 700, color: '#92400e', fontSize: '0.95rem' }}>
-                  You have {referralData.unclaimedMonths} free month{referralData.unclaimedMonths > 1 ? 's' : ''} to claim!
-                </div>
-                <div style={{ color: '#78350f', fontSize: '0.82rem', marginTop: '0.15rem' }}>
-                  {referralData.unclaimedMonths} friend{referralData.unclaimedMonths > 1 ? 's' : ''} joined using your referral code. Claim your free access anytime.
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={handleClaimReferralReward}
-              disabled={claimingReferral}
-              style={{
-                background: '#f59e0b',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                padding: '0.6rem 1.25rem',
-                fontWeight: 700,
-                fontSize: '0.875rem',
-                cursor: claimingReferral ? 'not-allowed' : 'pointer',
-                opacity: claimingReferral ? 0.7 : 1,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {claimingReferral ? 'Claiming...' : 'Claim Free Plan'}
-            </button>
-          </div>
-        )}
-
         {/* Payment success banner */}
         {paymentSuccessBanner && (
           <div className="payment-success-banner">
@@ -1495,6 +1518,15 @@ const Dashboard = () => {
         {/* Current Subscription Plans — carousel, one card visible at a time */}
         {allSubscriptions.length > 0 && (
           <SubscriptionCarousel subscriptions={allSubscriptions} />
+        )}
+
+        {/* Referral Plan Card — always shown when user has any referral history */}
+        {!isAdminUser && referralData && (referralData.totalRewarded > 0 || referralData.unclaimedMonths > 0 || referralData.referralPlanSub) && (
+          <ReferralCard
+            referralData={referralData}
+            onClaim={handleClaimReferralReward}
+            claiming={claimingReferral}
+          />
         )}
 
         {/* No Subscription */}
@@ -1708,11 +1740,17 @@ const Dashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {stockRecommendations.map((rec) => (
-                      <tr key={rec._id} className="rec-row">
+                    {stockRecommendations.map((rec) => {
+                      const flags = rec.alertFlags || {};
+                      const targetHit = flags.target1Hit || flags.target2Hit || flags.target3Hit;
+                      const slHit = flags.stopLossHit;
+                      return (
+                      <tr key={rec._id} className={`rec-row${slHit ? ' rec-row-sl-hit' : targetHit ? ' rec-row-target-hit' : ''}`}>
                         <td className="stock-cell">
                           <span className="stock-symbol">{rec.stockSymbol}</span>
                           <span className="stock-name">{rec.stockName}</span>
+                          {slHit && <span className="price-hit-badge stop-loss-hit">Stop Loss Hit</span>}
+                          {!slHit && targetHit && <span className="price-hit-badge target-hit">Target Hit</span>}
                         </td>
                         <td><span className={`rec-badge ${rec.recommendationType}`}>{rec.recommendationType.toUpperCase()}</span></td>
                         <td className="price-cell">₹{rec.currentPrice}</td>
@@ -1738,7 +1776,8 @@ const Dashboard = () => {
                             : '-'}
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

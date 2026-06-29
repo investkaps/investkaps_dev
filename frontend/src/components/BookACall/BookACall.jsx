@@ -278,22 +278,46 @@ export default function BookACall() {
   if (done) return <SuccessScreen onReset={reset} isFree={isFreeMode} />;
 
   if (pendingBooking) {
-    const statusLabel = pendingBooking.status === 'confirmed' ? 'Confirmed — awaiting your call' : 'Under Review';
+    const isConfirmed = pendingBooking.status === 'confirmed';
     return (
       <div className="bac-container">
         <div className="bac-header">
           <h2 className="bac-title">Book a Consultation Call</h2>
         </div>
-        <div style={{ background: '#fffbeb', border: '1.5px solid #fcd34d', borderRadius: 14, padding: '1.5rem 1.75rem', textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⏳</div>
-          <h3 style={{ margin: '0 0 0.5rem', color: '#92400e', fontSize: '1.1rem', fontWeight: 700 }}>You already have a pending booking</h3>
-          <p style={{ color: '#78350f', fontSize: '0.9rem', margin: '0 0 0.75rem', lineHeight: 1.6 }}>
-            Your booking for <strong>{pendingBooking.slotDate}</strong> at <strong>{pendingBooking.slotStartTime}–{pendingBooking.slotEndTime}</strong> is currently <strong>{statusLabel}</strong>.
-          </p>
-          <p style={{ color: '#92400e', fontSize: '0.85rem', margin: 0 }}>
-            Please wait for it to be approved or rejected before making a new booking.
-          </p>
-        </div>
+        {isConfirmed ? (
+          <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 14, padding: '1.5rem 1.75rem', textAlign: 'center' }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✅</div>
+            <h3 style={{ margin: '0 0 0.5rem', color: '#15803d', fontSize: '1.1rem', fontWeight: 700 }}>Your call is confirmed!</h3>
+            <p style={{ color: '#166534', fontSize: '0.9rem', margin: '0 0 0.75rem', lineHeight: 1.6 }}>
+              Scheduled for <strong>{pendingBooking.slotDate}</strong> at <strong>{pendingBooking.slotStartTime}–{pendingBooking.slotEndTime} IST</strong>.
+            </p>
+            {pendingBooking.meetLink ? (
+              <a
+                href={pendingBooking.meetLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'inline-block', marginTop: '0.25rem', background: '#16a34a', color: '#fff', padding: '0.55rem 1.25rem', borderRadius: 8, fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none' }}
+              >
+                Join Google Meet →
+              </a>
+            ) : (
+              <p style={{ color: '#15803d', fontSize: '0.85rem', margin: 0 }}>
+                A Google Meet link will be emailed to you shortly.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div style={{ background: '#fffbeb', border: '1.5px solid #fcd34d', borderRadius: 14, padding: '1.5rem 1.75rem', textAlign: 'center' }}>
+            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⏳</div>
+            <h3 style={{ margin: '0 0 0.5rem', color: '#92400e', fontSize: '1.1rem', fontWeight: 700 }}>Booking under review</h3>
+            <p style={{ color: '#78350f', fontSize: '0.9rem', margin: '0 0 0.75rem', lineHeight: 1.6 }}>
+              Your booking for <strong>{pendingBooking.slotDate}</strong> at <strong>{pendingBooking.slotStartTime}–{pendingBooking.slotEndTime}</strong> is being reviewed.
+            </p>
+            <p style={{ color: '#92400e', fontSize: '0.85rem', margin: 0 }}>
+              Once approved you'll receive a confirmation email with the Google Meet link.
+            </p>
+          </div>
+        )}
       </div>
     );
   }

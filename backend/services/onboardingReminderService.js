@@ -1,4 +1,5 @@
 import User from '../model/User.js';
+import UserSubscription from '../model/UserSubscription.js';
 import logger from '../utils/logger.js';
 import { sendOnboardingReminderEmail } from '../utils/emailService.js';
 import { isEmailUnsubscribed } from './emailPreferenceService.js';
@@ -57,6 +58,12 @@ export const sendWeeklyOnboardingReminders = async () => {
     .select('name email verificationStatus kycStatus.isVerified profile.phoneVerified clientTypes role')
     .lean();
 
+  // Pre-fetch all users who have an active RA subscription — they must NOT receive IA reminders
+  const raSubscriptions = await UserSubscription.find({ serviceType: 'RA', status: 'active' })
+    .select('user')
+    .lean();
+  const usersWithActiveRA = new Set(raSubscriptions.map(s => s.user.toString()));
+
   let sentCount = 0;
   let skippedCount = 0;
   let failedCount = 0;
@@ -73,6 +80,12 @@ export const sendWeeklyOnboardingReminders = async () => {
     }
 
     for (const serviceType of SERVICE_TYPES) {
+      // Never send IA onboarding reminders to users who have an active RA plan
+      if (serviceType === 'IA' && usersWithActiveRA.has(user._id.toString())) {
+        skippedCount++;
+        continue;
+      }
+
       const pendingSteps = getPendingOnboardingSteps(user, serviceType);
 
       if (pendingSteps.length === 0) {

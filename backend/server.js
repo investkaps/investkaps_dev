@@ -188,6 +188,18 @@ app.listen(PORT, () => {
         recs.map(r => ({ stockSymbol: r.stockSymbol, exchange: r.exchange || 'NSE' }))
       );
 
+      // Persist live prices back to each recommendation so currentPrice stays current
+      const now = new Date();
+      const bulkOps = recs
+        .filter(r => prices[r.stockSymbol] != null)
+        .map(r => ({
+          updateOne: {
+            filter: { _id: r._id },
+            update: { $set: { currentPrice: prices[r.stockSymbol], lastPriceUpdate: now } }
+          }
+        }));
+      if (bulkOps.length) await StockRecommendation.bulkWrite(bulkOps, { ordered: false });
+
       const { checkPriceAlerts } = await import('./services/priceAlertService.js');
       await checkPriceAlerts(prices);
     } catch (error) {
