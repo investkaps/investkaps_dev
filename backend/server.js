@@ -12,7 +12,6 @@ import cron from 'node-cron';
 import connectDB from './config/db.js';
 import logger from './utils/logger.js';
 import * as subscriptionService from './controllers/subscriptionService.js';
-import { sendWeeklyOnboardingReminders } from './services/onboardingReminderService.js';
 import { globalLimiter } from './middleware/rateLimiter.js';
 
 // Route imports
@@ -161,16 +160,6 @@ app.listen(PORT, () => {
     }
   });
 
-  // Send onboarding reminders every Monday at 9:30 AM
-  cron.schedule('30 9 * * 1', async () => {
-    try {
-      logger.info('Running scheduled task: Send onboarding reminders');
-      const result = await sendWeeklyOnboardingReminders();
-      logger.info('Onboarding reminders completed', result);
-    } catch (error) {
-      logger.error('Error in onboarding reminders scheduled task:', error);
-    }
-  });
 
   // Check price alerts every 5 minutes on weekdays (market hours check is inside the service)
   cron.schedule('*/5 * * * 1-5', async () => {

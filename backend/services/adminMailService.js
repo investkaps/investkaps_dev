@@ -7,11 +7,9 @@ import {
   sendPaymentRejectedEmail,
   sendNewRecommendationEmail,
   sendUpdatedRecommendationEmail,
-  sendOnboardingReminderEmail
 } from '../utils/emailService.js';
 import notificationService from '../utils/notificationService.js';
 import { sendQuestionnaireResultsEmail } from '../utils/questionnaireEmailService.js';
-import { sendOnboardingReminderToUser, getPendingOnboardingSteps } from './onboardingReminderService.js';
 import { isEmailUnsubscribed } from './emailPreferenceService.js';
 
 const SERVICE_TYPES = ['RA', 'IA'];
@@ -95,8 +93,6 @@ const buildGenericHtml = (title, lines) => `
 
 const mailTypeLabels = {
   'test-email': 'Test Email',
-  'manual-onboarding-reminder': 'Manual Onboarding Reminder',
-  'weekly-onboarding-reminder': 'Weekly Onboarding Reminder',
   'payment-request-received': 'Payment Request Received',
   'payment-approved': 'Payment Approved',
   'payment-rejected': 'Payment Rejected',
@@ -149,35 +145,6 @@ const sendAdminMail = async ({ userId, mailType, serviceType = 'RA' }) => {
           'If you received this message, the mail setup is working.'
         ])
       });
-      break;
-    }
-
-    case 'manual-onboarding-reminder': {
-      const pendingSteps = getPendingOnboardingSteps(user, normalizedServiceType);
-      await sendOnboardingReminderToUser(user, normalizedServiceType, { force: true, allowUnsubscribed: true });
-      return {
-        message: `Manual ${normalizedServiceType} onboarding reminder sent to ${user.email}`,
-        mailType: normalizedMailType,
-        serviceType: normalizedServiceType,
-        pendingSteps,
-        warning
-      };
-    }
-
-    case 'weekly-onboarding-reminder': {
-      const pendingSteps = getPendingOnboardingSteps(user, normalizedServiceType);
-      if (pendingSteps.length === 0) {
-        return {
-          message: `No pending ${normalizedServiceType} onboarding steps found for ${user.email}`,
-          mailType: normalizedMailType,
-          serviceType: normalizedServiceType,
-          pendingSteps,
-          skipped: true,
-          warning
-        };
-      }
-
-      await sendOnboardingReminderEmail(user, normalizedServiceType, pendingSteps, { allowUnsubscribed: true });
       break;
     }
 

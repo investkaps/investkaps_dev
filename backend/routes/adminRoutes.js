@@ -14,7 +14,6 @@ import UserSubscription from '../model/UserSubscription.js';
 import Subscription from '../model/Subscription.js';
 import { sendEmail } from '../utils/emailService.js';
 import * as adminRoleController from '../controllers/adminRoleController.js';
-import { sendOnboardingReminderToUser } from '../services/onboardingReminderService.js';
 import {
   getMailTypeOptions,
   buildMailPreviewPath,
@@ -418,55 +417,6 @@ router.post('/users/:id/test-email', verifyToken, checkRole('admin'), async (req
   }
 });
 
-/**
- * @route   POST /api/admin/users/:id/onboarding-reminder
- * @desc    Send a manual onboarding reminder to the selected user
- * @access  Private (Admin only)
- */
-router.post('/users/:id/onboarding-reminder', verifyToken, checkRole('admin'), async (req, res) => {
-  try {
-    const serviceType = String(req.body.serviceType || req.query.serviceType || 'RA').toUpperCase() === 'IA' ? 'IA' : 'RA';
-    const user = await User.findById(req.params.id).select('name email verificationStatus kycStatus.isVerified profile.phoneVerified clientTypes role');
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      });
-    }
-
-    if (!user.email) {
-      return res.status(400).json({
-        success: false,
-        error: 'User does not have an email address'
-      });
-    }
-
-    const result = await sendOnboardingReminderToUser(user, serviceType, { force: true });
-
-    if (result.skipped) {
-      return res.status(200).json({
-        success: true,
-        message: `No pending ${serviceType} onboarding steps found for ${user.email}`,
-        pendingSteps: result.pendingSteps,
-        skipped: true
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: `${serviceType} onboarding reminder sent to ${user.email}`,
-      pendingSteps: result.pendingSteps,
-      skipped: false
-    });
-  } catch (error) {
-    console.error('Error sending onboarding reminder:', error);
-    return res.status(500).json({
-      success: false,
-      error: error.message || 'Server error while sending onboarding reminder'
-    });
-  }
-});
 
 /**
  * @route   GET /api/admin/mail-types
