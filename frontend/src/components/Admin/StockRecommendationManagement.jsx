@@ -404,6 +404,17 @@ const StockRecommendationManagement = () => {
     }
   };
 
+  const handleToggleActive = async (recommendation) => {
+    const newValue = recommendation.isActive === false ? true : false;
+    try {
+      await adminAPI.updateStockRecommendation(recommendation._id, { isActive: newValue });
+      fetchRecommendations();
+    } catch (err) {
+      console.error('Error toggling active state:', err);
+      setError('Failed to update active state');
+    }
+  };
+
   const handleGeneratePDF = (recommendation) => {
     setPdfRecommendation(recommendation);
     setShowPDFModal(true);
@@ -1017,9 +1028,10 @@ const StockRecommendationManagement = () => {
                 const flags = recommendation.alertFlags || {};
                 const targetHit = flags.target1Hit || flags.target2Hit || flags.target3Hit;
                 const slHit = flags.stopLossHit;
+                const inactive = recommendation.isActive === false;
                 const isMenuOpen = openMenuId === recommendation._id;
                 return (
-                <tr key={recommendation._id}>
+                <tr key={recommendation._id} className={inactive ? 'rec-row-admin-inactive' : ''}>
                   <td>{recommendation.title}</td>
                   <td>
                     <strong>{recommendation.stockSymbol}</strong>
@@ -1066,6 +1078,7 @@ const StockRecommendationManagement = () => {
                       : targetHit
                       ? <span className="admin-price-hit-badge admin-target-hit">Target Hit</span>
                       : <span className="alert-none">—</span>}
+                    {inactive && <span className="admin-price-hit-badge admin-inactive-badge" style={{ display: 'block', marginTop: 4 }}>Inactive</span>}
                   </td>
                   <td>
                     <span className={getStatusBadgeClass(recommendation.status)}>
@@ -1089,6 +1102,9 @@ const StockRecommendationManagement = () => {
                           </button>
                           <button onClick={() => { handleEdit(recommendation); setOpenMenuId(null); }}>
                             Edit
+                          </button>
+                          <button onClick={() => { handleToggleActive(recommendation); setOpenMenuId(null); }}>
+                            {recommendation.isActive === false ? 'Mark Active' : 'Mark Inactive'}
                           </button>
                           {recommendation.pdfReport?.url ? (
                             <button onClick={() => { window.open(recommendation.pdfReport.url, '_blank'); setOpenMenuId(null); }}>

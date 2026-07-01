@@ -142,24 +142,30 @@ router.post('/book', verifyToken, upload.single('screenshot'), async (req, res) 
 router.get('/free-call-status', verifyToken, async (req, res) => {
   try {
     const userId = req.user._id;
-    const today = new Date().toISOString().slice(0, 10);
     const [user, pendingBooking] = await Promise.all([
       User.findById(userId).select('freeCallClaimed').lean(),
       CallBooking.findOne({
         user: userId,
         status: { $in: ['awaiting_payment', 'payment_submitted', 'confirmed'] },
-        // Don't block the user if a confirmed booking's slot has already passed
-        $or: [
-          { status: { $in: ['awaiting_payment', 'payment_submitted'] } },
-          { status: 'confirmed', slotDate: { $gte: today } },
-        ],
       }).select('_id status isFreeCall slotDate slotStartTime slotEndTime meetLink').lean(),
     ]);
+
+    // If the booking is confirmed, only block the user while the call end time is
+    // still in the future. Once the slot end time has passed they can book again.
+    // slotDate = 'YYYY-MM-DD', slotEndTime = 'HH:MM' — both in IST.
+    let activePendingBooking = pendingBooking;
+    if (pendingBooking?.status === 'confirmed' && pendingBooking.slotDate && pendingBooking.slotEndTime) {
+      // Parse the IST end time as an absolute UTC instant
+      const slotEndMs = new Date(`${pendingBooking.slotDate}T${pendingBooking.slotEndTime}:00+05:30`).getTime();
+      if (Date.now() > slotEndMs) {
+        activePendingBooking = null;
+      }
+    }
 
     res.json({
       success: true,
       eligible: !user?.freeCallClaimed,
-      pendingBooking: pendingBooking || null,
+      pendingBooking: activePendingBooking || null,
     });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });

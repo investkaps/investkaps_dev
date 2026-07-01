@@ -5,8 +5,14 @@ import {
   sendPaymentRequestReceivedEmail,
   sendPaymentApprovedEmail,
   sendPaymentRejectedEmail,
+  sendSubscriptionStartedEmail,
   sendNewRecommendationEmail,
   sendUpdatedRecommendationEmail,
+  sendOnboardingReminderEmail,
+  sendPriceAlertEmail,
+  sendCallBookingEmail,
+  sendCallConfirmedEmail,
+  sendCallCancelledEmail,
 } from '../utils/emailService.js';
 import notificationService from '../utils/notificationService.js';
 import { sendQuestionnaireResultsEmail } from '../utils/questionnaireEmailService.js';
@@ -53,7 +59,10 @@ const buildSampleRecommendation = () => ({
   stockSymbol: 'TCS',
   stockName: 'Tata Consultancy Services',
   currentPrice: 3925.5,
+  buyingRangeLow: 3880,
+  buyingRangeHigh: 3950,
   targetPrice: 4200,
+  targetPrice2: 4400,
   stopLoss: 3750,
   recommendationType: 'buy',
   timeFrame: 'medium_term',
@@ -61,6 +70,20 @@ const buildSampleRecommendation = () => ({
   rationale: 'Sample rationale for testing the mail template.',
   riskLevel: 'moderate'
 });
+
+const buildSampleCallPlan = () => ({
+  name: 'Free Consultation Call',
+  durationMinutes: 30,
+  price: 0,
+});
+
+const buildSampleCallSlot = () => {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate() + 1).padStart(2, '0');
+  return { date: `${yyyy}-${mm}-${dd}`, startTime: '10:00', endTime: '10:30' };
+};
 
 const buildSamplePaymentRequest = (serviceType, status = 'received') => {
   const paymentRequest = {
@@ -96,10 +119,17 @@ const mailTypeLabels = {
   'payment-request-received': 'Payment Request Received',
   'payment-approved': 'Payment Approved',
   'payment-rejected': 'Payment Rejected',
+  'subscription-started': 'Subscription Started',
   'subscription-expiring-soon': 'Subscription Expiring Soon',
   'subscription-expired': 'Subscription Expired',
   'new-recommendation': 'New Recommendation',
   'updated-recommendation': 'Updated Recommendation',
+  'price-alert-target': 'Price Alert — Target Hit',
+  'price-alert-stoploss': 'Price Alert — Stop Loss Hit',
+  'call-booking': 'Call Booking Received',
+  'call-confirmed': 'Call Confirmed',
+  'call-cancelled': 'Call Cancelled',
+  'onboarding-reminder': 'Onboarding Reminder',
   'questionnaire-results': 'Questionnaire Results',
   'legacy-recommendation-notification': 'Recommendation Notification (Legacy)'
 };
@@ -108,7 +138,7 @@ const getMailTypeOptions = () => Object.entries(mailTypeLabels).map(([value, lab
 
 const buildMailPreviewPath = () => '/api/admin/mail/send';
 
-const sendAdminMail = async ({ userId, mailType, serviceType = 'RA' }) => {
+const sendAdminMail = async ({ userId, mailType, serviceType = 'RA', overrides = {} }) => {
   const normalizedMailType = String(mailType || '').trim();
   if (!normalizedMailType) {
     throw new Error('mailType is required');
@@ -149,18 +179,25 @@ const sendAdminMail = async ({ userId, mailType, serviceType = 'RA' }) => {
     }
 
     case 'payment-request-received': {
-      await sendPaymentRequestReceivedEmail(user, buildSamplePaymentRequest(normalizedServiceType, 'received'), { allowUnsubscribed: true });
+      const pr = { ...buildSamplePaymentRequest(normalizedServiceType, 'received'), ...overrides };
+      await sendPaymentRequestReceivedEmail(user, pr, { allowUnsubscribed: true });
       break;
     }
 
     case 'payment-approved': {
-      const paymentRequest = buildSamplePaymentRequest(normalizedServiceType, 'approved');
-      await sendPaymentApprovedEmail(user, paymentRequest, buildSampleUserSubscription(normalizedServiceType), { allowUnsubscribed: true });
+      const pr = { ...buildSamplePaymentRequest(normalizedServiceType, 'approved'), ...overrides };
+      await sendPaymentApprovedEmail(user, pr, buildSampleUserSubscription(normalizedServiceType), { allowUnsubscribed: true });
       break;
     }
 
     case 'payment-rejected': {
-      await sendPaymentRejectedEmail(user, buildSamplePaymentRequest(normalizedServiceType, 'rejected'), { allowUnsubscribed: true });
+      const pr = { ...buildSamplePaymentRequest(normalizedServiceType, 'rejected'), ...overrides };
+      await sendPaymentRejectedEmail(user, pr, { allowUnsubscribed: true });
+      break;
+    }
+
+    case 'subscription-started': {
+      await sendSubscriptionStartedEmail(user, buildSampleUserSubscription(normalizedServiceType), { allowUnsubscribed: true });
       break;
     }
 
@@ -186,12 +223,58 @@ const sendAdminMail = async ({ userId, mailType, serviceType = 'RA' }) => {
     }
 
     case 'new-recommendation': {
-      await sendNewRecommendationEmail(user, buildSampleRecommendation(), normalizedServiceType, { allowUnsubscribed: true });
+      const rec = { ...buildSampleRecommendation(), ...overrides };
+      await sendNewRecommendationEmail(user, rec, normalizedServiceType, { allowUnsubscribed: true });
       break;
     }
 
     case 'updated-recommendation': {
-      await sendUpdatedRecommendationEmail(user, buildSampleRecommendation(), normalizedServiceType, { allowUnsubscribed: true });
+      const rec = { ...buildSampleRecommendation(), ...overrides };
+      await sendUpdatedRecommendationEmail(user, rec, normalizedServiceType, { allowUnsubscribed: true });
+      break;
+    }
+
+    case 'price-alert-target': {
+      const rec = { ...buildSampleRecommendation(), targetPrice2: 4400, ...overrides };
+      const alertPrice = overrides.alertPrice != null ? Number(overrides.alertPrice) : 4210;
+      await sendPriceAlertEmail(user, rec, 'target1', alertPrice, normalizedServiceType, { allowUnsubscribed: true });
+      break;
+    }
+
+    case 'price-alert-stoploss': {
+      const rec = { ...buildSampleRecommendation(), ...overrides };
+      const alertPrice = overrides.alertPrice != null ? Number(overrides.alertPrice) : 3740;
+      await sendPriceAlertEmail(user, rec, 'stopLoss', alertPrice, normalizedServiceType, { allowUnsubscribed: true });
+      break;
+    }
+
+    case 'call-booking': {
+      const slot = { ...buildSampleCallSlot(), ...overrides };
+      await sendCallBookingEmail(user, buildSampleCallPlan(), slot, true);
+      break;
+    }
+
+    case 'call-confirmed': {
+      const slot = { ...buildSampleCallSlot(), ...overrides };
+      const meetLink = overrides.meetLink || 'https://meet.google.com/sample-link';
+      await sendCallConfirmedEmail(user, buildSampleCallPlan(), slot, meetLink, null, true);
+      break;
+    }
+
+    case 'call-cancelled': {
+      const slot = { ...buildSampleCallSlot(), ...overrides };
+      const reason = overrides.reason || 'Admin unavailable at the scheduled time. Please rebook.';
+      await sendCallCancelledEmail(user, buildSampleCallPlan(), slot, reason);
+      break;
+    }
+
+    case 'onboarding-reminder': {
+      const steps = overrides.steps || [
+        'Complete your KYC verification',
+        'Upload required documents',
+        'Sign the client agreement'
+      ];
+      await sendOnboardingReminderEmail(user, normalizedServiceType, steps, { allowUnsubscribed: true });
       break;
     }
 

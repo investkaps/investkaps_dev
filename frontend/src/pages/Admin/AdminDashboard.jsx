@@ -32,6 +32,81 @@ const EMPTY_FORM = {
   serviceType: 'RA', transactionId: '',
 };
 
+/* Fields to show per mail type. Each entry: { key, label, placeholder, type? } */
+const MAIL_FIELD_CONFIGS = {
+  'new-recommendation': [
+    { key: 'stockSymbol', label: 'Stock Symbol', placeholder: 'e.g. TCS' },
+    { key: 'stockName', label: 'Stock Name', placeholder: 'e.g. Tata Consultancy Services' },
+    { key: 'buyingRangeLow', label: 'Buy Range Low (₹)', placeholder: '3880', type: 'number' },
+    { key: 'buyingRangeHigh', label: 'Buy Range High (₹)', placeholder: '3950', type: 'number' },
+    { key: 'targetPrice', label: 'Target 1 (₹)', placeholder: '4200', type: 'number' },
+    { key: 'targetPrice2', label: 'Target 2 (₹)', placeholder: '4400', type: 'number' },
+    { key: 'targetPrice3', label: 'Target 3 (₹)', placeholder: '', type: 'number' },
+    { key: 'stopLoss', label: 'Stop Loss (₹)', placeholder: '3750', type: 'number' },
+    { key: 'currentPrice', label: 'Current Price (₹)', placeholder: '3925', type: 'number' },
+    { key: 'recommendationType', label: 'Type', placeholder: 'e.g. buy' },
+    { key: 'timeFrame', label: 'Time Frame', placeholder: 'e.g. medium_term' },
+  ],
+  'updated-recommendation': [
+    { key: 'stockSymbol', label: 'Stock Symbol', placeholder: 'e.g. TCS' },
+    { key: 'stockName', label: 'Stock Name', placeholder: 'e.g. Tata Consultancy Services' },
+    { key: 'buyingRangeLow', label: 'Buy Range Low (₹)', placeholder: '3880', type: 'number' },
+    { key: 'buyingRangeHigh', label: 'Buy Range High (₹)', placeholder: '3950', type: 'number' },
+    { key: 'targetPrice', label: 'Target 1 (₹)', placeholder: '4200', type: 'number' },
+    { key: 'targetPrice2', label: 'Target 2 (₹)', placeholder: '4400', type: 'number' },
+    { key: 'targetPrice3', label: 'Target 3 (₹)', placeholder: '', type: 'number' },
+    { key: 'stopLoss', label: 'Stop Loss (₹)', placeholder: '3750', type: 'number' },
+    { key: 'currentPrice', label: 'Current Price (₹)', placeholder: '3925', type: 'number' },
+    { key: 'recommendationType', label: 'Type', placeholder: 'e.g. buy' },
+  ],
+  'price-alert-target': [
+    { key: 'stockSymbol', label: 'Stock Symbol', placeholder: 'e.g. TCS' },
+    { key: 'stockName', label: 'Stock Name', placeholder: 'e.g. Tata Consultancy Services' },
+    { key: 'targetPrice', label: 'Target Price (₹)', placeholder: '4200', type: 'number' },
+    { key: 'alertPrice', label: 'Alert / LTP Price (₹)', placeholder: '4210', type: 'number' },
+    { key: 'stopLoss', label: 'Stop Loss (₹)', placeholder: '3750', type: 'number' },
+  ],
+  'price-alert-stoploss': [
+    { key: 'stockSymbol', label: 'Stock Symbol', placeholder: 'e.g. TCS' },
+    { key: 'stockName', label: 'Stock Name', placeholder: 'e.g. Tata Consultancy Services' },
+    { key: 'stopLoss', label: 'Stop Loss (₹)', placeholder: '3750', type: 'number' },
+    { key: 'alertPrice', label: 'Alert / LTP Price (₹)', placeholder: '3740', type: 'number' },
+  ],
+  'call-booking': [
+    { key: 'date', label: 'Call Date', placeholder: 'YYYY-MM-DD', type: 'date' },
+    { key: 'startTime', label: 'Start Time', placeholder: '10:00', type: 'time' },
+    { key: 'endTime', label: 'End Time', placeholder: '10:30', type: 'time' },
+  ],
+  'call-confirmed': [
+    { key: 'date', label: 'Call Date', placeholder: 'YYYY-MM-DD', type: 'date' },
+    { key: 'startTime', label: 'Start Time', placeholder: '10:00', type: 'time' },
+    { key: 'endTime', label: 'End Time', placeholder: '10:30', type: 'time' },
+    { key: 'meetLink', label: 'Google Meet Link', placeholder: 'https://meet.google.com/...' },
+  ],
+  'call-cancelled': [
+    { key: 'date', label: 'Call Date', placeholder: 'YYYY-MM-DD', type: 'date' },
+    { key: 'startTime', label: 'Start Time', placeholder: '10:00', type: 'time' },
+    { key: 'endTime', label: 'End Time', placeholder: '10:30', type: 'time' },
+    { key: 'reason', label: 'Cancellation Reason', placeholder: 'Admin unavailable…' },
+  ],
+  'payment-request-received': [
+    { key: 'planName', label: 'Plan Name', placeholder: 'e.g. RA Starter' },
+    { key: 'amount', label: 'Amount (₹)', placeholder: '1999', type: 'number' },
+    { key: 'transactionId', label: 'Transaction ID', placeholder: 'TEST-RECEIVED-...' },
+  ],
+  'payment-approved': [
+    { key: 'planName', label: 'Plan Name', placeholder: 'e.g. RA Starter' },
+    { key: 'amount', label: 'Amount (₹)', placeholder: '1999', type: 'number' },
+    { key: 'transactionId', label: 'Transaction ID', placeholder: 'TEST-APPROVED-...' },
+  ],
+  'payment-rejected': [
+    { key: 'planName', label: 'Plan Name', placeholder: 'e.g. RA Starter' },
+    { key: 'amount', label: 'Amount (₹)', placeholder: '1999', type: 'number' },
+    { key: 'transactionId', label: 'Transaction ID', placeholder: 'TEST-REJECTED-...' },
+    { key: 'adminNotes', label: 'Rejection Reason', placeholder: 'e.g. Payment not received' },
+  ],
+};
+
 const SettingsTab = () => {
   /* ── Mail center state ── */
   const [users, setUsers] = useState([]);
@@ -43,6 +118,7 @@ const SettingsTab = () => {
   const [selectedUserId, setSelectedUserId] = useState('');
   const [selectedMailType, setSelectedMailType] = useState('test-email');
   const [selectedServiceType, setSelectedServiceType] = useState('RA');
+  const [mailOverrides, setMailOverrides] = useState({});
   const [mailSending, setMailSending] = useState(false);
   const [mailResult, setMailResult] = useState(null);
   const [mailError, setMailError] = useState(null);
@@ -186,6 +262,17 @@ const SettingsTab = () => {
     setInvBusy(false);
   };
 
+  const handleMailTypeChange = (e) => {
+    setSelectedMailType(e.target.value);
+    setMailOverrides({});
+    setMailResult(null);
+    setMailError(null);
+  };
+
+  const handleOverrideChange = (key, value) => {
+    setMailOverrides(prev => ({ ...prev, [key]: value }));
+  };
+
   const handleSendMail = async () => {
     if (!selectedUserId) { setMailError('Please select a user first.'); return; }
     const selectedUser = users.find(u => u._id === selectedUserId);
@@ -193,10 +280,11 @@ const SettingsTab = () => {
     const selectedMail = mailTypes.find(m => m.value === selectedMailType);
     const actionLabel = selectedMail?.label || selectedMailType;
     const serviceForMail = selectedMailType === 'questionnaire-results' ? 'IA' : selectedServiceType;
+    const activeOverrides = Object.fromEntries(Object.entries(mailOverrides).filter(([, v]) => v !== ''));
     if (!window.confirm(`Send ${actionLabel} to ${selectedUser.name || selectedUser.email} using ${serviceForMail} mail?`)) return;
     setMailSending(true); setMailError(null); setMailResult(null);
     try {
-      const response = await adminAPI.sendAdminMail({ userId: selectedUserId, mailType: selectedMailType, serviceType: serviceForMail });
+      const response = await adminAPI.sendAdminMail({ userId: selectedUserId, mailType: selectedMailType, serviceType: serviceForMail, overrides: activeOverrides });
       setMailResult([response?.message, response?.warning].filter(Boolean).join(' ') || `${actionLabel} sent to ${selectedUser.email}`);
     } catch (err) { setMailError(err.message || 'Failed to send mail'); }
     finally { setMailSending(false); }
@@ -230,7 +318,7 @@ const SettingsTab = () => {
           </div>
           <div>
             <label style={labelStyle}>Mail Type</label>
-            <select value={selectedMailType} onChange={e => setSelectedMailType(e.target.value)} disabled={mailTypesLoading} style={inputStyle}>
+            <select value={selectedMailType} onChange={handleMailTypeChange} disabled={mailTypesLoading} style={inputStyle}>
               {mailTypes.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
             </select>
             {mailTypesLoading && <div style={{ fontSize: '0.78rem', color: '#6c757d', marginTop: '0.35rem' }}>Loading mail types…</div>}
@@ -250,6 +338,30 @@ const SettingsTab = () => {
             </button>
           </div>
         </div>
+
+        {/* Dynamic configurable fields for the selected mail type */}
+        {MAIL_FIELD_CONFIGS[selectedMailType] && (
+          <div style={{ marginTop: '1.25rem', padding: '1rem 1.1rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#475569', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Override sample values (optional — blank fields use defaults)
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '0.7rem' }}>
+              {MAIL_FIELD_CONFIGS[selectedMailType].map(({ key, label, placeholder, type = 'text' }) => (
+                <div key={key}>
+                  <label style={{ ...labelStyle, fontSize: '0.77rem' }}>{label}</label>
+                  <input
+                    type={type}
+                    value={mailOverrides[key] ?? ''}
+                    onChange={e => handleOverrideChange(key, e.target.value)}
+                    placeholder={placeholder}
+                    style={{ ...inputStyle, fontSize: '0.82rem', padding: '0.55rem 0.7rem' }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {mailError && <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: '#f8d7da', color: '#721c24', borderRadius: '8px', fontSize: '0.85rem' }}>⚠ {mailError}</div>}
         {mailResult && <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: '#d4edda', color: '#155724', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600 }}>✓ {mailResult}</div>}
       </div>
@@ -411,7 +523,17 @@ const AdminDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview');
+  const getInitialTab = () => {
+    const hash = window.location.hash.slice(1);
+    const valid = ['overview','users','kyc','subscriptions','strategies','recommendations','payment-approval','documents','testimonials','questionnaire-management','questionnaire-responses','model-portfolios','meetings','settings'];
+    return valid.includes(hash) ? hash : 'overview';
+  };
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+
+  const switchTab = (tab) => {
+    setActiveTab(tab);
+    window.location.hash = tab;
+  };
   
   // AdminRoute already verified the user is admin, so no need to redirect here.
   // Just fetch dashboard data if user is available.
@@ -464,46 +586,46 @@ const AdminDashboard = () => {
         <nav className="admin-nav">
           <ul>
             <li className={activeTab === 'overview' ? 'active' : ''}>
-              <button onClick={() => setActiveTab('overview')}>Overview</button>
+              <button onClick={() => switchTab('overview')}>Overview</button>
             </li>
             <li className={activeTab === 'users' ? 'active' : ''}>
-              <button onClick={() => setActiveTab('users')}>Users</button>
+              <button onClick={() => switchTab('users')}>Users</button>
             </li>
             <li className={activeTab === 'kyc' ? 'active' : ''}>
-              <button onClick={() => setActiveTab('kyc')}>KYC Verifications</button>
+              <button onClick={() => switchTab('kyc')}>KYC Verifications</button>
             </li>
             <li className={activeTab === 'subscriptions' ? 'active' : ''}>
-              <button onClick={() => setActiveTab('subscriptions')}>Subscriptions</button>
+              <button onClick={() => switchTab('subscriptions')}>Subscriptions</button>
             </li>
             <li className={activeTab === 'strategies' ? 'active' : ''}>
-              <button onClick={() => setActiveTab('strategies')}>Strategies</button>
+              <button onClick={() => switchTab('strategies')}>Strategies</button>
             </li>
             <li className={activeTab === 'recommendations' ? 'active' : ''}>
-              <button onClick={() => setActiveTab('recommendations')}>Stock Recommendations</button>
+              <button onClick={() => switchTab('recommendations')}>Stock Recommendations</button>
             </li>
             <li className={activeTab === 'payment-approval' ? 'active' : ''}>
-              <button onClick={() => setActiveTab('payment-approval')}>Payment Approval</button>
+              <button onClick={() => switchTab('payment-approval')}>Payment Approval</button>
             </li>
             <li className={activeTab === 'documents' ? 'active' : ''}>
-              <button onClick={() => setActiveTab('documents')}>📄 Documents</button>
+              <button onClick={() => switchTab('documents')}>📄 Documents</button>
             </li>
             <li className={activeTab === 'testimonials' ? 'active' : ''}>
-              <button onClick={() => setActiveTab('testimonials')}>Testimonials</button>
+              <button onClick={() => switchTab('testimonials')}>Testimonials</button>
             </li>
             <li className={activeTab === 'questionnaire-management' ? 'active' : ''}>
-              <button onClick={() => setActiveTab('questionnaire-management')}>Questionnaires</button>
+              <button onClick={() => switchTab('questionnaire-management')}>Questionnaires</button>
             </li>
             <li className={activeTab === 'questionnaire-responses' ? 'active' : ''}>
-              <button onClick={() => setActiveTab('questionnaire-responses')}>Responses</button>
+              <button onClick={() => switchTab('questionnaire-responses')}>Responses</button>
             </li>
             <li className={activeTab === 'model-portfolios' ? 'active' : ''}>
-              <button onClick={() => setActiveTab('model-portfolios')}>Model Portfolios</button>
+              <button onClick={() => switchTab('model-portfolios')}>Model Portfolios</button>
             </li>
             <li className={activeTab === 'meetings' ? 'active' : ''}>
-              <button onClick={() => setActiveTab('meetings')}>Meetings</button>
+              <button onClick={() => switchTab('meetings')}>Meetings</button>
             </li>
             <li className={activeTab === 'settings' ? 'active' : ''}>
-              <button onClick={() => setActiveTab('settings')}>Settings</button>
+              <button onClick={() => switchTab('settings')}>Settings</button>
             </li>
           </ul>
         </nav>

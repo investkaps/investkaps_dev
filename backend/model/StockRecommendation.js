@@ -150,6 +150,8 @@ const StockRecommendationSchema = new mongoose.Schema({
     target3Hit:  { type: Boolean, default: false },
     stopLossHit: { type: Boolean, default: false }
   },
+  // Active flag — set to false when stop loss hits or the final target price is reached
+  isActive: { type: Boolean, default: true },
   createdAt: {
     type: Date,
     default: Date.now

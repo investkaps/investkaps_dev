@@ -2031,6 +2031,16 @@ input.verified {
   background: rgba(254, 226, 226, 0.25);
 }
 
+.rec-row-inactive {
+  opacity: 0.55;
+}
+
+.price-hit-badge.rec-inactive-badge {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+}
+
 .buy-range-badge {
   display: inline-block;
   padding: 2px 8px;

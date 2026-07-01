@@ -448,7 +448,7 @@ router.get('/mail-types', verifyToken, checkRole('admin'), async (_req, res) => 
  */
 router.post('/mail/send', verifyToken, checkRole('admin'), async (req, res) => {
   try {
-    const { userId, mailType, serviceType } = req.body;
+    const { userId, mailType, serviceType, overrides } = req.body;
 
     if (!userId) {
       return res.status(400).json({
@@ -464,7 +464,7 @@ router.post('/mail/send', verifyToken, checkRole('admin'), async (req, res) => {
       });
     }
 
-    const result = await sendAdminMail({ userId, mailType, serviceType });
+    const result = await sendAdminMail({ userId, mailType, serviceType, overrides });
 
     return res.status(200).json({
       success: true,

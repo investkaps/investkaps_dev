@@ -20,7 +20,7 @@ const MEDIA_ARTICLES = [
     source: 'Newsable – AsianetNews',
     logoColor: '#e8091c',
     logoText: 'Newsable',
-    imgSrc: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=150&h=150&fit=crop',
+    date: 'Aug 14, 2025',
   },
   {
     id: 1,
@@ -30,7 +30,7 @@ const MEDIA_ARTICLES = [
     source: 'StockTwits',
     logoColor: '#1DA1F2',
     logoText: 'StockTwits',
-    imgSrc: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=150&h=150&fit=crop',
+    date: 'Aug 6, 2025',
   },
   {
     id: 2,
@@ -40,7 +40,7 @@ const MEDIA_ARTICLES = [
     source: 'MSN Money',
     logoColor: '#00a4ef',
     logoText: 'MSN Money',
-    imgSrc: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=150&h=150&fit=crop',
+    date: 'Jul 30, 2025',
   },
   {
     id: 3,
@@ -50,7 +50,7 @@ const MEDIA_ARTICLES = [
     source: 'Investing.com',
     logoColor: '#e8231a',
     logoText: 'Investing.com',
-    imgSrc: 'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=150&h=150&fit=crop',
+    date: 'Jun 20, 2025',
   },
   {
     id: 4,
@@ -60,7 +60,7 @@ const MEDIA_ARTICLES = [
     source: 'Newsable – AsianetNews',
     logoColor: '#e8091c',
     logoText: 'Newsable',
-    imgSrc: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=150&h=150&fit=crop',
+    date: 'Aug 14, 2025',
   },
 ];
 
@@ -85,17 +85,15 @@ function MediaCard({ article, position, cardSize, onMove }) {
       {/* folded-corner diagonal line */}
       <span className="mstagger-card__corner" style={{ width: SQRT_5000 }} />
 
-      {/* publication logo badge */}
-      <div className="mstagger-card__logo-badge" style={{ background: article.logoColor }}>
-        {article.logoText}
+      {/* publication logo badge + date */}
+      <div className="mstagger-card__top-row">
+        <div className="mstagger-card__logo-badge" style={{ background: article.logoColor }}>
+          {article.logoText}
+        </div>
+        {article.date && (
+          <span className="mstagger-card__date">{article.date}</span>
+        )}
       </div>
-
-      {/* article image */}
-      <img
-        src={article.imgSrc}
-        alt={article.source}
-        className="mstagger-card__img"
-      />
 
       {/* quote */}
       <p className="mstagger-card__quote">{article.quote}</p>

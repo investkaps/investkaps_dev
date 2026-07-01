@@ -420,9 +420,9 @@ export const adminAPI = {
     }
   },
 
-  sendAdminMail: async ({ userId, mailType, serviceType = 'RA' }) => {
+  sendAdminMail: async ({ userId, mailType, serviceType = 'RA', overrides = {} }) => {
     try {
-      const res = await api.post('/admin/mail/send', { userId, mailType, serviceType });
+      const res = await api.post('/admin/mail/send', { userId, mailType, serviceType, overrides });
       return res.data;
     } catch (err) {
       const { message } = extractError(err);

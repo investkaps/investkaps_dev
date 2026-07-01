@@ -76,9 +76,10 @@ export async function checkPriceAlerts(prices) {
     return;
   }
 
-  // Only check published, non-archived recommendations where at least one alert hasn't fired yet
+  // Only check published, active recommendations where at least one alert hasn't fired yet
   const recs = await StockRecommendation.find({
     status: 'published',
+    isActive: { $ne: false },
     $or: [
       { 'alertFlags.target1Hit': false },
       { 'alertFlags.target2Hit': false, targetPrice2: { $exists: true, $ne: null } },
@@ -105,18 +106,26 @@ export async function checkPriceAlerts(prices) {
     if (!rec.alertFlags.target1Hit && rec.targetPrice && targetHit(rec.targetPrice)) {
       updates['alertFlags.target1Hit'] = true;
       alertsToSend.push('target1');
+      // Deactivate if target1 is the final target set
+      if (!rec.targetPrice2 && !rec.targetPrice3) updates['isActive'] = false;
     }
     if (!rec.alertFlags.target2Hit && rec.targetPrice2 && targetHit(rec.targetPrice2)) {
       updates['alertFlags.target2Hit'] = true;
       alertsToSend.push('target2');
+      // Deactivate if target2 is the final target set
+      if (!rec.targetPrice3) updates['isActive'] = false;
     }
     if (!rec.alertFlags.target3Hit && rec.targetPrice3 && targetHit(rec.targetPrice3)) {
       updates['alertFlags.target3Hit'] = true;
       alertsToSend.push('target3');
+      // target3 is always the final target
+      updates['isActive'] = false;
     }
     if (!rec.alertFlags.stopLossHit && rec.stopLoss && slHit(rec.stopLoss)) {
       updates['alertFlags.stopLossHit'] = true;
       alertsToSend.push('stopLoss');
+      // Stop loss hit always deactivates the recommendation
+      updates['isActive'] = false;
     }
 
     if (!alertsToSend.length) continue;

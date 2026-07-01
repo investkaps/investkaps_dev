@@ -168,7 +168,7 @@ app.listen(PORT, () => {
       const StockRecommendation = (await import('./model/StockRecommendation.js')).default;
       const ltpService = (await import('./services/ltpService.js')).default;
 
-      const recs = await StockRecommendation.find({ status: 'published' })
+      const recs = await StockRecommendation.find({ status: 'published', isActive: { $ne: false } })
         .select('stockSymbol exchange');
 
       if (!recs.length) return;

@@ -180,6 +180,16 @@
   border: 1px solid #fca5a5;
 }
 
+.admin-price-hit-badge.admin-inactive-badge {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+}
+
+.rec-row-admin-inactive {
+  opacity: 0.55;
+}
+
 .status-badge {
   display: inline-block;
   padding: 4px 8px;

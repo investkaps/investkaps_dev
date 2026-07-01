@@ -1744,13 +1744,15 @@ const Dashboard = () => {
                       const flags = rec.alertFlags || {};
                       const targetHit = flags.target1Hit || flags.target2Hit || flags.target3Hit;
                       const slHit = flags.stopLossHit;
+                      const inactive = rec.isActive === false;
                       return (
-                      <tr key={rec._id} className={`rec-row${slHit ? ' rec-row-sl-hit' : targetHit ? ' rec-row-target-hit' : ''}`}>
+                      <tr key={rec._id} className={`rec-row${inactive ? ' rec-row-inactive' : slHit ? ' rec-row-sl-hit' : targetHit ? ' rec-row-target-hit' : ''}`}>
                         <td className="stock-cell">
                           <span className="stock-symbol">{rec.stockSymbol}</span>
                           <span className="stock-name">{rec.stockName}</span>
                           {slHit && <span className="price-hit-badge stop-loss-hit">Stop Loss Hit</span>}
                           {!slHit && targetHit && <span className="price-hit-badge target-hit">Target Hit</span>}
+                          {inactive && <span className="price-hit-badge rec-inactive-badge">Inactive</span>}
                         </td>
                         <td><span className={`rec-badge ${rec.recommendationType}`}>{rec.recommendationType.toUpperCase()}</span></td>
                         <td className="price-cell">₹{rec.currentPrice}</td>
