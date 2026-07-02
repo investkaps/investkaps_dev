@@ -41,6 +41,7 @@ const StockRecommendationManagement = () => {
   const [lastPriceUpdate, setLastPriceUpdate] = useState(null);
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
   const [formSuccessMessage, setFormSuccessMessage] = useState('');
+  const [formSubmitting, setFormSubmitting] = useState(false);
   const [uploadingPdfId, setUploadingPdfId] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
   const menuRef = useRef(null);
@@ -58,8 +59,8 @@ const StockRecommendationManagement = () => {
     lotSize: '',
     instrumentType: '',
     currentPrice: '',
-    buyingRangeLow: '',
-    buyingRangeHigh: '',
+    entryRangeLow: '',
+    entryRangeHigh: '',
     targetPrice: '',
     targetPrice2: '',
     targetPrice3: '',
@@ -154,8 +155,15 @@ const StockRecommendationManagement = () => {
       setUpdatingPrices(true);
       setRefreshMessage(null);
 
+      const activeList = list.filter(r => r.isActive !== false);
+      if (activeList.length === 0) {
+        setRefreshMessage({ type: 'success', text: 'No active recommendations to update.' });
+        setTimeout(() => setRefreshMessage(null), 3000);
+        return;
+      }
+
       const response = await adminAPI.fetchRecommendationPrices(
-        list.map(r => ({ stockSymbol: r.stockSymbol, exchange: r.exchange || 'NSE' }))
+        activeList.map(r => ({ stockSymbol: r.stockSymbol, exchange: r.exchange || 'NSE' }))
       );
 
       const prices = response.prices || {};
@@ -163,7 +171,7 @@ const StockRecommendationManagement = () => {
       let totalUpdated = 0;
       const errors = [];
 
-      for (const rec of list) {
+      for (const rec of activeList) {
         const newPrice = prices[rec.stockSymbol] ?? prices[rec.stockSymbol?.toUpperCase()];
         if (newPrice != null) {
           try {
@@ -244,8 +252,8 @@ const StockRecommendationManagement = () => {
       stockSymbol: '',
       stockName: '',
       currentPrice: '',
-      buyingRangeLow: '',
-      buyingRangeHigh: '',
+      entryRangeLow: '',
+      entryRangeHigh: '',
       targetPrice: '',
       targetPrice2: '',
       targetPrice3: '',
@@ -295,8 +303,8 @@ const StockRecommendationManagement = () => {
       ...recommendation,
       targetStrategies: recommendation.targetStrategies.map(strategy => strategy._id || strategy),
       currentPrice: recommendation.currentPrice.toString(),
-      buyingRangeLow: recommendation.buyingRangeLow ? recommendation.buyingRangeLow.toString() : '',
-      buyingRangeHigh: recommendation.buyingRangeHigh ? recommendation.buyingRangeHigh.toString() : '',
+      entryRangeLow: recommendation.entryRangeLow ? recommendation.entryRangeLow.toString() : '',
+      entryRangeHigh: recommendation.entryRangeHigh ? recommendation.entryRangeHigh.toString() : '',
       targetPrice: recommendation.targetPrice.toString(),
       targetPrice2: recommendation.targetPrice2 ? recommendation.targetPrice2.toString() : '',
       targetPrice3: recommendation.targetPrice3 ? recommendation.targetPrice3.toString() : '',
@@ -331,17 +339,18 @@ const StockRecommendationManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    if (formSubmitting) return;
+
     try {
-      setLoading(true);
+      setFormSubmitting(true);
       setError(null);
       
       const isNfoSubmit = new Set(['NFO', 'BFO', 'CDS', 'MCX']).has(formData.exchange);
       const dataToSubmit = {
         ...formData,
         currentPrice: parseFloat(formData.currentPrice),
-        buyingRangeLow: formData.buyingRangeLow ? parseFloat(formData.buyingRangeLow) : undefined,
-        buyingRangeHigh: formData.buyingRangeHigh ? parseFloat(formData.buyingRangeHigh) : undefined,
+        entryRangeLow: formData.entryRangeLow ? parseFloat(formData.entryRangeLow) : undefined,
+        entryRangeHigh: formData.entryRangeHigh ? parseFloat(formData.entryRangeHigh) : undefined,
         targetPrice: parseFloat(formData.targetPrice),
         targetPrice2: formData.targetPrice2 ? parseFloat(formData.targetPrice2) : undefined,
         targetPrice3: formData.targetPrice3 ? parseFloat(formData.targetPrice3) : undefined,
@@ -376,7 +385,7 @@ const StockRecommendationManagement = () => {
       console.error('Error saving recommendation:', err);
       setError('An error occurred while saving the recommendation');
     } finally {
-      setLoading(false);
+      setFormSubmitting(false);
     }
   };
 
@@ -775,12 +784,12 @@ const StockRecommendationManagement = () => {
 
             <div className="form-row">
               <div className="form-group" style={{ flex: 1 }}>
-                <label htmlFor="buyingRangeLow">Buying Range Low (₹)</label>
+                <label htmlFor="entryRangeLow">Entry Range (Low) (₹)</label>
                 <input
                   type="number"
-                  id="buyingRangeLow"
-                  name="buyingRangeLow"
-                  value={formData.buyingRangeLow}
+                  id="entryRangeLow"
+                  name="entryRangeLow"
+                  value={formData.entryRangeLow}
                   onChange={handleFormChange}
                   step="0.01"
                   placeholder="e.g. 450"
@@ -788,12 +797,12 @@ const StockRecommendationManagement = () => {
               </div>
 
               <div className="form-group" style={{ flex: 1 }}>
-                <label htmlFor="buyingRangeHigh">Buying Range High (₹)</label>
+                <label htmlFor="entryRangeHigh">Entry Range (High) (₹)</label>
                 <input
                   type="number"
-                  id="buyingRangeHigh"
-                  name="buyingRangeHigh"
-                  value={formData.buyingRangeHigh}
+                  id="entryRangeHigh"
+                  name="entryRangeHigh"
+                  value={formData.entryRangeHigh}
                   onChange={handleFormChange}
                   step="0.01"
                   placeholder="e.g. 480"
@@ -976,8 +985,8 @@ const StockRecommendationManagement = () => {
               </div>
             )}
             <div className="form-actions">
-              <button type="submit" className="admin-button primary">
-                {formMode === 'create' ? 'Create Recommendation' : 'Update Recommendation'}
+              <button type="submit" className="admin-button primary" disabled={formSubmitting} style={{ opacity: formSubmitting ? 0.65 : 1, cursor: formSubmitting ? 'not-allowed' : 'pointer' }}>
+                {formSubmitting ? (formMode === 'create' ? 'Creating…' : 'Updating…') : (formMode === 'create' ? 'Create Recommendation' : 'Update Recommendation')}
               </button>
               <button
                 type="button"

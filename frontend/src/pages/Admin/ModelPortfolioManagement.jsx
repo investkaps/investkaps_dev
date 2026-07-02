@@ -600,7 +600,7 @@ const ModelPortfolioManagement = () => {
               <div style={{ overflowX: 'auto' }}>
                 <table style={s.table}>
                   <thead>
-                    <tr>{['Symbol', 'Exchange', 'Buy Range', 'T1', 'T2', 'T3', 'SL', 'Alloc %'].map(h => <th key={h} style={s.th}>{h}</th>)}</tr>
+                    <tr>{['Symbol', 'Exchange', 'Entry Range', 'T1', 'T2', 'T3', 'SL', 'Alloc %'].map(h => <th key={h} style={s.th}>{h}</th>)}</tr>
                   </thead>
                   <tbody>
                     {rebalancePf.stocks.map((st, i) => (

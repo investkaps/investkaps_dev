@@ -958,7 +958,7 @@ router.post('/model-portfolios', verifyToken, checkRole('admin'), async (req, re
                   <tr style="background:#1e3a5f;color:#fff;">
                     <th style="padding:8px 10px;text-align:left;">Symbol</th>
                     <th style="padding:8px 10px;text-align:left;">Name</th>
-                    <th style="padding:8px 10px;text-align:left;">Buy Range</th>
+                    <th style="padding:8px 10px;text-align:left;">Entry Range</th>
                     <th style="padding:8px 10px;text-align:left;">Target</th>
                     <th style="padding:8px 10px;text-align:left;">Stop Loss</th>
                   </tr>
@@ -1054,7 +1054,7 @@ router.post('/model-portfolios/:id/rebalance', verifyToken, checkRole('admin'), 
                 <tr style="background:#1e3a5f;color:#fff;">
                   <th style="padding:8px 10px;text-align:left;">Symbol</th>
                   <th style="padding:8px 10px;text-align:left;">Name</th>
-                  <th style="padding:8px 10px;text-align:left;">Buy Range</th>
+                  <th style="padding:8px 10px;text-align:left;">Entry Range</th>
                   <th style="padding:8px 10px;text-align:left;">Target</th>
                   <th style="padding:8px 10px;text-align:left;">Stop Loss</th>
                 </tr>

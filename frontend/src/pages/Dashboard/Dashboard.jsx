@@ -1583,7 +1583,7 @@ const Dashboard = () => {
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.875rem' }}>
                       <thead>
                         <tr style={{ background: 'linear-gradient(135deg, #3498db 0%, #2c3e50 100%)' }}>
-                          {['Symbol', 'Name', 'Exchange', 'Buy Range', 'Target 1', 'Target 2', 'Target 3', 'Stop Loss', 'Alloc %'].map(h => (
+                          {['Symbol', 'Name', 'Exchange', 'Entry Range', 'Target 1', 'Target 2', 'Target 3', 'Stop Loss', 'Alloc %'].map(h => (
                             <th key={h} style={{ padding: '10px 12px', color: '#fff', textAlign: 'left', fontWeight: 600, fontSize: '.78rem', textTransform: 'uppercase', letterSpacing: '.04em', whiteSpace: 'nowrap' }}>{h}</th>
                           ))}
                         </tr>
@@ -1734,7 +1734,7 @@ const Dashboard = () => {
                   <thead>
                     <tr>
                       <th>Stock</th><th>Type</th><th>Current</th>
-                      <th>Buy Range</th>
+                      <th>Entry Range</th>
                       <th>Target 1</th><th>Target 2</th><th>Target 3</th>
                       <th>Stop Loss</th><th>Timeframe</th><th>Report</th>
                     </tr>
@@ -1757,12 +1757,12 @@ const Dashboard = () => {
                         <td><span className={`rec-badge ${rec.recommendationType}`}>{rec.recommendationType.toUpperCase()}</span></td>
                         <td className="price-cell">₹{rec.currentPrice}</td>
                         <td className="price-cell buy-range">
-                          {rec.buyingRangeLow && rec.buyingRangeHigh
-                            ? <span className="buy-range-badge">₹{rec.buyingRangeLow} – ₹{rec.buyingRangeHigh}</span>
-                            : rec.buyingRangeLow
-                            ? <span className="buy-range-badge">≥ ₹{rec.buyingRangeLow}</span>
-                            : rec.buyingRangeHigh
-                            ? <span className="buy-range-badge">≤ ₹{rec.buyingRangeHigh}</span>
+                          {rec.entryRangeLow && rec.entryRangeHigh
+                            ? <span className="entry-range-badge">₹{rec.entryRangeLow} – ₹{rec.entryRangeHigh}</span>
+                            : rec.entryRangeLow
+                            ? <span className="entry-range-badge">≥ ₹{rec.entryRangeLow}</span>
+                            : rec.entryRangeHigh
+                            ? <span className="entry-range-badge">≤ ₹{rec.entryRangeHigh}</span>
                             : '-'}
                         </td>
                         <td className="price-cell target">₹{rec.targetPrice}</td>

@@ -37,8 +37,8 @@ const MAIL_FIELD_CONFIGS = {
   'new-recommendation': [
     { key: 'stockSymbol', label: 'Stock Symbol', placeholder: 'e.g. TCS' },
     { key: 'stockName', label: 'Stock Name', placeholder: 'e.g. Tata Consultancy Services' },
-    { key: 'buyingRangeLow', label: 'Buy Range Low (₹)', placeholder: '3880', type: 'number' },
-    { key: 'buyingRangeHigh', label: 'Buy Range High (₹)', placeholder: '3950', type: 'number' },
+    { key: 'entryRangeLow', label: 'Entry Range (Low) (₹)', placeholder: '3880', type: 'number' },
+    { key: 'entryRangeHigh', label: 'Entry Range (High) (₹)', placeholder: '3950', type: 'number' },
     { key: 'targetPrice', label: 'Target 1 (₹)', placeholder: '4200', type: 'number' },
     { key: 'targetPrice2', label: 'Target 2 (₹)', placeholder: '4400', type: 'number' },
     { key: 'targetPrice3', label: 'Target 3 (₹)', placeholder: '', type: 'number' },
@@ -50,8 +50,8 @@ const MAIL_FIELD_CONFIGS = {
   'updated-recommendation': [
     { key: 'stockSymbol', label: 'Stock Symbol', placeholder: 'e.g. TCS' },
     { key: 'stockName', label: 'Stock Name', placeholder: 'e.g. Tata Consultancy Services' },
-    { key: 'buyingRangeLow', label: 'Buy Range Low (₹)', placeholder: '3880', type: 'number' },
-    { key: 'buyingRangeHigh', label: 'Buy Range High (₹)', placeholder: '3950', type: 'number' },
+    { key: 'entryRangeLow', label: 'Entry Range (Low) (₹)', placeholder: '3880', type: 'number' },
+    { key: 'entryRangeHigh', label: 'Entry Range (High) (₹)', placeholder: '3950', type: 'number' },
     { key: 'targetPrice', label: 'Target 1 (₹)', placeholder: '4200', type: 'number' },
     { key: 'targetPrice2', label: 'Target 2 (₹)', placeholder: '4400', type: 'number' },
     { key: 'targetPrice3', label: 'Target 3 (₹)', placeholder: '', type: 'number' },

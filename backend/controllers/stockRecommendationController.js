@@ -34,8 +34,8 @@ const createRecommendation = async (req, res) => {
       lotSize,
       instrumentType,
       currentPrice,
-      buyingRangeLow,
-      buyingRangeHigh,
+      entryRangeLow,
+      entryRangeHigh,
       targetPrice,
       targetPrice2,
       targetPrice3,
@@ -61,8 +61,8 @@ const createRecommendation = async (req, res) => {
       lotSize,
       instrumentType,
       currentPrice,
-      buyingRangeLow,
-      buyingRangeHigh,
+      entryRangeLow,
+      entryRangeHigh,
       targetPrice,
       targetPrice2,
       targetPrice3,
@@ -554,7 +554,7 @@ const sendRecommendationToUsers = async (recommendationId) => {
     for (const user of users) {
       try {
         // Send notification
-        await notificationService.sendRecommendationNotification(user, recommendation, userServiceTypes.get(user._id.toString()) || 'RA');
+        await sendNewRecommendationEmail(user, recommendation, userServiceTypes.get(user._id.toString()) || 'RA');
         
         // Track sent status
         recommendation.sentTo.push({

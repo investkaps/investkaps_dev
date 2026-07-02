@@ -405,10 +405,10 @@ const sendNewRecommendationEmail = async (user, recommendation, serviceType = 'R
               <p style="margin:0;color:#bfdbfe;font-size:11px;font-weight:600;text-transform:uppercase;">LTP</p>
               <p style="margin:4px 0 0;color:#ffffff;font-size:18px;font-weight:700;">₹${recommendation.currentPrice}</p>
             </td>
-            ${recommendation.buyingRangeLow || recommendation.buyingRangeHigh ? `
+            ${recommendation.entryRangeLow || recommendation.entryRangeHigh ? `
             <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 8px;">
-              <p style="margin:0;color:#bfdbfe;font-size:11px;font-weight:600;text-transform:uppercase;">Buy Range</p>
-              <p style="margin:4px 0 0;color:#fde68a;font-size:15px;font-weight:700;">₹${recommendation.buyingRangeLow || '—'} – ₹${recommendation.buyingRangeHigh || '—'}</p>
+              <p style="margin:0;color:#bfdbfe;font-size:11px;font-weight:600;text-transform:uppercase;">Entry Range</p>
+              <p style="margin:4px 0 0;color:#fde68a;font-size:15px;font-weight:700;">₹${recommendation.entryRangeLow || '—'} – ₹${recommendation.entryRangeHigh || '—'}</p>
             </td>` : ''}
             <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 8px;">
               <p style="margin:0;color:#bfdbfe;font-size:11px;font-weight:600;text-transform:uppercase;">Target 1</p>
@@ -480,10 +480,10 @@ const sendUpdatedRecommendationEmail = async (user, recommendation, serviceType 
               <p style="margin:0;color:#ddd6fe;font-size:11px;font-weight:600;text-transform:uppercase;">LTP</p>
               <p style="margin:4px 0 0;color:#ffffff;font-size:18px;font-weight:700;">₹${recommendation.currentPrice}</p>
             </td>
-            ${recommendation.buyingRangeLow || recommendation.buyingRangeHigh ? `
+            ${recommendation.entryRangeLow || recommendation.entryRangeHigh ? `
             <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 8px;">
-              <p style="margin:0;color:#ddd6fe;font-size:11px;font-weight:600;text-transform:uppercase;">Buy Range</p>
-              <p style="margin:4px 0 0;color:#fde68a;font-size:15px;font-weight:700;">₹${recommendation.buyingRangeLow || '—'} – ₹${recommendation.buyingRangeHigh || '—'}</p>
+              <p style="margin:0;color:#ddd6fe;font-size:11px;font-weight:600;text-transform:uppercase;">Entry Range</p>
+              <p style="margin:4px 0 0;color:#fde68a;font-size:15px;font-weight:700;">₹${recommendation.entryRangeLow || '—'} – ₹${recommendation.entryRangeHigh || '—'}</p>
             </td>` : ''}
             <td style="text-align:center;border-right:1px solid rgba(255,255,255,.15);padding:0 8px;">
               <p style="margin:0;color:#ddd6fe;font-size:11px;font-weight:600;text-transform:uppercase;">Target 1</p>

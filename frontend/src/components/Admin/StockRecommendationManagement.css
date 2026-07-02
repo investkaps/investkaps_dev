@@ -186,7 +186,7 @@
   border: 1px solid #cbd5e1;
 }
 
-.rec-row-admin-inactive {
+.rec-row-admin-inactive td:not(:last-child) {
   opacity: 0.55;
 }
 

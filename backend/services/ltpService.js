@@ -167,11 +167,19 @@ class LTPService {
 
   // Calls app.py /ltp/nfo — no -EQ suffix, raw instrument keys
   async _fetchNfoKeys(keys) {
-    const response = await axios.get(`${this.baseURL}/ltp/nfo`, {
-      params: { keys: keys.join(',') },
-      timeout: this.timeout,
-    });
-    return response.data.prices || {};
+    try {
+      const response = await axios.get(`${this.baseURL}/ltp/nfo`, {
+        params: { keys: keys.join(',') },
+        timeout: this.timeout,
+      });
+      return response.data.prices || {};
+    } catch (err) {
+      const status = err.response?.status;
+      const detail = err.response?.data?.detail || err.message;
+      logger.warn(`_fetchNfoKeys failed with ${status}: ${detail} — returning nulls for keys: ${keys.join(', ')}`);
+      // Return nulls for all requested keys so equity prices still update
+      return Object.fromEntries(keys.map(k => [k, null]));
+    }
   }
 }
 
