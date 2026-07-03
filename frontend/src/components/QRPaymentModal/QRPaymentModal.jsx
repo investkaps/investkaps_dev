@@ -17,11 +17,10 @@ const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSucce
   const [success, setSuccess] = useState(false);
   const dialogRef = useRef(null);
 
-  // ── Referral code state ──
+  // ── Referral code state (only shown if user hasn't used a code before) ──
   const [referralCode, setReferralCode] = useState('');
-  const [referralStatus, setReferralStatus] = useState(null); // null | 'validating' | 'valid' | 'invalid'
-  const [referralMsg, setReferralMsg]     = useState('');
-  const [referralReferrerName, setReferralReferrerName] = useState('');
+  const [referralStatus, setReferralStatus] = useState(null);
+  const [referralMsg, setReferralMsg] = useState('');
   const referralDebounce = useRef(null);
 
   const validateReferralCode = useCallback(async (code) => {
@@ -36,7 +35,6 @@ const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSucce
       if (data.valid) {
         setReferralStatus('valid');
         setReferralMsg(data.message);
-        setReferralReferrerName(data.referrerName);
       } else {
         setReferralStatus('invalid');
         setReferralMsg('Invalid referral code.');
@@ -194,9 +192,9 @@ const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSucce
       formDataToSend.append('durationMonths', String(planOption?.months || ''));
       formDataToSend.append('amount', price);
       formDataToSend.append('userId', currentUser.id);
-      // Attach referral code if valid and not already used
-      const finalReferralCode = alreadyUsedReferralCode || (referralStatus === 'valid' ? referralCode.trim().toUpperCase() : '');
-      if (finalReferralCode) formDataToSend.append('referralCode', finalReferralCode);
+      if (!alreadyUsedReferralCode && referralStatus === 'valid') {
+        formDataToSend.append('referralCode', referralCode.trim().toUpperCase());
+      }
 
       const token = localStorage.getItem('clerk_jwt');
       const response = await fetch(`${import.meta.env.VITE_API_URL}/payment-requests/submit`, {
@@ -385,22 +383,9 @@ const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSucce
               )}
             </div>
 
-            {/* ── Referral Code ── */}
-            {alreadyUsedReferralCode ? (
-              <div className="form-group">
-                <label>Referral Code Applied</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input
-                    type="text"
-                    value={alreadyUsedReferralCode}
-                    readOnly
-                    style={{ background: '#f0fdf4', color: '#166534', fontWeight: 600, cursor: 'default', border: '1px solid #bbf7d0' }}
-                  />
-                  <span style={{ color: '#16a34a', fontWeight: 700 }}>✓</span>
-                </div>
-                <small style={{ color: '#6b7280' }}>You've already applied a referral code on this account.</small>
-              </div>
-            ) : (
+
+            {/* Referral code — only shown if user has never used one before */}
+            {!alreadyUsedReferralCode && (
               <div className="form-group">
                 <label htmlFor="referralCode">Referral Code <span style={{ color: '#9ca3af', fontWeight: 400 }}>(optional)</span></label>
                 <small style={{ color: '#6b7280', display: 'block', marginBottom: '0.4rem' }}>If a friend referred you, enter their code here. You can only use a referral code once.</small>

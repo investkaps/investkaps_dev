@@ -1489,6 +1489,28 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/* Referral nudge banner */}
+        {!isAdminUser && referralData?.myCode && (
+          <div style={{
+            background: 'linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%)',
+            border: '1.5px solid #bfdbfe',
+            borderRadius: '12px',
+            padding: '14px 20px',
+            fontSize: '0.9rem',
+            color: '#1e3a5f',
+            lineHeight: 1.5,
+          }}>
+            You can now refer friends using your referral code{' '}
+            <strong style={{ fontFamily: 'monospace', background: '#dbeafe', padding: '2px 8px', borderRadius: '5px', letterSpacing: '0.05em' }}>
+              {referralData.myCode}
+            </strong>
+            .{' '}
+            <Link to="/pricing?tab=referral" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'underline' }}>
+              Know more details about referral plan.
+            </Link>
+          </div>
+        )}
+
         {pendingPaymentRequests.filter(r => r.status !== 'approved').length > 0 && (
           <div className="payment-requests-section" ref={paymentRequestsRef}>
             <h2>QR / Manual Payment Status</h2>

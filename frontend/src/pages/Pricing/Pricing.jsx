@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Pricing.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import subscriptionAPI from '../../services/subscriptionAPI';
 import userSubscriptionAPI from '../../services/userSubscriptionAPI';
@@ -53,15 +53,9 @@ const PlanCard = ({ plan, idx, totalPlans, active, onSelect, ctaLabel }) => {
         </div>
       </div>
       <div className="px-card-footer">
-        {plan.isTrial ? (
-          <span style={{ fontSize: '0.85rem', color: '#92400e', background: '#fef3c7', padding: '8px 16px', borderRadius: '8px', fontWeight: 600 }}>
-            Trial — admin assigned only
-          </span>
-        ) : (
-          <button className={`px-cta ${active ? 'px-cta--active' : ''}`} onClick={e => onSelect(plan, options[selectedOpt], e)}>
-            {ctaLabel || (active ? 'Extend Plan' : 'Get Started')}
-          </button>
-        )}
+        <button className={`px-cta ${active ? 'px-cta--active' : ''}`} onClick={e => onSelect(plan, options[selectedOpt], e)}>
+          {ctaLabel || (active ? 'Extend Plan' : 'Get Started')}
+        </button>
       </div>
     </div>
   );
@@ -122,6 +116,7 @@ const MpCard = ({ portfolio, active, onSelect }) => {
 const Pricing = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const hasFetched = useRef(false);
   const durationDialogRef = useRef(null);
   const paymentDialogRef = useRef(null);
@@ -143,7 +138,11 @@ const Pricing = () => {
   const [referralInfo, setReferralInfo] = useState(null);
   const [referralPlan, setReferralPlan] = useState(undefined); // undefined = loading, null = none
 
-  const [pricingTab, setPricingTab] = useState('ra');
+  const VALID_TABS = ['ra', 'mp', 'referral', 'book-meeting'];
+  const [pricingTab, setPricingTab] = useState(() => {
+    const t = searchParams.get('tab');
+    return VALID_TABS.includes(t) ? t : 'ra';
+  });
   const [modelPortfolios, setModelPortfolios] = useState([]);
   const [modelPortfoliosLoading, setModelPortfoliosLoading] = useState(false);
   const [expandedPortfolio, setExpandedPortfolio] = useState(null);
@@ -282,10 +281,6 @@ const Pricing = () => {
   }, [anyModalOpen, showDurationModal, showPaymentMethodModal]);
 
   const handleSelectPlan = (plan, preSelectedOption, event) => {
-    if (plan.isTrial) {
-      alert('Trial plans cannot be purchased or extended. Please choose a regular plan.');
-      return;
-    }
     lastTriggerRef.current = event?.currentTarget || null;
     setSelectedPlan(plan);
     const allOptions = getPlanOptions(plan);
@@ -367,7 +362,7 @@ const Pricing = () => {
   // Split plans: RA = not IA, not MP, not referral
   const raPlans = plans.filter(p => {
     const st = String(p.serviceType || '').toUpperCase();
-    return st !== 'IA' && st !== 'MP' && !p.isReferralPlan;
+    return st !== 'IA' && st !== 'MP' && !p.isReferralPlan && !p.isTrial;
   });
 
   const isActive = (plan) => activeSubscriptions.some(s => s.subscription?._id === plan._id || s.subscription?.name === plan.name);
