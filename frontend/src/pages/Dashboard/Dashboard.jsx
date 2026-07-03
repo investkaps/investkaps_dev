@@ -1736,7 +1736,7 @@ const Dashboard = () => {
                       <th>Stock</th><th>Type</th><th>Current</th>
                       <th>Entry Range</th>
                       <th>Target 1</th><th>Target 2</th><th>Target 3</th>
-                      <th>Stop Loss</th><th>Timeframe</th><th>Report</th>
+                      <th>Stop Loss</th><th>Timeframe</th><th>Rec Date</th><th>Report</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1771,6 +1771,11 @@ const Dashboard = () => {
                         <td className="price-cell stoploss">{rec.stopLoss ? `₹${rec.stopLoss}` : '-'}</td>
                         <td className="timeframe-cell">
                           {rec.timeFrame === 'short_term' ? 'Short' : rec.timeFrame === 'medium_term' ? 'Medium' : 'Long'}
+                        </td>
+                        <td className="rec-date-cell">
+                          {rec.publishedAt
+                            ? new Date(rec.publishedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                            : '—'}
                         </td>
                         <td>
                           {rec.pdfReport?.url

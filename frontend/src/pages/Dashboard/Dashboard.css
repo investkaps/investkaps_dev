@@ -2059,6 +2059,12 @@ input.verified {
   font-size: 0.85rem;
 }
 
+.rec-date-cell {
+  color: #6c757d;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
 .pdf-btn {
   display: inline-block;
   padding: 6px 12px;

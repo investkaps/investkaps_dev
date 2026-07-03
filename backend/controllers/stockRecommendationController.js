@@ -47,7 +47,7 @@ const createRecommendation = async (req, res) => {
       riskLevel,
       targetStrategies,
       status,
-      expiresAt
+      publishedAt
     } = req.body;
 
     // Create new recommendation
@@ -74,9 +74,8 @@ const createRecommendation = async (req, res) => {
       riskLevel,
       targetStrategies,
       status,
-      expiresAt,
       createdBy: req.user._id,
-      ...(status === 'published' && { publishedAt: Date.now() })
+      publishedAt: publishedAt || (status === 'published' ? new Date() : undefined)
     });
 
     await recommendation.save();
@@ -233,9 +232,9 @@ const updateRecommendation = async (req, res) => {
       recommendation[key] = req.body[key];
     });
 
-    // If publishing, set publishedAt
-    if (willBePublished) {
-      recommendation.publishedAt = Date.now();
+    // If publishing and no explicit publishedAt provided, default to now
+    if (willBePublished && !req.body.publishedAt) {
+      recommendation.publishedAt = new Date();
     }
 
     await recommendation.save();

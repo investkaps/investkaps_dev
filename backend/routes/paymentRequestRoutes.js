@@ -637,4 +637,19 @@ router.post('/reject/:id', verifyToken, checkRole('admin'), async (req, res) => 
   }
 });
 
+// Permanently delete a payment request (Admin only)
+router.delete('/:id', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const paymentRequest = await PaymentRequest.findById(req.params.id);
+    if (!paymentRequest) {
+      return res.status(404).json({ success: false, message: 'Payment request not found' });
+    }
+    await PaymentRequest.deleteOne({ _id: req.params.id });
+    res.json({ success: true, message: 'Payment request permanently deleted' });
+  } catch (error) {
+    console.error('Error deleting payment request:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete payment request', error: error.message });
+  }
+});
+
 export default router;

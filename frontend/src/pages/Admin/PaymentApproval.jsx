@@ -122,6 +122,35 @@ const PaymentApproval = () => {
     }
   };
 
+  const handleDelete = async (requestId) => {
+    if (!window.confirm('Permanently delete this payment request? This cannot be undone.')) return;
+
+    setProcessing(true);
+    try {
+      const token = localStorage.getItem('clerk_jwt');
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/payment-requests/${requestId}`,
+        {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to delete payment request');
+      }
+
+      fetchPaymentRequests();
+    } catch (err) {
+      console.error('Error deleting payment request:', err);
+      alert('Delete failed: ' + err.message);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case 'pending':
@@ -226,6 +255,25 @@ const PaymentApproval = () => {
                 >
                   View Screenshot
                 </button>
+                {request.status !== 'pending' && (
+                  <button
+                    onClick={() => handleDelete(request._id)}
+                    disabled={processing}
+                    style={{
+                      padding: '6px 14px',
+                      background: '#fff',
+                      color: '#dc2626',
+                      border: '1.5px solid #dc2626',
+                      borderRadius: '7px',
+                      fontWeight: 600,
+                      fontSize: '0.82rem',
+                      cursor: processing ? 'not-allowed' : 'pointer',
+                      opacity: processing ? 0.6 : 1,
+                    }}
+                  >
+                    Delete
+                  </button>
+                )}
                 {request.status === 'pending' && (
                   <>
                     <button

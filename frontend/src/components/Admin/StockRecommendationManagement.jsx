@@ -72,7 +72,7 @@ const StockRecommendationManagement = () => {
     riskLevel: 'moderate',
     targetStrategies: [],
     status: 'draft',
-    expiresAt: ''
+    publishedAt: ''
   });
 
   const NFO_EXCHANGES = new Set(['NFO', 'BFO', 'CDS', 'MCX']);
@@ -265,7 +265,7 @@ const StockRecommendationManagement = () => {
       riskLevel: 'moderate',
       targetStrategies: [],
       status: 'draft',
-      expiresAt: ''
+      publishedAt: ''
     });
     setFormMode('create');
     setIsFormVisible(true);
@@ -309,7 +309,7 @@ const StockRecommendationManagement = () => {
       targetPrice2: recommendation.targetPrice2 ? recommendation.targetPrice2.toString() : '',
       targetPrice3: recommendation.targetPrice3 ? recommendation.targetPrice3.toString() : '',
       stopLoss: recommendation.stopLoss ? recommendation.stopLoss.toString() : '',
-      expiresAt: recommendation.expiresAt ? new Date(recommendation.expiresAt).toISOString().split('T')[0] : ''
+      publishedAt: recommendation.publishedAt ? new Date(recommendation.publishedAt).toISOString().split('T')[0] : ''
     });
     setFormMode('edit');
     setIsFormVisible(true);
@@ -432,6 +432,11 @@ const StockRecommendationManagement = () => {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleString();
+  };
+
+  const formatDateOnly = (dateString) => {
+    if (!dateString) return '—';
+    return new Date(dateString).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   const getStatusBadgeClass = (status) => {
@@ -968,12 +973,12 @@ const StockRecommendationManagement = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="expiresAt">Expires At (Optional)</label>
+                <label htmlFor="publishedAt">Published Date</label>
                 <input
                   type="date"
-                  id="expiresAt"
-                  name="expiresAt"
-                  value={formData.expiresAt}
+                  id="publishedAt"
+                  name="publishedAt"
+                  value={formData.publishedAt}
                   onChange={handleFormChange}
                 />
               </div>
@@ -1028,7 +1033,7 @@ const StockRecommendationManagement = () => {
                 <th>Target Price</th>
                 <th>Alert</th>
                 <th>Status</th>
-                <th>Created</th>
+                <th>Rec Date</th>
                 <th></th>
               </tr>
             </thead>
@@ -1094,7 +1099,7 @@ const StockRecommendationManagement = () => {
                       {recommendation.status.charAt(0).toUpperCase() + recommendation.status.slice(1)}
                     </span>
                   </td>
-                  <td>{formatDate(recommendation.createdAt)}</td>
+                  <td>{formatDateOnly(recommendation.publishedAt)}</td>
                   <td className="actions-cell">
                     <div className="rec-menu-wrap" ref={isMenuOpen ? menuRef : null}>
                       <button
@@ -1228,13 +1233,7 @@ const StockRecommendationManagement = () => {
                   {selectedRecommendation.publishedAt && (
                     <div className="timeline-item">
                       <span className="timeline-label">Published</span>
-                      <span className="timeline-value">{formatDate(selectedRecommendation.publishedAt)}</span>
-                    </div>
-                  )}
-                  {selectedRecommendation.expiresAt && (
-                    <div className="timeline-item">
-                      <span className="timeline-label">Expires</span>
-                      <span className="timeline-value">{formatDate(selectedRecommendation.expiresAt)}</span>
+                      <span className="timeline-value">{formatDateOnly(selectedRecommendation.publishedAt)}</span>
                     </div>
                   )}
                 </div>

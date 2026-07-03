@@ -26,7 +26,8 @@
       "Bash(curl -s \"http://34.93.152.127:8000/ltp/nfo?keys=NFO:JINDALSTEL26AUG1000CE\")",
       "Bash(curl -s \"http://34.93.152.127:8000/ltp?exchange=NFO&symbol=JINDALSTEL26AUG1000CE\")",
       "Bash(curl -s -X POST \"http://localhost:5000/api/ltp/recommendations\" -H \"Content-Type: application/json\" -d '{\"recommendations\":[{\"stockSymbol\":\"JINDALSTEL26AUG1000CE\",\"exchange\":\"NFO\"},{\"stockSymbol\":\"TCS\",\"exchange\":\"NSE\"}]}')",
-      "Bash(curl -s \"http://34.93.152.127:8000/ltp/nfo?keys=NFO:JINDALSTEL26AUG1000CE,NSE:TCS\")"
+      "Bash(curl -s \"http://34.93.152.127:8000/ltp/nfo?keys=NFO:JINDALSTEL26AUG1000CE,NSE:TCS\")",
+      "Bash(node --env-file=.env scripts/backfillReferralCodes.js)"
     ],
     "additionalDirectories": [
       "c:\\Users\\aiman\\Desktop\\Projects\\investkaps_dev\\frontend\\src\\pages\\Contact"
