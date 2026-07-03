@@ -53,9 +53,15 @@ const PlanCard = ({ plan, idx, totalPlans, active, onSelect, ctaLabel }) => {
         </div>
       </div>
       <div className="px-card-footer">
-        <button className={`px-cta ${active ? 'px-cta--active' : ''}`} onClick={e => onSelect(plan, options[selectedOpt], e)}>
-          {ctaLabel || (active ? 'Extend Plan' : 'Get Started')}
-        </button>
+        {plan.isTrial ? (
+          <span style={{ fontSize: '0.85rem', color: '#92400e', background: '#fef3c7', padding: '8px 16px', borderRadius: '8px', fontWeight: 600 }}>
+            Trial — admin assigned only
+          </span>
+        ) : (
+          <button className={`px-cta ${active ? 'px-cta--active' : ''}`} onClick={e => onSelect(plan, options[selectedOpt], e)}>
+            {ctaLabel || (active ? 'Extend Plan' : 'Get Started')}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -276,6 +282,10 @@ const Pricing = () => {
   }, [anyModalOpen, showDurationModal, showPaymentMethodModal]);
 
   const handleSelectPlan = (plan, preSelectedOption, event) => {
+    if (plan.isTrial) {
+      alert('Trial plans cannot be purchased or extended. Please choose a regular plan.');
+      return;
+    }
     lastTriggerRef.current = event?.currentTarget || null;
     setSelectedPlan(plan);
     const allOptions = getPlanOptions(plan);

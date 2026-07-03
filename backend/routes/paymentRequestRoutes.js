@@ -157,6 +157,14 @@ router.post('/submit', upload.single('transactionImage'), async (req, res) => {
         });
       }
 
+      // Block payment requests for trial plans — trials cannot be purchased or extended by users
+      if (plan.isTrial) {
+        return res.status(403).json({
+          success: false,
+          message: 'Trial plans cannot be purchased or extended. Contact support if you need assistance.'
+        });
+      }
+
       const submittedAmount = Number(amount);
       const expectedAmount = Number(planOption.price);
       if (!Number.isFinite(submittedAmount) || submittedAmount !== expectedAmount) {
