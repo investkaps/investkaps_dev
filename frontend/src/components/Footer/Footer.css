@@ -279,6 +279,33 @@
   color: #b3b3b3;
 }
 
+.built-by {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: #8a9bb0;
+}
+
+.aimoz-link {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.aimoz-link:hover {
+  opacity: 1;
+}
+
+.aimoz-logo {
+  height: 80px;
+  width: auto;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 6px;
+  filter: brightness(0) invert(0.6);
+}
+
 .footer-bottom-links {
   display: flex;
   gap: 1.5rem;

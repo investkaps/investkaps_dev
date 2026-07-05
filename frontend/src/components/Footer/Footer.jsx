@@ -103,6 +103,12 @@ const Footer = () => {
           </div>
           <div className="copyright">
             <p>&copy; {new Date().getFullYear()} InvestKaps. All Rights Reserved.</p>
+            <p className="built-by">
+              Built and managed by{' '}
+              <a href="mailto:aiman.singh30@gmail.com" className="aimoz-link">
+                <img src="/Aimoz-logo.png" alt="Aimoz" className="aimoz-logo" />
+              </a>
+            </p>
           </div>
         </div>
       </div>

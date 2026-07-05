@@ -75,7 +75,7 @@ const getDurationLabel = ({ planName, duration, planOption }) => {
 };
 
 // Submit payment request
-router.post('/submit', upload.single('transactionImage'), async (req, res) => {
+router.post('/submit', verifyToken, upload.single('transactionImage'), async (req, res) => {
   try {
     const { senderName, billingName, billingState, transactionId, planId, planName, duration, durationMonths, planOptionId, amount, userId, serviceType = 'RA', paymentMethod = 'qr', referralCode } = req.body;
 

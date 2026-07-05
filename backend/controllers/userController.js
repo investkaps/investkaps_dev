@@ -75,6 +75,12 @@ export const createUser = async (req, res) => {
         updated = true;
       }
 
+      // Backfill referral code if missing
+      if (!existingUser.referral?.code) {
+        existingUser.referral = { ...existingUser.referral, code: await generateReferralCode() };
+        updated = true;
+      }
+
       const syncedUser = updated ? await existingUser.save() : existingUser;
 
       return res.status(200).json({
@@ -85,11 +91,13 @@ export const createUser = async (req, res) => {
     }
 
     console.log(' NEW USER CREATING:', normalizedEmail);
+    const referralCode = await generateReferralCode();
     const user = new User({
       clerkId: finalClerkId,
       email: normalizedEmail,
       name: name || email.split('@')[0],
       isVerified: isVerified || false,
+      referral: { code: referralCode },
     });
 
     const savedUser = await user.save();
@@ -144,14 +152,16 @@ export const createOrUpdateUser = async (req, res) => {
         user
       });
     } else {
-      // Create new user — referral code is assigned only on first plan purchase
+      // Create new user with a referral code assigned immediately
+      const newReferralCode = await generateReferralCode();
       user = new User({
         clerkId: id,
         email: primaryEmail.email_address,
         name: `${first_name || ''} ${last_name || ''}`.trim() || primaryEmail.email_address.split('@')[0],
         isVerified: primaryEmail.verification?.status === 'verified',
+        referral: { code: newReferralCode },
       });
-      
+
       await user.save();
       
       return res.status(201).json({
@@ -185,26 +195,47 @@ export const getUserById = async (req, res) => {
       });
     }
     
-    const user = await User.findOne({ clerkId });
-    
+    const user = await User.findOne({ clerkId })
+      .populate('kycVerifications')
+      .populate('documents');
+
     if (!user) {
       return res.status(404).json({
         success: false,
         error: 'User not found'
       });
     }
-    
+
     // Fetch user subscriptions
     const userSubscriptions = await UserSubscription.find({ user: user._id })
       .populate('subscription', 'name packageCode description')
       .sort({ createdAt: -1 });
-    
-    // Add subscriptions to user object
+
+    // Build a merged kycStatus that includes PII from the latest KycVerification record
+    const latestKyc = user.kycVerifications?.length
+      ? user.kycVerifications[user.kycVerifications.length - 1]
+      : null;
+
+    const enrichedKycStatus = {
+      ...user.kycStatus,
+      ...(latestKyc ? {
+        fullName:    latestKyc.fullName,
+        panNumber:   latestKyc.pan,
+        fatherName:  latestKyc.camsDownloadData?.fatherName,
+        dob:         latestKyc.camsDownloadData?.dob,
+        gender:      latestKyc.camsDownloadData?.gender,
+        nationality: latestKyc.camsDownloadData?.nationality,
+        address:     latestKyc.camsDownloadData?.address,
+        camsData:    latestKyc.camsDownloadData,
+      } : {}),
+    };
+
     const userWithSubscriptions = {
       ...user.toObject(),
-      userSubscriptions
+      userSubscriptions,
+      kycStatus: enrichedKycStatus,
     };
-    
+
     return res.status(200).json({
       success: true,
       user: userWithSubscriptions
@@ -460,14 +491,19 @@ export const getUserKYCHistory = async (req, res) => {
 export const getUserKYCHistoryByEmail = async (req, res) => {
   try {
     const { email } = req.params;
-    
+
     if (!email) {
       return res.status(400).json({
         success: false,
         error: 'Email is required'
       });
     }
-    
+
+    // Only admin or the user themselves can read this
+    if (req.user.role !== 'admin' && req.user.email !== email.toLowerCase()) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
     const user = await User.findOne({ email: email.toLowerCase() })
       .populate('kycVerifications');
     
@@ -499,14 +535,19 @@ export const getUserKYCHistoryByEmail = async (req, res) => {
 export const getUserKYCStatusByEmail = async (req, res) => {
   try {
     const { email } = req.params;
-    
+
     if (!email) {
       return res.status(400).json({
         success: false,
         error: 'Email is required'
       });
     }
-    
+
+    // Only admin or the user themselves can read this
+    if (req.user.role !== 'admin' && req.user.email !== email.toLowerCase()) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
     const user = await User.findOne({ email: email.toLowerCase() })
       .populate('kycStatus.latestVerification');
     
@@ -540,14 +581,19 @@ export const updateUserKYCByEmail = async (req, res) => {
   try {
     const { email } = req.params;
     const { panNumber, aadhaarNumber, isVerified } = req.body;
-    
+
     if (!email) {
       return res.status(400).json({
         success: false,
         error: 'Email is required'
       });
     }
-    
+
+    // Only admins can update KYC records via email
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
     const user = await User.findOne({ email: email.toLowerCase() });
     
     if (!user) {

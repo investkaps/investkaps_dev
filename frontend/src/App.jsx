@@ -8,7 +8,8 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import Navbar from './components/Navbar/Navbar';
 import Footer from './components/Footer/Footer';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
-import AdminRoute from './components/guards/AdminRoute'; // Admin route guard
+import AdminRoute from './components/guards/AdminRoute';
+import DashboardRoute from './components/guards/DashboardRoute';
 import PWAInstallPrompt from './components/PWAInstallPrompt/PWAInstallPrompt';
 
 // Pages
@@ -167,7 +168,9 @@ function App() {
                       path="/dashboard"
                       element={
                         <ProtectedRoute redirectTo="/">
-                          <Dashboard />
+                          <DashboardRoute>
+                            <Dashboard />
+                          </DashboardRoute>
                         </ProtectedRoute>
                       }
                     />
@@ -191,7 +194,9 @@ function App() {
                       path="/recommendations"
                       element={
                         <ProtectedRoute>
-                          <UserRecommendations />
+                          <DashboardRoute>
+                            <UserRecommendations />
+                          </DashboardRoute>
                         </ProtectedRoute>
                       }
                     />

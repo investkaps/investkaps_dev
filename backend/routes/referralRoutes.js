@@ -52,7 +52,6 @@ router.get('/validate/:code', async (req, res) => {
     return res.json({
       success: true,
       valid: true,
-      referrerId: referrer._id,
       referrerName: referrer.name,
       message: `Valid code! Referred by ${referrer.name}.`,
     });

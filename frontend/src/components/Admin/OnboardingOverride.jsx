@@ -84,7 +84,7 @@ const Row = ({ label, value }) => value ? (
 ) : null;
 
 // ─── KYC Override ─────────────────────────────────────────────────────────────
-const KycOverride = ({ userId, kycVerifications }) => {
+const KycOverride = ({ userId, kycVerifications, onSuccess }) => {
   const [mode, setMode] = useState('upload');
   const [file, setFile] = useState(null);
   const [pan, setPan] = useState('');
@@ -99,8 +99,11 @@ const KycOverride = ({ userId, kycVerifications }) => {
     try {
       const res = await adminAPI.overrideKycUpload(userId, file);
       setResult({ ok: res.success, msg: res.message || 'Done' });
-      setFile(null);
-      if (fileRef.current) fileRef.current.value = '';
+      if (res.success) {
+        setFile(null);
+        if (fileRef.current) fileRef.current.value = '';
+        onSuccess?.();
+      }
     } catch (e) { setResult({ ok: false, msg: e.message }); }
     finally { setLoading(false); }
   };
@@ -111,7 +114,7 @@ const KycOverride = ({ userId, kycVerifications }) => {
     try {
       const res = await adminAPI.overrideKycPan(userId, { pan, dob });
       setResult({ ok: res.success, msg: res.message || (res.isVerified ? 'KYC verified' : 'Not verified by CAMS') });
-      if (res.success) { setPan(''); setDob(''); }
+      if (res.success) { setPan(''); setDob(''); onSuccess?.(); }
     } catch (e) { setResult({ ok: false, msg: e.message }); }
     finally { setLoading(false); }
   };
@@ -185,7 +188,7 @@ const KycOverride = ({ userId, kycVerifications }) => {
 };
 
 // ─── Phone Override ────────────────────────────────────────────────────────────
-const PhoneOverride = ({ userId, currentPhone, phoneVerified }) => {
+const PhoneOverride = ({ userId, currentPhone, phoneVerified, onSuccess }) => {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -196,7 +199,7 @@ const PhoneOverride = ({ userId, currentPhone, phoneVerified }) => {
     try {
       const res = await adminAPI.overridePhone(userId, phone);
       setResult({ ok: res.success, msg: res.message || 'Done' });
-      if (res.success) setPhone('');
+      if (res.success) { setPhone(''); onSuccess?.(); }
     } catch (e) { setResult({ ok: false, msg: e.message }); }
     finally { setLoading(false); }
   };
@@ -228,7 +231,7 @@ const PhoneOverride = ({ userId, currentPhone, phoneVerified }) => {
 };
 
 // ─── E-Sign Override ──────────────────────────────────────────────────────────
-const EsignOverride = ({ userId, documents }) => {
+const EsignOverride = ({ userId, documents, onSuccess }) => {
   const [file, setFile] = useState(null);
   const [serviceType, setServiceType] = useState('RA');
   const [loading, setLoading] = useState(false);
@@ -241,8 +244,11 @@ const EsignOverride = ({ userId, documents }) => {
     try {
       const res = await adminAPI.overrideEsign(userId, file, serviceType);
       setResult({ ok: res.success, msg: res.message || 'Done' });
-      setFile(null);
-      if (fileRef.current) fileRef.current.value = '';
+      if (res.success) {
+        setFile(null);
+        if (fileRef.current) fileRef.current.value = '';
+        onSuccess?.();
+      }
     } catch (e) { setResult({ ok: false, msg: e.message }); }
     finally { setLoading(false); }
   };
@@ -634,7 +640,7 @@ const PlanAssignment = ({ userId, userSubscriptions: initialSubs }) => {
 };
 
 // ─── Main component ────────────────────────────────────────────────────────────
-const OnboardingOverride = ({ userId, userName, kycVerifications = [], documents = [], userSubscriptions = [], currentPhone = null, phoneVerified = false }) => {
+const OnboardingOverride = ({ userId, userName, kycVerifications = [], documents = [], userSubscriptions = [], currentPhone = null, phoneVerified = false, onOverrideSuccess }) => {
   if (!userId) return null;
 
   return (
@@ -646,9 +652,9 @@ const OnboardingOverride = ({ userId, userName, kycVerifications = [], documents
         </p>
       </div>
 
-      <KycOverride userId={userId} kycVerifications={kycVerifications} />
-      <PhoneOverride userId={userId} currentPhone={currentPhone} phoneVerified={phoneVerified} />
-      <EsignOverride userId={userId} documents={documents} />
+      <KycOverride userId={userId} kycVerifications={kycVerifications} onSuccess={onOverrideSuccess} />
+      <PhoneOverride userId={userId} currentPhone={currentPhone} phoneVerified={phoneVerified} onSuccess={onOverrideSuccess} />
+      <EsignOverride userId={userId} documents={documents} onSuccess={onOverrideSuccess} />
       <PlanAssignment userId={userId} userSubscriptions={userSubscriptions} />
     </div>
   );

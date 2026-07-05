@@ -557,7 +557,7 @@ router.post('/esign/webhook', async (req, res) => {
 });
 
 // POST /api/esign/update-status - Update document status after checking Leegality
-router.post('/esign/update-status', async (req, res) => {
+router.post('/esign/update-status', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { documentId, status, leegalityResponse } = req.body;
     

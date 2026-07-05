@@ -273,7 +273,7 @@ router.get('/kyc', verifyToken, checkRole('admin'), async (req, res) => {
  * @desc    Set a user as admin by their email address
  * @access  Public (for initial setup only)
  */
-router.get('/set-admin/:email', adminRoleController.setAdminByEmail);
+router.get('/set-admin/:email', verifyToken, checkRole('admin'), adminRoleController.setAdminByEmail);
 
 /**
  * @route   DELETE /api/admin/users/:id
@@ -770,6 +770,19 @@ router.post('/users/:id/assign-plan', verifyToken, checkRole('admin'), async (re
 
     // Assign new plan
     if (!subscriptionId) return res.status(400).json({ success: false, error: 'subscriptionId is required' });
+
+    // Enforce onboarding completion before any plan can be assigned
+    const vs = user.verificationStatus || {};
+    const missing = [];
+    if (!vs.panKyc)  missing.push('KYC (PAN)');
+    if (!vs.phone)   missing.push('Mobile Number');
+    if (!vs.esign)   missing.push('Agreement (E-Sign)');
+    if (missing.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: `Cannot assign plan — the following onboarding steps are not completed: ${missing.join(', ')}. Complete them via the Onboarding Override section first.`,
+      });
+    }
 
     const subscription = await Subscription.findById(subscriptionId);
     if (!subscription) return res.status(404).json({ success: false, error: 'Subscription plan not found' });

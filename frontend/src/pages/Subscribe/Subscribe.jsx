@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import './Subscribe.css';
 
 const Subscribe = () => {
@@ -188,9 +188,9 @@ const Subscribe = () => {
               >
                 {isExpanded ? 'Show less' : 'Read plan details'}
               </button>
-              <a href="https://trade.investkaps.com/checkout" className="plan-button">
+              <Link to="/pricing" className="plan-button">
                 Subscribe
-              </a>
+              </Link>
             </>
           )}
         </div>
@@ -296,10 +296,10 @@ const Subscribe = () => {
               हमारे पास आपके लिए मुफ्त सदस्यता है जिसमें नियमित बाजार अपडेट, क्षेत्र विश्लेषण, 
               वित्तीय परिणामों का विश्लेषण, मुफ्त स्टॉक विचार और अनुशंसाएं और बहुत कुछ शामिल हैं।
             </p>
-            <a href="https://trade.investkaps.com/checkout" className="free-button">
+            <Link to="/pricing" className="free-button">
               <span className="lang-en" lang="en">Subscribe For Free</span>
               <span className="lang-hi" lang="hi">मुफ्त सदस्यता लें</span>
-            </a>
+            </Link>
           </div>
         </div>
 

@@ -526,7 +526,12 @@ export const removeStrategiesFromSubscription = async (req, res) => {
 export const getUserSubscriptions = async (req, res) => {
   try {
     const clerkUserId = req.params.userId;
-    
+
+    // Enforce ownership — non-admins can only read their own subscriptions
+    if (req.user.role !== 'admin' && req.user.clerkId !== clerkUserId) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
     // First, find the User document by Clerk ID
     const user = await User.findOne({ clerkId: clerkUserId });
     
@@ -565,7 +570,12 @@ export const getActiveSubscription = async (req, res) => {
   try {
     const clerkUserId = req.params.userId;
     const requestedServiceType = req.query.serviceType ? normalizeServiceType(req.query.serviceType) : null;
-        
+
+    // Enforce ownership — non-admins can only read their own subscriptions
+    if (req.user.role !== 'admin' && req.user.clerkId !== clerkUserId) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
     // First, find the User document by Clerk ID
     const user = await User.findOne({ clerkId: clerkUserId });
     if (!user) {
@@ -784,14 +794,14 @@ export const verifyPayment = async (req, res) => {
     // Get payment details from Razorpay
     const razorpayInstance = getRazorpayInstance();
     const payment = await razorpayInstance.payments.fetch(razorpay_payment_id);
-    
+
     if (payment.status !== 'captured') {
       return res.status(400).json({
         success: false,
         error: 'Payment not captured'
       });
     }
-    
+
     // Get subscription details
     const subscription = await Subscription.findById(planId);
     if (!subscription) {
@@ -837,7 +847,7 @@ export const verifyPayment = async (req, res) => {
 
     // Allow multiple subscriptions - no need to cancel existing ones
     // Users can now have multiple active subscriptions simultaneously
-    
+
     const selectedPlanOption = getSelectedPlanOption(subscription, { planOptionId, duration });
 
     if (!selectedPlanOption) {

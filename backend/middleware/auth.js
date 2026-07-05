@@ -103,7 +103,6 @@ export const requireAdmin = (req, res, next) => {
 
 /**
  * Middleware to handle Clerk webhooks.
- * TODO: Implement Clerk webhook signature verification before production.
  */
 export const handleWebhook = async (req, res, next) => {
   try {

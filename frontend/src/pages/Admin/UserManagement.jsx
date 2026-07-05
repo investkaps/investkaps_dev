@@ -912,6 +912,7 @@ const UserManagement = () => {
                   userSubscriptions={selectedUser.userSubscriptions || []}
                   currentPhone={selectedUser.profile?.phone || null}
                   phoneVerified={selectedUser.profile?.phoneVerified || false}
+                  onOverrideSuccess={() => fetchUserDetails(selectedUser._id)}
                 />
               </div>
             </div>

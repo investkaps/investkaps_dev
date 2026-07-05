@@ -80,8 +80,8 @@ router.put('/:subscriptionId/cancel', authenticateToken, subscriptionService.can
 router.post('/payment/order', authenticateToken, subscriptionService.createOrder);
 // Verify payment and create subscription
 router.post('/payment/verify', authenticateToken, subscriptionService.verifyPayment);
-// Create test subscription (bypass payment for testing)
-router.post('/payment/test-bypass', authenticateToken, subscriptionService.createTestSubscription);
+// Create test subscription (bypass payment for testing) — admin only
+router.post('/payment/test-bypass', authenticateToken, checkRole('admin'), subscriptionService.createTestSubscription);
 
 // ===== ADMIN ROUTES (PROTECTED) =====
 // Get all subscription plans (including inactive)

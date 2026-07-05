@@ -267,22 +267,18 @@ const Navbar = ({ scrolled }) => {
                 </>
               ) : (
                 <>
-                  <a
-                    href="https://trade.investkaps.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Link
+                    to="/login"
                     className="mobile-login-btn"
                     onClick={() => setMenuOpen(false)}
                   >
                     Login
-                  </a>
-                  <a
-                    href="https://trade.investkaps.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  </Link>
+                  <Link
+                    to="/register"
                     className="mobile-register-btn"
                     onClick={() => setMenuOpen(false)}
-                  >Get Started</a>
+                  >Get Started</Link>
                 </>
               )}
             </div>
@@ -355,8 +351,8 @@ const Navbar = ({ scrolled }) => {
               </>
             ) : (
               <>
-                <a href="https://trade.investkaps.com" target="_blank" rel="noopener noreferrer" className="btn btn-secondary">Login</a>
-                <a href="https://trade.investkaps.com" target="_blank" rel="noopener noreferrer" className="btn btn-primary">Get Started</a>
+                <Link to="/login" className="btn btn-secondary">Login</Link>
+                <Link to="/register" className="btn btn-primary">Get Started</Link>
               </>
             )}
           </div>
