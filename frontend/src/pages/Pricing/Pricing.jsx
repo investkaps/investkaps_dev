@@ -134,6 +134,7 @@ const Pricing = () => {
   const [showBillingModal, setShowBillingModal] = useState(false);
   const [billingInfo, setBillingInfo] = useState({ name: '', state: '' });
   const [activeSubscriptions, setActiveSubscriptions] = useState([]);
+  const [hasClaimedTrial, setHasClaimedTrial] = useState(false);
   const [userReferralCode, setUserReferralCode] = useState(null);
   const [referralInfo, setReferralInfo] = useState(null);
   const [referralPlan, setReferralPlan] = useState(undefined); // undefined = loading, null = none
@@ -245,6 +246,7 @@ const Pricing = () => {
     try {
       const res = await userSubscriptionAPI.getActiveSubscription(currentUser.id);
       if (res.success && res.data) setActiveSubscriptions(Array.isArray(res.data) ? res.data : [res.data]);
+      if (res.hasClaimedTrial) setHasClaimedTrial(true);
     } catch { setActiveSubscriptions([]); }
   };
 
@@ -362,7 +364,9 @@ const Pricing = () => {
   // Split plans: RA = not IA, not MP, not referral
   const raPlans = plans.filter(p => {
     const st = String(p.serviceType || '').toUpperCase();
-    return st !== 'IA' && st !== 'MP' && !p.isReferralPlan && !p.isTrial;
+    if (st === 'IA' || st === 'MP' || p.isReferralPlan) return false;
+    if (p.isTrial && hasClaimedTrial) return false;
+    return true;
   });
 
   const isActive = (plan) => activeSubscriptions.some(s => s.subscription?._id === plan._id || s.subscription?.name === plan.name);

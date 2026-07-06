@@ -605,12 +605,20 @@ export const getActiveSubscription = async (req, res) => {
         error: 'Subscription not found'
       });
     }
-    
+
+    // Check if this user has ever claimed a trial plan (any status)
+    const trialPlans = await Subscription.find({ isTrial: true }).select('_id').lean();
+    const trialPlanIds = trialPlans.map(p => p._id);
+    const hasClaimedTrial = trialPlanIds.length > 0
+      ? !!(await UserSubscription.findOne({ user: user._id, subscription: { $in: trialPlanIds } }).lean())
+      : false;
+
     // Return array of subscriptions (can be empty)
     res.status(200).json({
       success: true,
       count: subscriptions.length,
-      data: subscriptions
+      data: subscriptions,
+      hasClaimedTrial,
     });
   } catch (error) {
     logger.error('Error fetching active subscriptions:', error);
