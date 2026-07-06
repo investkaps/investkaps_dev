@@ -222,22 +222,29 @@ const Profile = () => {
                 )}
               </div>
 
-              {kyc?.isVerified && (
+              {kyc?.isVerified && (kyc.fullName || kyc.panNumber || kyc.fatherName || kyc.dob) && (
                 <div className="pf-grid-2 pf-mt">
-                  <Row label="Full Name"     value={kyc.fullName} />
-                  <Row label="PAN Number"    value={kyc.panNumber} />
-                  <Row label="Father's Name" value={kyc.fatherName} />
-                  <Row label="Date of Birth" value={kyc.dob} />
-                  <Row label="Gender"        value={kyc.gender} />
-                  <Row label="Nationality"   value={kyc.nationality} />
-                  <Row label="KYC Mode"      value={kyc.camsData?.kycMode} />
-                  <Row label="IPV Status"    value={kyc.camsData?.ipvFlag === 'Y' ? 'Completed' : 'Pending'} />
+                  {kyc.fullName     && <Row label="Full Name"     value={kyc.fullName} />}
+                  {kyc.panNumber    && <Row label="PAN Number"    value={kyc.panNumber} />}
+                  {kyc.fatherName   && <Row label="Father's Name" value={kyc.fatherName} />}
+                  {kyc.dob          && <Row label="Date of Birth" value={kyc.dob} />}
+                  {kyc.gender       && <Row label="Gender"        value={kyc.gender} />}
+                  {kyc.nationality  && <Row label="Nationality"   value={kyc.nationality} />}
+                  {kyc.camsData?.kycMode  && <Row label="KYC Mode"   value={kyc.camsData.kycMode} />}
+                  {kyc.camsData?.ipvFlag  && <Row label="IPV Status" value={kyc.camsData.ipvFlag === 'Y' ? 'Completed' : 'Pending'} />}
                   {kyc.address && (
                     <div className="pf-row pf-full-width">
                       <span className="pf-label">Registered Address</span>
                       <span className="pf-value">{kyc.address}</span>
                     </div>
                   )}
+                </div>
+              )}
+              {kyc?.isVerified && kyc?.documentUrl && (
+                <div className="pf-mt">
+                  <a href={kyc.documentUrl} target="_blank" rel="noopener noreferrer" className="pf-proof-link">
+                    View KYC Document →
+                  </a>
                 </div>
               )}
             </div>
@@ -345,19 +352,28 @@ const Profile = () => {
                   <div className="pf-table-wrap">
                     <table className="pf-table">
                       <thead>
-                        <tr><th>Plan</th><th>Duration</th><th>Status</th><th>Start</th><th>End</th><th>Amount</th></tr>
+                        <tr><th>Plan</th><th>Duration</th><th>Status</th><th>Start</th><th>End</th><th>Amount</th><th>Invoice</th></tr>
                       </thead>
                       <tbody>
-                        {userDetails.userSubscriptions.map((sub, i) => (
-                          <tr key={i}>
-                            <td><strong>{sub.subscription?.name || 'N/A'}</strong></td>
-                            <td>{sub.duration === 'sixMonth' ? '6 Mo.' : sub.duration}</td>
-                            <td><span className={`pf-badge ${sub.status}`}>{sub.status}</span></td>
-                            <td>{fmt(sub.startDate)}</td>
-                            <td>{fmt(sub.endDate)}</td>
-                            <td>₹{sub.price?.toLocaleString()}</td>
-                          </tr>
-                        ))}
+                        {userDetails.userSubscriptions.map((sub, i) => {
+                          const invoiceUrl = sub.invoicePdfUrl || sub.paymentRequestId?.invoicePdfUrl || null;
+                          const invoiceNum = sub.invoiceNumber || sub.paymentRequestId?.invoiceNumber || null;
+                          return (
+                            <tr key={i}>
+                              <td><strong>{sub.subscription?.name || 'N/A'}</strong></td>
+                              <td>{sub.duration === 'sixMonth' ? '6 Mo.' : sub.duration}</td>
+                              <td><span className={`pf-badge ${sub.status}`}>{sub.status}</span></td>
+                              <td>{fmt(sub.startDate)}</td>
+                              <td>{fmt(sub.endDate)}</td>
+                              <td>₹{sub.price?.toLocaleString()}</td>
+                              <td>
+                                {invoiceUrl
+                                  ? <a href={invoiceUrl} target="_blank" rel="noopener noreferrer" className="pf-proof-link" style={{ whiteSpace: 'nowrap' }}>View PDF →</a>
+                                  : <span className="pf-muted">—</span>}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

@@ -32,7 +32,8 @@
       "Skill(artifact-design:*)",
       "Bash(npm list *)",
       "Bash(node -e \"const clerk = require\\('@clerk/clerk-sdk-node'\\); console.log\\(Object.keys\\(clerk\\).filter\\(k => k.toLowerCase\\(\\).includes\\('webhook'\\)\\)\\)\")",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "Bash(grep -n \"clerk/:clerkId\\\\|clerk\\\\\\\\\\\\/:clerkId\\\\|getUserById\\\\|getUserProfile\" \"c:/Users/aiman/Desktop/Projects/investkaps_dev/backend/routes/userRoutes.js\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\aiman\\Desktop\\Projects\\investkaps_dev\\frontend\\src\\pages\\Contact"

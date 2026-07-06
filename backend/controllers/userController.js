@@ -206,9 +206,10 @@ export const getUserById = async (req, res) => {
       });
     }
 
-    // Fetch user subscriptions
+    // Fetch user subscriptions with invoice data
     const userSubscriptions = await UserSubscription.find({ user: user._id })
       .populate('subscription', 'name packageCode description')
+      .populate('paymentRequestId', 'invoiceNumber invoicePdfUrl')
       .sort({ createdAt: -1 });
 
     // Build a merged kycStatus that includes PII from the latest KycVerification record
@@ -219,14 +220,15 @@ export const getUserById = async (req, res) => {
     const enrichedKycStatus = {
       ...user.kycStatus,
       ...(latestKyc ? {
-        fullName:    latestKyc.fullName,
-        panNumber:   latestKyc.pan,
-        fatherName:  latestKyc.camsDownloadData?.fatherName,
-        dob:         latestKyc.camsDownloadData?.dob,
-        gender:      latestKyc.camsDownloadData?.gender,
-        nationality: latestKyc.camsDownloadData?.nationality,
-        address:     latestKyc.camsDownloadData?.address,
-        camsData:    latestKyc.camsDownloadData,
+        fullName:        latestKyc.fullName,
+        panNumber:       latestKyc.pan,
+        fatherName:      latestKyc.camsDownloadData?.fatherName,
+        dob:             latestKyc.camsDownloadData?.dob,
+        gender:          latestKyc.camsDownloadData?.gender,
+        nationality:     latestKyc.camsDownloadData?.nationality,
+        address:         latestKyc.camsDownloadData?.address,
+        camsData:        latestKyc.camsDownloadData,
+        documentUrl:     latestKyc.camsDownloadData?.adminUploadUrl || null,
       } : {}),
     };
 
@@ -265,26 +267,48 @@ export const getUserProfile = async (req, res) => {
       });
     }
     
-    const user = await User.findOne({ email: email.toLowerCase() });
-    
+    const user = await User.findOne({ email: email.toLowerCase() })
+      .populate('kycVerifications')
+      .populate('documents');
+
     if (!user) {
       return res.status(404).json({
         success: false,
         error: 'User not found'
       });
     }
-    
-    // Fetch user subscriptions
+
+    // Fetch user subscriptions with invoice data
     const userSubscriptions = await UserSubscription.find({ user: user._id })
       .populate('subscription', 'name packageCode description')
+      .populate('paymentRequestId', 'invoiceNumber invoicePdfUrl')
       .sort({ createdAt: -1 });
-    
-    // Add subscriptions to user object
+
+    // Build enriched kycStatus (same as getUserById)
+    const latestKyc = user.kycVerifications?.length
+      ? user.kycVerifications[user.kycVerifications.length - 1]
+      : null;
+    const enrichedKycStatus = {
+      ...user.kycStatus,
+      ...(latestKyc ? {
+        fullName:    latestKyc.fullName,
+        panNumber:   latestKyc.pan,
+        fatherName:  latestKyc.camsDownloadData?.fatherName,
+        dob:         latestKyc.camsDownloadData?.dob,
+        gender:      latestKyc.camsDownloadData?.gender,
+        nationality: latestKyc.camsDownloadData?.nationality,
+        address:     latestKyc.camsDownloadData?.address,
+        camsData:    latestKyc.camsDownloadData,
+        documentUrl: latestKyc.camsDownloadData?.adminUploadUrl || null,
+      } : {}),
+    };
+
     const userWithSubscriptions = {
       ...user.toObject(),
-      userSubscriptions
+      userSubscriptions,
+      kycStatus: enrichedKycStatus,
     };
-    
+
     return res.status(200).json({
       success: true,
       user: userWithSubscriptions

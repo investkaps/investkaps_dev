@@ -220,16 +220,14 @@ export const userAPI = {
    * Never returns raw PII. Used by Dashboard on mount.
    */
   getOnboardingStatus: async (clerkId) => {
-    return debounce(`onboarding_status_${clerkId}`, async () => {
-      try {
-        const res = await api.get(`/users/clerk/${clerkId}/onboarding-status`);
-        return res.data;
-      } catch (err) {
-        const { message } = extractError(err);
-        console.error('Error fetching onboarding status:', message);
-        throw new Error(message);
-      }
-    });
+    try {
+      const res = await api.get(`/users/clerk/${clerkId}/onboarding-status`);
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching onboarding status:', message);
+      throw new Error(message);
+    }
   }
 };
 
@@ -488,6 +486,16 @@ export const adminAPI = {
   overridePhone: async (userId, phone) => {
     try {
       const res = await api.post(`/admin/users/${userId}/override-phone`, { phone });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      throw new Error(message);
+    }
+  },
+
+  checkPhoneExists: async (phone) => {
+    try {
+      const res = await api.get(`/phone/check/${phone}`);
       return res.data;
     } catch (err) {
       const { message } = extractError(err);

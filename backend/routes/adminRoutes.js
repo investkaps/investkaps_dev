@@ -630,10 +630,20 @@ router.post('/users/:id/override-phone', verifyToken, checkRole('admin'), async 
     if (!phone) return res.status(400).json({ success: false, error: 'phone is required' });
 
     const cleanPhone = String(phone).trim().replace(/\D/g, '');
-    if (cleanPhone.length < 10) return res.status(400).json({ success: false, error: 'Invalid phone number' });
+    if (cleanPhone.length !== 10) return res.status(400).json({ success: false, error: 'Invalid phone number — must be exactly 10 digits' });
 
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+    // Reject if the number is already verified on a different account
+    const conflict = await User.findOne({
+      'profile.phone': cleanPhone,
+      'profile.phoneVerified': true,
+      _id: { $ne: user._id },
+    }).lean();
+    if (conflict) {
+      return res.status(409).json({ success: false, error: 'This phone number is already registered and verified on another account' });
+    }
 
     await User.updateOne({ _id: user._id }, {
       'profile.phone': cleanPhone,
@@ -698,13 +708,15 @@ router.post(
       });
       await doc.save();
 
-      const userUpdate = {
-        'verificationStatus.esign': true,
-        [`clientTypes.${svcType}.isCompleted`]: true,
-        [`clientTypes.${svcType}.completedAt`]: new Date(),
-        [`clientTypes.${svcType}.agreementDocumentId`]: doc._id,
-      };
-      await User.updateOne({ _id: user._id }, userUpdate);
+      await User.updateOne({ _id: user._id }, {
+        $set: {
+          'verificationStatus.esign': true,
+          [`clientTypes.${svcType}.isCompleted`]: true,
+          [`clientTypes.${svcType}.completedAt`]: new Date(),
+          [`clientTypes.${svcType}.agreementDocumentId`]: doc._id,
+        },
+        $push: { documents: doc._id },
+      });
 
       return res.status(200).json({ success: true, message: `${svcType} e-sign manually completed by admin`, documentUrl: cloudinaryUrl, documentId: doc._id });
     } catch (err) {
@@ -821,6 +833,77 @@ router.post('/users/:id/assign-plan', verifyToken, checkRole('admin'), async (re
     });
     await userSub.save();
 
+    // Generate invoice for manually assigned plan
+    let invoiceNumber = null;
+    let invoicePdfUrl = null;
+    let paymentRequestId = null;
+    try {
+      invoiceNumber = await generateInvoiceNumber(PaymentRequest);
+      const durationStr = `${months} month${months > 1 ? 's' : ''}`;
+      const pdfBuffer = await generateInvoicePDF({
+        invoiceNumber,
+        date: new Date(),
+        serviceType: subscription.serviceType || 'RA',
+        billingName: user.name || user.email,
+        billingState: user.profile?.state || '—',
+        pan: null,
+        email: user.email || '',
+        phone: user.profile?.phone || '',
+        transactionId: `MANUAL-${userSub._id}`,
+        packageName: planOption?.name || subscription.name,
+        duration: durationStr,
+        amount: price,
+        coupon: 0,
+      });
+      const uploaded = await uploadInvoicePDF(pdfBuffer, invoiceNumber);
+      invoicePdfUrl = uploaded.url;
+
+      // Create a PaymentRequest record linked to the user so it appears in their history
+      const pr = await PaymentRequest.create({
+        user: user._id,
+        serviceType: subscription.serviceType || 'RA',
+        plan: subscription._id,
+        planName: subscription.name,
+        duration: durationStr,
+        durationMonths: months,
+        amount: price,
+        senderName: user.name || '',
+        billingName: user.name || user.email,
+        billingState: user.profile?.state || '—',
+        transactionId: `MANUAL-${userSub._id}`,
+        transactionImageUrl: '',
+        transactionImagePublicId: '',
+        paymentMethod: 'razorpay',
+        status: 'approved',
+        approvedAt: new Date(),
+        invoiceNumber,
+        invoicePdfUrl: uploaded.url,
+        invoicePdfPublicId: uploaded.publicId,
+        userSubscription: userSub._id,
+      });
+      paymentRequestId = pr._id;
+
+      // Save invoice details back onto the subscription record
+      userSub.invoiceNumber = invoiceNumber;
+      userSub.invoicePdfUrl = invoicePdfUrl;
+      userSub.paymentRequestId = paymentRequestId;
+      await userSub.save();
+
+      // Email invoice to the user if they have an email
+      if (user.email) {
+        sendEmail({
+          to: user.email,
+          subject: `Invoice ${invoiceNumber} — InvestKaps`,
+          serviceType: subscription.serviceType || 'RA',
+          html: `<p>Dear ${user.name || 'Valued Customer'},</p><p>Your subscription plan <strong>${subscription.name}</strong> has been activated. Please find your invoice attached.</p><p>Invoice Number: <strong>${invoiceNumber}</strong></p>`,
+          attachments: [{ filename: `Invoice_${invoiceNumber}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }],
+        }).catch(err => console.error('[assign-plan] Invoice email failed:', err.message));
+      }
+    } catch (invoiceErr) {
+      // Invoice generation is non-critical — plan is already saved, just log the error
+      console.error('[assign-plan] Invoice generation failed (plan still assigned):', invoiceErr.message);
+    }
+
     const actualDays = Math.round((end - start) / (1000 * 60 * 60 * 24));
     const durationLabel = endDate
       ? `${actualDays} day${actualDays !== 1 ? 's' : ''}`
@@ -829,7 +912,9 @@ router.post('/users/:id/assign-plan', verifyToken, checkRole('admin'), async (re
     return res.status(200).json({
       success: true,
       message: `Plan "${subscription.name}" assigned for ${durationLabel} (${start.toLocaleDateString('en-IN')} → ${end.toLocaleDateString('en-IN')})`,
-      subscription: { id: userSub._id, plan: subscription.name, startDate: start, endDate: end, months, days: actualDays }
+      subscription: { id: userSub._id, plan: subscription.name, startDate: start, endDate: end, months, days: actualDays },
+      invoiceNumber,
+      invoicePdfUrl,
     });
   } catch (err) {
     console.error('Admin assign plan error:', err);

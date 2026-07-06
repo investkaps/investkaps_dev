@@ -109,6 +109,14 @@ const userSubscriptionSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  invoiceNumber: {
+    type: String,
+    default: null
+  },
+  invoicePdfUrl: {
+    type: String,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

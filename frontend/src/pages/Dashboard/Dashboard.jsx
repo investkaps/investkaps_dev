@@ -88,6 +88,48 @@ function ReferralCard({ referralData, onClaim, claiming }) {
   );
 }
 
+function ReferralBanner({ referralData }) {
+  const [copied, setCopied] = React.useState(false);
+  const totalReferred = referralData.totalRewarded || 0;
+  const unclaimed = referralData.unclaimedMonths || 0;
+  const hasReferred = totalReferred > 0 || unclaimed > 0;
+
+  const copyCode = () => {
+    navigator.clipboard.writeText(referralData.myCode).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <div className={`referral-banner${hasReferred ? ' referral-banner--active' : ''}`}>
+      <div className="referral-banner-left">
+        <div className="referral-banner-icon">{hasReferred ? '🏆' : '🎁'}</div>
+        <div className="referral-banner-text">
+          <h3 className="referral-banner-title">
+            {hasReferred ? `You've referred ${totalReferred + unclaimed} friend${totalReferred + unclaimed !== 1 ? 's' : ''}!` : 'Refer friends & earn free months'}
+          </h3>
+          <p className="referral-banner-sub">
+            {hasReferred
+              ? `${unclaimed > 0 ? `${unclaimed} reward${unclaimed !== 1 ? 's' : ''} ready to claim below. ` : 'Keep sharing to earn more. '}Each referral earns you 1 free month.`
+              : 'Share your code — every friend who subscribes gives you 1 free month on us.'}
+          </p>
+        </div>
+      </div>
+      <div className="referral-banner-right">
+        <span className="referral-banner-label">Your referral code</span>
+        <div className="referral-banner-code-row">
+          <span className="referral-banner-code">{referralData.myCode}</span>
+          <button className="referral-banner-copy" onClick={copyCode}>
+            {copied ? '✓ Copied' : 'Copy'}
+          </button>
+        </div>
+        <Link to="/pricing?tab=referral" className="referral-banner-link">How it works →</Link>
+      </div>
+    </div>
+  );
+}
+
 function SubscriptionCarousel({ subscriptions }) {
   const [idx, setIdx] = React.useState(0);
   const sub = subscriptions[idx];
@@ -1302,6 +1344,17 @@ const Dashboard = () => {
     return 'Good evening';
   };
 
+  const getFirstName = () => {
+    // Priority: KYC full name → Clerk display name → email prefix
+    const raw =
+      kycResult?.data?.fullName ||
+      currentUser?.name ||
+      currentUser?.email ||
+      '';
+    const first = raw.split(/[\s@.]/)[0]; // split on space, @, or dot
+    return first ? first.charAt(0).toUpperCase() + first.slice(1).toLowerCase() : '';
+  };
+
   // ─── Setup-complete box: hide once user has dismissed it ─────────────────
   const setupDismissKey = `setup_dismissed_${currentUser?.id || currentUser?.email}`;
   const [setupDismissed, setSetupDismissed] = useState(() => !!localStorage.getItem(setupDismissKey));
@@ -1446,7 +1499,7 @@ const Dashboard = () => {
         <div className="dashboard-greeting">
           <div>
             <h1 className="greeting-text">
-              {getGreeting()}, {(currentUser?.name || currentUser?.email || '').split(' ')[0]}!
+              {getGreeting()}, {getFirstName()}!
             </h1>
             <p className="greeting-sub">Here's what's happening with your account today.</p>
           </div>
@@ -1489,26 +1542,9 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Referral nudge banner */}
+        {/* Referral banner */}
         {!isAdminUser && referralData?.myCode && (
-          <div style={{
-            background: 'linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%)',
-            border: '1.5px solid #bfdbfe',
-            borderRadius: '12px',
-            padding: '14px 20px',
-            fontSize: '0.9rem',
-            color: '#1e3a5f',
-            lineHeight: 1.5,
-          }}>
-            You can now refer friends using your referral code{' '}
-            <strong style={{ fontFamily: 'monospace', background: '#dbeafe', padding: '2px 8px', borderRadius: '5px', letterSpacing: '0.05em' }}>
-              {referralData.myCode}
-            </strong>
-            .{' '}
-            <Link to="/pricing?tab=referral" style={{ color: '#2563eb', fontWeight: 600, textDecoration: 'underline' }}>
-              Know more details about referral plan.
-            </Link>
-          </div>
+          <ReferralBanner referralData={referralData} />
         )}
 
         {pendingPaymentRequests.filter(r => r.status !== 'approved').length > 0 && (
@@ -1769,16 +1805,16 @@ const Dashboard = () => {
                       const inactive = rec.isActive === false;
                       return (
                       <tr key={rec._id} className={`rec-row${inactive ? ' rec-row-inactive' : slHit ? ' rec-row-sl-hit' : targetHit ? ' rec-row-target-hit' : ''}`}>
-                        <td className="stock-cell">
+                        <td className="stock-cell" data-label="Stock">
                           <span className="stock-symbol">{rec.stockSymbol}</span>
                           <span className="stock-name">{rec.stockName}</span>
                           {slHit && <span className="price-hit-badge stop-loss-hit">Stop Loss Hit</span>}
                           {!slHit && targetHit && <span className="price-hit-badge target-hit">Target Hit</span>}
                           {inactive && <span className="price-hit-badge rec-inactive-badge">Inactive</span>}
                         </td>
-                        <td><span className={`rec-badge ${rec.recommendationType}`}>{rec.recommendationType.toUpperCase()}</span></td>
-                        <td className="price-cell">₹{rec.currentPrice}</td>
-                        <td className="price-cell buy-range">
+                        <td data-label="Type"><span className={`rec-badge ${rec.recommendationType}`}>{rec.recommendationType.toUpperCase()}</span></td>
+                        <td className="price-cell" data-label="Current">₹{rec.currentPrice}</td>
+                        <td className="price-cell buy-range" data-label="Entry Range">
                           {rec.entryRangeLow && rec.entryRangeHigh
                             ? <span className="entry-range-badge">₹{rec.entryRangeLow} – ₹{rec.entryRangeHigh}</span>
                             : rec.entryRangeLow
@@ -1787,19 +1823,19 @@ const Dashboard = () => {
                             ? <span className="entry-range-badge">≤ ₹{rec.entryRangeHigh}</span>
                             : '-'}
                         </td>
-                        <td className="price-cell target">₹{rec.targetPrice}</td>
-                        <td className="price-cell target">{rec.targetPrice2 ? `₹${rec.targetPrice2}` : '-'}</td>
-                        <td className="price-cell target">{rec.targetPrice3 ? `₹${rec.targetPrice3}` : '-'}</td>
-                        <td className="price-cell stoploss">{rec.stopLoss ? `₹${rec.stopLoss}` : '-'}</td>
-                        <td className="timeframe-cell">
+                        <td className="price-cell target" data-label="Target 1">₹{rec.targetPrice}</td>
+                        <td className="price-cell target" data-label="Target 2">{rec.targetPrice2 ? `₹${rec.targetPrice2}` : '-'}</td>
+                        <td className="price-cell target" data-label="Target 3">{rec.targetPrice3 ? `₹${rec.targetPrice3}` : '-'}</td>
+                        <td className="price-cell stoploss" data-label="Stop Loss">{rec.stopLoss ? `₹${rec.stopLoss}` : '-'}</td>
+                        <td className="timeframe-cell" data-label="Timeframe">
                           {rec.timeFrame === 'short_term' ? 'Short' : rec.timeFrame === 'medium_term' ? 'Medium' : 'Long'}
                         </td>
-                        <td className="rec-date-cell">
+                        <td className="rec-date-cell" data-label="Rec Date">
                           {rec.publishedAt
                             ? new Date(rec.publishedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
                             : '—'}
                         </td>
-                        <td>
+                        <td data-label="Report">
                           {rec.pdfReport?.url
                             ? <a href={rec.pdfReport.url} target="_blank" rel="noopener noreferrer" className="pdf-btn">View PDF</a>
                             : '-'}

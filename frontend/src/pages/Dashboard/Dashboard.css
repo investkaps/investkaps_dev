@@ -1518,6 +1518,151 @@ input.verified {
   cursor: default;
 }
 
+/* ── Referral Banner ────────────────────────────────────────── */
+.referral-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 2px solid #fcd34d;
+  border-radius: 20px;
+  padding: 1.5rem 2rem;
+  margin-top: 0;
+  flex-wrap: wrap;
+}
+
+.referral-banner--active {
+  background: linear-gradient(135deg, #fef9c3 0%, #fef08a 60%, #fde68a 100%);
+  border-color: #f59e0b;
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.18);
+}
+
+.referral-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 220px;
+}
+
+.referral-banner-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.referral-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.referral-banner-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #78350f;
+  line-height: 1.2;
+}
+
+.referral-banner--active .referral-banner-title {
+  color: #92400e;
+  font-size: 1.25rem;
+}
+
+.referral-banner-sub {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #92400e;
+  line-height: 1.5;
+}
+
+.referral-banner-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.referral-banner-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #92400e;
+}
+
+.referral-banner-code-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.referral-banner-code {
+  font-family: 'Courier New', monospace;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #1e293b;
+  background: rgba(255,255,255,0.75);
+  border: 1.5px solid #fcd34d;
+  border-radius: 10px;
+  padding: 0.35rem 1rem;
+}
+
+.referral-banner--active .referral-banner-code {
+  background: rgba(255,255,255,0.9);
+  border-color: #f59e0b;
+  font-size: 1.65rem;
+}
+
+.referral-banner-copy {
+  background: #f59e0b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 1rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.referral-banner-copy:hover {
+  background: #d97706;
+}
+
+.referral-banner-link {
+  font-size: 0.8rem;
+  color: #b45309;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.referral-banner-link:hover {
+  color: #92400e;
+}
+
+@media (max-width: 600px) {
+  .referral-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.25rem 1.25rem;
+  }
+  .referral-banner-right {
+    align-items: flex-start;
+    width: 100%;
+  }
+  .referral-banner-code-row {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
 /* ── Referral Plan Card ─────────────────────────────────────── */
 .referral-card {
   background: linear-gradient(135deg, #fffbeb 0%, #fef9ee 100%);
@@ -2084,22 +2229,106 @@ input.verified {
 
 /* Mobile responsive for table */
 @media screen and (max-width: 768px) {
-  .recommendations-table {
-    font-size: 0.85rem;
+  .stock-recommendations-section {
+    padding: 1.25rem 1rem;
   }
-  
-  .recommendations-table th,
-  .recommendations-table td {
-    padding: 10px 8px;
+
+  .recommendations-table-container {
+    overflow-x: unset;
   }
-  
-  .recommendations-table th:nth-child(5),
-  .recommendations-table td:nth-child(5),
-  .recommendations-table th:nth-child(6),
-  .recommendations-table td:nth-child(6) {
+
+  /* Hide the header row — labels come from data-label on each cell */
+  .recommendations-table thead {
     display: none;
   }
+
+  /* Carousel — cards scroll horizontally */
+  .recommendations-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.5rem;
+  }
+
+  .recommendations-table {
+    display: block;
+    width: 100%;
+  }
+
+  .recommendations-table tbody {
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+    width: max-content;
+  }
+
+  .recommendations-table tr {
+    display: flex;
+    flex-direction: column;
+    width: 72vw;
+    max-width: 280px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .recommendations-table tr.rec-row-target-hit {
+    border-color: #6ee7b7;
+    background: rgba(209,250,229,0.18);
+  }
+  .recommendations-table tr.rec-row-sl-hit {
+    border-color: #fca5a5;
+    background: rgba(254,226,226,0.18);
+  }
+  .recommendations-table tr.rec-row-inactive {
+    opacity: 0.6;
+  }
+
+  /* Each cell becomes a labelled row inside the card */
+  .recommendations-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.875rem;
+  }
+
+  .recommendations-table td:last-child {
+    border-bottom: none;
+  }
+
+  /* Stock cell spans full width as the card header */
+  .recommendations-table td.stock-cell {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-bottom: 0.6rem;
+    margin-bottom: 0.25rem;
+    border-bottom: 2px solid #e2e8f0;
+    gap: 2px;
+  }
+
+  .recommendations-table td.stock-cell .stock-symbol {
+    font-size: 1.05rem;
+  }
+
+  /* Inject the column label before cell value */
+  .recommendations-table td[data-label]:not(.stock-cell)::before {
+    content: attr(data-label);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    flex-shrink: 0;
+    margin-right: 0.5rem;
+  }
 }
+
 
 .recommendation-card {
   background: #f8f9fa;
@@ -2691,6 +2920,16 @@ input.verified {
 
 @media (max-width: 600px) {
   .db-review-chip-arrow { display: none; }
-  .db-review-chip { max-width: calc(100vw - 3rem); }
+  .db-review-chip {
+    max-width: calc(100vw - 3rem);
+    padding: 0.45rem 0.65rem;
+    gap: 0.45rem;
+    border-radius: 10px;
+    bottom: 52px;
+    right: 0.75rem;
+  }
+  .db-review-chip-icon { font-size: 1rem; }
+  .db-review-chip-title { font-size: 0.75rem; }
+  .db-review-chip-sub { font-size: 0.68rem; }
   .greeting-text { font-size: 1.5rem; }
 }

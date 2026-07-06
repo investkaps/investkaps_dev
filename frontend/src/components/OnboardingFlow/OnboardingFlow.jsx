@@ -95,7 +95,7 @@ const OnboardingFlow = ({
         label: 'Mobile Verification',
         subtitle: 'OTP confirmation',
         icon: '📱',
-        mandatory: false,
+        mandatory: true,
         completed: steps.phone.completed,
         skippedForRa: serviceType === 'IA' && isRaCustomer && steps.phone.completed,
       },
@@ -482,7 +482,7 @@ const OnboardingFlow = ({
     return (
       <div className="ob-step-body">
         <p className="ob-step-desc">
-          Verify your mobile number with a one-time password. You can skip this step and complete it later.
+          Verify your mobile number with a one-time password. This step is <strong>mandatory</strong> and required before your subscription can be activated.
         </p>
         {phoneError && <div className="ob-alert ob-alert-error">{phoneError}</div>}
 
@@ -509,9 +509,6 @@ const OnboardingFlow = ({
             <div className="ob-actions">
               <button type="submit" className="ob-btn ob-btn-primary" disabled={phoneLoading || phoneAlreadyExists}>
                 {phoneLoading ? <><span className="ob-spinner-mini" /> Sending…</> : 'Send OTP'}
-              </button>
-              <button type="button" className="ob-btn ob-btn-ghost" onClick={handleSkipPhone}>
-                Skip for now
               </button>
               {isAdminUser && (
                 <button type="button" className="ob-btn ob-btn-bypass" onClick={handlePhoneBypass}>

@@ -319,11 +319,6 @@ const Navbar = ({ scrolled }) => {
                             <i className="dashboard-icon"></i> Dashboard
                           </Link>
                         </li>
-                        <li>
-                          <Link to="/settings" onClick={() => setDropdownOpen(false)}>
-                            <i className="settings-icon"></i> Settings
-                          </Link>
-                        </li>
                         {isAdminUser && (
                           <li>
                             <Link to="/admin" onClick={() => setDropdownOpen(false)}>

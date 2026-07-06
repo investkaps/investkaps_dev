@@ -101,7 +101,7 @@ export default function UserTestimonial() {
                 </label>
                 <label>
                   <span>Testimonial</span>
-                  <textarea value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} rows={6} />
+                  <textarea value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} rows={3} />
                 </label>
                 {error && <p className="error">{error}</p>}
                 {success && <p className="success">{success}</p>}
@@ -157,7 +157,7 @@ export default function UserTestimonial() {
               value={form.text}
               onChange={(e) => setForm({ ...form, text: e.target.value })}
               placeholder="Write your testimonial (min 20 characters)"
-              rows={6}
+              rows={3}
             />
           </label>
 

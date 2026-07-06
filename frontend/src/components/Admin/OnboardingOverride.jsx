@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { adminAPI } from '../../services/api';
+import { isValidPhone } from '../../utils/validators';
 
 const card = {
   background: '#fff',
@@ -191,18 +192,43 @@ const KycOverride = ({ userId, kycVerifications, onSuccess }) => {
 const PhoneOverride = ({ userId, currentPhone, phoneVerified, onSuccess }) => {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [taken, setTaken] = useState(false);
   const [result, setResult] = useState(null);
+
+  const handlePhoneChange = async (e) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+    setPhone(digits);
+    setResult(null);
+    setTaken(false);
+
+    if (digits.length === 10 && isValidPhone(digits)) {
+      setChecking(true);
+      try {
+        const res = await adminAPI.checkPhoneExists(digits);
+        setTaken(!!res?.exists);
+      } catch {
+        // ignore — backend will enforce on submit
+      } finally {
+        setChecking(false);
+      }
+    }
+  };
 
   const handle = async () => {
     if (!phone) return setResult({ ok: false, msg: 'Phone number is required' });
+    if (!isValidPhone(phone)) return setResult({ ok: false, msg: 'Enter a valid 10-digit Indian mobile number (starts with 6–9)' });
+    if (taken) return setResult({ ok: false, msg: 'This number is already registered on another account' });
     setLoading(true); setResult(null);
     try {
       const res = await adminAPI.overridePhone(userId, phone);
       setResult({ ok: res.success, msg: res.message || 'Done' });
-      if (res.success) { setPhone(''); onSuccess?.(); }
+      if (res.success) { setPhone(''); setTaken(false); onSuccess?.(); }
     } catch (e) { setResult({ ok: false, msg: e.message }); }
     finally { setLoading(false); }
   };
+
+  const inputBorder = taken ? '1.5px solid #ef4444' : inputStyle.border;
 
   return (
     <div style={card}>
@@ -218,10 +244,19 @@ const PhoneOverride = ({ userId, currentPhone, phoneVerified, onSuccess }) => {
       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: '200px' }}>
           <label style={labelStyle}>New Phone Number</label>
-          <input style={inputStyle} value={phone} onChange={e => setPhone(e.target.value)}
-            placeholder="10-digit mobile number" maxLength={15} />
+          <input
+            style={{ ...inputStyle, border: inputBorder }}
+            value={phone}
+            onChange={handlePhoneChange}
+            placeholder="10-digit mobile number"
+            maxLength={10}
+            inputMode="numeric"
+            pattern="\d{10}"
+          />
+          {checking && <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '0.3rem' }}>Checking…</div>}
+          {taken && !checking && <div style={{ fontSize: '0.78rem', color: '#ef4444', marginTop: '0.3rem' }}>Already registered on another account</div>}
         </div>
-        <button onClick={handle} disabled={loading || !phone} style={btn('linear-gradient(135deg,#0f766e,#14b8a6)', loading || !phone)}>
+        <button onClick={handle} disabled={loading || checking || taken || phone.length !== 10} style={btn('linear-gradient(135deg,#0f766e,#14b8a6)', loading || checking || taken || phone.length !== 10)}>
           {loading ? 'Saving…' : 'Set Phone'}
         </button>
       </div>

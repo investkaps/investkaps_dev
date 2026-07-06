@@ -9,3 +9,14 @@
 .success { color:#16a34a; }
 .existing-testimonial { border-left: 4px solid #e2e8f0; padding: 0.5rem 1rem; }
 .occupation { font-weight:600; color:#475569; }
+
+@media (max-width: 768px) {
+  .user-testimonial { padding: 0.75rem; margin: 0.5rem 0; }
+  .user-testimonial h3 { font-size: 0.95rem; margin-bottom: 0.5rem; }
+  .testimonial-form label { margin-bottom: 0.5rem; }
+  .testimonial-form span { font-size: 0.8rem; }
+  .testimonial-form input { font-size: 0.85rem; padding: 0.4rem 0.5rem; }
+  .testimonial-form textarea { font-size: 0.85rem; padding: 0.4rem 0.5rem; rows: 3; max-height: 80px; }
+  .submit-btn { font-size: 0.85rem; padding: 0.4rem 0.85rem; margin-top: 0.5rem; }
+  .note, .hint { font-size: 0.78rem; }
+}
