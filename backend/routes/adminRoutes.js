@@ -833,77 +833,6 @@ router.post('/users/:id/assign-plan', verifyToken, checkRole('admin'), async (re
     });
     await userSub.save();
 
-    // Generate invoice for manually assigned plan
-    let invoiceNumber = null;
-    let invoicePdfUrl = null;
-    let paymentRequestId = null;
-    try {
-      invoiceNumber = await generateInvoiceNumber(PaymentRequest);
-      const durationStr = `${months} month${months > 1 ? 's' : ''}`;
-      const pdfBuffer = await generateInvoicePDF({
-        invoiceNumber,
-        date: new Date(),
-        serviceType: subscription.serviceType || 'RA',
-        billingName: user.name || user.email,
-        billingState: user.profile?.state || '—',
-        pan: null,
-        email: user.email || '',
-        phone: user.profile?.phone || '',
-        transactionId: `MANUAL-${userSub._id}`,
-        packageName: planOption?.name || subscription.name,
-        duration: durationStr,
-        amount: price,
-        coupon: 0,
-      });
-      const uploaded = await uploadInvoicePDF(pdfBuffer, invoiceNumber);
-      invoicePdfUrl = uploaded.url;
-
-      // Create a PaymentRequest record linked to the user so it appears in their history
-      const pr = await PaymentRequest.create({
-        user: user._id,
-        serviceType: subscription.serviceType || 'RA',
-        plan: subscription._id,
-        planName: subscription.name,
-        duration: durationStr,
-        durationMonths: months,
-        amount: price,
-        senderName: user.name || '',
-        billingName: user.name || user.email,
-        billingState: user.profile?.state || '—',
-        transactionId: `MANUAL-${userSub._id}`,
-        transactionImageUrl: '',
-        transactionImagePublicId: '',
-        paymentMethod: 'razorpay',
-        status: 'approved',
-        approvedAt: new Date(),
-        invoiceNumber,
-        invoicePdfUrl: uploaded.url,
-        invoicePdfPublicId: uploaded.publicId,
-        userSubscription: userSub._id,
-      });
-      paymentRequestId = pr._id;
-
-      // Save invoice details back onto the subscription record
-      userSub.invoiceNumber = invoiceNumber;
-      userSub.invoicePdfUrl = invoicePdfUrl;
-      userSub.paymentRequestId = paymentRequestId;
-      await userSub.save();
-
-      // Email invoice to the user if they have an email
-      if (user.email) {
-        sendEmail({
-          to: user.email,
-          subject: `Invoice ${invoiceNumber} — InvestKaps`,
-          serviceType: subscription.serviceType || 'RA',
-          html: `<p>Dear ${user.name || 'Valued Customer'},</p><p>Your subscription plan <strong>${subscription.name}</strong> has been activated. Please find your invoice attached.</p><p>Invoice Number: <strong>${invoiceNumber}</strong></p>`,
-          attachments: [{ filename: `Invoice_${invoiceNumber}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }],
-        }).catch(err => console.error('[assign-plan] Invoice email failed:', err.message));
-      }
-    } catch (invoiceErr) {
-      // Invoice generation is non-critical — plan is already saved, just log the error
-      console.error('[assign-plan] Invoice generation failed (plan still assigned):', invoiceErr.message);
-    }
-
     const actualDays = Math.round((end - start) / (1000 * 60 * 60 * 24));
     const durationLabel = endDate
       ? `${actualDays} day${actualDays !== 1 ? 's' : ''}`
@@ -913,8 +842,6 @@ router.post('/users/:id/assign-plan', verifyToken, checkRole('admin'), async (re
       success: true,
       message: `Plan "${subscription.name}" assigned for ${durationLabel} (${start.toLocaleDateString('en-IN')} → ${end.toLocaleDateString('en-IN')})`,
       subscription: { id: userSub._id, plan: subscription.name, startDate: start, endDate: end, months, days: actualDays },
-      invoiceNumber,
-      invoicePdfUrl,
     });
   } catch (err) {
     console.error('Admin assign plan error:', err);
