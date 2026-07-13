@@ -33,10 +33,9 @@ const Subscribe = () => {
       name: 'Moonshot Wealth Plan',
       image: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=400&h=250&fit=crop',
       alt: 'Wealth Growth',
-      price: 'Coming soon',
-      priceNote: 'launch details will be announced later',
+      price: 'Rs. 4,999/-',
+      priceNote: '*pricing for quarterly plan',
       summary: 'A future offering for long-term wealth creation and portfolio building.',
-      comingSoon: true,
       details: [
         { label: 'Status', value: '...to be launched soon' },
         { label: 'What to expect', value: 'Details will be shared once the product is ready.' }
@@ -66,9 +65,10 @@ const Subscribe = () => {
       name: 'One-on-One Advisory',
       image: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=400&h=250&fit=crop',
       alt: 'Personal Advisory',
-      price: 'Rs. 2,999/-',
-      priceNote: '*per 60-min consultation',
+      price: 'Coming soon',
+      priceNote: 'launch details will be announced later',
       summary: 'Personalized one-on-one meeting with an expert advisor to discuss your portfolio and strategy.',
+      comingSoon: true,
       details: [
         { label: 'Session duration', value: '60 minutes' },
         { label: 'Pricing', value: 'Rs. 2,999 per session (inclusive of follow-up notes)' },
@@ -101,9 +101,10 @@ const Subscribe = () => {
       name: 'IK15_Momentum_Buys',
       image: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=400&h=250&fit=crop',
       alt: 'Financial Trading',
-      price: 'Rs. 5,999/-',
-      priceNote: '*pricing for half-yearly plan',
+      price: 'Coming soon',
+      priceNote: 'launch details will be announced later',
       summary: 'Momentum portfolio built around diversified top-15 Nifty500 names.',
+      comingSoon: true,
       details: [
         { label: 'Research focus', value: 'Dynamic portfolio strategy aiming to outperform the underlying benchmark Nifty500 index by investing in top 15 stocks in the index with rebalancing. Weekly rebalancing ensures weak performers get exited and replaced periodiclly once they meet the exit criteria, giving way to new entries. Portfolio stocks get weights assigned basis risk parity and ensuring adequate diversification. The ideas will be based upon top momentum, relative strength as against broader market and other sectors and stocks.' },
         { label: 'Objective', value: 'Aiming to outperform the underlying benchmark Nifty500 index.' },
@@ -119,9 +120,10 @@ const Subscribe = () => {
       name: 'International Equity Portfolio',
       image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=250&fit=crop',
       alt: 'International Equity',
-      price: 'Rs. 7,999/-',
-      priceNote: '*pricing for quarterly plan',
+      price: 'Coming soon',
+      priceNote: 'launch details will be announced later',
       summary: 'Curated global equity portfolio with exposure to international markets and diversified economies.',
+      comingSoon: true,
       details: [
         { label: 'Research focus', value: 'Global equity exposure across developed and emerging markets with focus on multinational corporations and international sectors.' },
         { label: 'Objective', value: 'Building wealth through international diversification and gaining exposure to global growth opportunities.' },
@@ -142,7 +144,7 @@ const Subscribe = () => {
         plan.id === 'international-equity'
       );
     }
-    return planCards;
+    return planCards.filter(plan => plan.id !== 'one-on-one-advisory');
   };
 
   const filteredPlans = getFilteredPlans();
