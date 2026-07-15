@@ -99,12 +99,7 @@ router.post('/submit', verifyToken, upload.single('transactionImage'), async (re
       }
     }
 
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: 'Transaction image is required'
-      });
-    }
+    // Transaction screenshot is optional.
 
     // Check if user exists
     const user = await User.findOne({ clerkId: userId });
@@ -175,8 +170,11 @@ router.post('/submit', verifyToken, upload.single('transactionImage'), async (re
       }
     }
 
-    // Upload image to Cloudinary
-    const uploadResult = await uploadImage(req.file.buffer, 'payment-requests');
+    // Upload image to Cloudinary (only if a screenshot was provided)
+    let uploadResult = null;
+    if (req.file) {
+      uploadResult = await uploadImage(req.file.buffer, 'payment-requests');
+    }
 
     // Create payment request
     const paymentRequest = new PaymentRequest({
@@ -192,8 +190,8 @@ router.post('/submit', verifyToken, upload.single('transactionImage'), async (re
       billingName: billingName || senderName,
       billingState: billingState || '',
       transactionId,
-      transactionImageUrl: uploadResult.url,
-      transactionImagePublicId: uploadResult.publicId,
+      transactionImageUrl: uploadResult?.url || '',
+      transactionImagePublicId: uploadResult?.publicId || '',
       paymentMethod,
       status: 'pending'
     });
@@ -372,7 +370,9 @@ router.post('/approve/:id', verifyToken, checkRole('admin'), async (req, res) =>
         endDate,
         price: paymentRequest.amount,
         status: onboardingComplete ? 'active' : 'pending',
-        paymentMethod: 'qr_code',
+        paymentMethod: paymentRequest.paymentMethod === 'razorpay' ? 'razorpay' : 'qr_code',
+        paymentId: paymentRequest.paymentMethod === 'razorpay' ? paymentRequest.transactionId : undefined,
+        orderId: paymentRequest.paymentMethod === 'razorpay' ? paymentRequest.orderId : undefined,
         paymentRequestId: paymentRequest._id
       });
 

@@ -133,6 +133,11 @@ const Pricing = () => {
   const [showQRModal, setShowQRModal] = useState(false);
   const [showBillingModal, setShowBillingModal] = useState(false);
   const [billingInfo, setBillingInfo] = useState({ name: '', state: '' });
+  // Referral code entered in the Razorpay billing modal
+  const [billingReferralCode, setBillingReferralCode] = useState('');
+  const [billingReferralStatus, setBillingReferralStatus] = useState(null); // null | 'validating' | 'valid' | 'invalid'
+  const [billingReferralMsg, setBillingReferralMsg] = useState('');
+  const billingReferralDebounce = useRef(null);
   const [activeSubscriptions, setActiveSubscriptions] = useState([]);
   const [hasClaimedTrial, setHasClaimedTrial] = useState(false);
   const [userReferralCode, setUserReferralCode] = useState(null);
@@ -311,6 +316,31 @@ const Pricing = () => {
     setShowBillingModal(true);
   };
 
+  const validateBillingReferralCode = async (code) => {
+    const trimmed = code.trim().toUpperCase();
+    if (!trimmed) { setBillingReferralStatus(null); setBillingReferralMsg(''); return; }
+    setBillingReferralStatus('validating');
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/referrals/validate/${encodeURIComponent(trimmed)}`);
+      const data = await res.json();
+      if (data.valid) { setBillingReferralStatus('valid'); setBillingReferralMsg(data.message); }
+      else { setBillingReferralStatus('invalid'); setBillingReferralMsg('Invalid referral code.'); }
+    } catch {
+      setBillingReferralStatus('invalid'); setBillingReferralMsg('Could not validate code. Please try again.');
+    }
+  };
+
+  const handleBillingReferralChange = (e) => {
+    const val = e.target.value;
+    setBillingReferralCode(val);
+    setBillingReferralStatus(null);
+    setBillingReferralMsg('');
+    clearTimeout(billingReferralDebounce.current);
+    if (val.trim().length >= 6) {
+      billingReferralDebounce.current = setTimeout(() => validateBillingReferralCode(val), 600);
+    }
+  };
+
   const createOrder = async () => {
     if (!selectedPlan || !selectedPlanOption) return;
     setShowBillingModal(false); setError(''); setLoading(true);
@@ -347,6 +377,12 @@ const Pricing = () => {
   const verifyPayment = async (paymentResponse) => {
     setLoading(true); setError('');
     try {
+      const planName = selectedPlan?.name;
+      const planDuration = selectedPlanOption?.name;
+      // Only forward a referral code the user hasn't used before and that validated OK.
+      const referralCode = (!userReferralCode && billingReferralStatus === 'valid')
+        ? billingReferralCode.trim().toUpperCase()
+        : undefined;
       await subscriptionAPI.verifyPayment({
         razorpay_order_id: paymentResponse.razorpay_order_id,
         razorpay_payment_id: paymentResponse.razorpay_payment_id,
@@ -355,8 +391,11 @@ const Pricing = () => {
         durationMonths: selectedPlanOption?.months, planOptionId: selectedPlanOption?._id,
         billingName: billingInfo.name,
         billingState: billingInfo.state,
+        referralCode,
       });
-      navigate('/dashboard', { replace: true, state: { justPurchased: true, paymentId: paymentResponse.razorpay_payment_id } });
+      // Payment is captured but the subscription starts only after an admin
+      // approves it — mirror the QR flow's "payment submitted" banner.
+      navigate('/dashboard', { replace: true, state: { paymentSubmitted: true, planName, planDuration } });
     } catch (e) { setError(e.response?.data?.message || 'Payment verification failed'); }
     finally { document.body.classList.remove('razorpay-active'); setLoading(false); }
   };
@@ -581,19 +620,25 @@ const Pricing = () => {
 
       {/* ── Razorpay Billing Info Modal ──────────────────────────────────────── */}
       {showBillingModal && selectedPlan && (
-        <div className="duration-modal-overlay" role="presentation">
-          <div className="duration-modal" role="dialog" aria-modal="true" aria-labelledby="billing-title" tabIndex={-1}
-            style={{ maxWidth: 440 }}>
-            <div className="duration-modal-header">
+        <div className="billing-modal-overlay" role="presentation" onMouseDown={() => { setShowBillingModal(false); setShowPaymentMethodModal(true); }}>
+          <div className="billing-modal" role="dialog" aria-modal="true" aria-labelledby="billing-title" tabIndex={-1}
+            onMouseDown={e => e.stopPropagation()}>
+            <div className="billing-modal-header">
               <div>
                 <h2 id="billing-title">Billing Details</h2>
-                <p className="modal-description">These details will appear on your invoice.</p>
+                <p className="billing-modal-sub">These details will appear on your invoice.</p>
               </div>
-              <button className="duration-close-btn" onClick={() => { setShowBillingModal(false); setShowPaymentMethodModal(true); }} aria-label="Close"><FaClose /></button>
+              <button className="billing-close-btn" onClick={() => { setShowBillingModal(false); setShowPaymentMethodModal(true); }} aria-label="Close"><FaClose /></button>
             </div>
-            <form onSubmit={e => { e.preventDefault(); createOrder(); }} style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '0 0 8px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label htmlFor="rzp-billing-name" style={{ fontSize: 13, fontWeight: 600, color: '#334155' }}>Full Name (for invoice) *</label>
+
+            <div className="billing-modal-summary">
+              <span className="billing-summary-plan">{selectedPlan.name}{selectedPlanOption?.name ? ` · ${selectedPlanOption.name}` : ''}</span>
+              <span className="billing-summary-price">₹{Number(selectedPlanOption?.price || 0).toLocaleString('en-IN')}</span>
+            </div>
+
+            <form className="billing-form" onSubmit={e => { e.preventDefault(); createOrder(); }}>
+              <div className="billing-field">
+                <label htmlFor="rzp-billing-name">Full Name (for invoice) <span className="billing-req">*</span></label>
                 <input
                   id="rzp-billing-name"
                   type="text"
@@ -601,11 +646,11 @@ const Pricing = () => {
                   onChange={e => setBillingInfo(b => ({ ...b, name: e.target.value }))}
                   placeholder="Your legal full name"
                   required
-                  style={{ padding: '10px 12px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 14, outline: 'none' }}
+                  autoFocus
                 />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label htmlFor="rzp-billing-state" style={{ fontSize: 13, fontWeight: 600, color: '#334155' }}>State *</label>
+              <div className="billing-field">
+                <label htmlFor="rzp-billing-state">State <span className="billing-req">*</span></label>
                 <input
                   id="rzp-billing-state"
                   type="text"
@@ -613,11 +658,34 @@ const Pricing = () => {
                   onChange={e => setBillingInfo(b => ({ ...b, state: e.target.value }))}
                   placeholder="e.g. Delhi, Maharashtra, Karnataka"
                   required
-                  style={{ padding: '10px 12px', borderRadius: 8, border: '1.5px solid #e2e8f0', fontSize: 14, outline: 'none' }}
                 />
               </div>
-              <button type="submit" className="btn-primary" style={{ marginTop: 4, width: '100%', padding: '12px', borderRadius: 8, fontSize: 15, fontWeight: 600 }}>
-                Continue to Payment
+
+              {/* Referral code — only if the user has never used one before */}
+              {!userReferralCode && (
+                <div className="billing-field">
+                  <label htmlFor="rzp-referral-code">Referral Code <span className="billing-optional">(optional)</span></label>
+                  <input
+                    id="rzp-referral-code"
+                    type="text"
+                    value={billingReferralCode}
+                    onChange={handleBillingReferralChange}
+                    placeholder="e.g. ABCD1234"
+                    autoComplete="off"
+                    maxLength={10}
+                    style={{
+                      borderColor: billingReferralStatus === 'valid' ? '#16a34a' : billingReferralStatus === 'invalid' ? '#dc2626' : undefined,
+                      background:  billingReferralStatus === 'valid' ? '#f0fdf4' : billingReferralStatus === 'invalid' ? '#fef2f2' : undefined,
+                    }}
+                  />
+                  {billingReferralStatus === 'validating' && <small className="billing-referral-hint" style={{ color: '#6b7280' }}>Checking…</small>}
+                  {billingReferralStatus === 'valid'      && <small className="billing-referral-hint" style={{ color: '#16a34a', fontWeight: 600 }}>✓ {billingReferralMsg}</small>}
+                  {billingReferralStatus === 'invalid'    && <small className="billing-referral-hint" style={{ color: '#dc2626', fontWeight: 600 }}>✗ {billingReferralMsg}</small>}
+                </div>
+              )}
+
+              <button type="submit" className="billing-submit-btn" disabled={loading}>
+                {loading ? 'Please wait…' : 'Continue to Payment'}
               </button>
             </form>
           </div>

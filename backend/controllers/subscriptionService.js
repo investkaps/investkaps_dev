@@ -3,12 +3,12 @@ import UserSubscription from '../model/UserSubscription.js';
 import User from '../model/User.js';
 import PaymentRequest from '../model/PaymentRequest.js';
 import KycVerification from '../model/KycVerification.js';
+import Referral from '../model/Referral.js';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
-import { sendEmail  } from '../utils/emailService.js';
+import { sendEmail, sendPaymentRequestReceivedEmail  } from '../utils/emailService.js';
 import { generateInvoiceNumber, generateInvoicePDF, uploadInvoicePDF } from '../utils/invoiceGenerator.js';
 import logger from '../utils/logger.js';
-import moment from 'moment';
 
 // Initialize Razorpay lazily to ensure environment variables are loaded
 let razorpay = null;
@@ -783,7 +783,7 @@ export const verifyPayment = async (req, res) => {
       });
     }
     
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId, duration, planOptionId, billingName, billingState } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId, duration, planOptionId, billingName, billingState, referralCode } = req.body;
     const userId = req.user.id;
     
     // Verify signature
@@ -837,7 +837,10 @@ export const verifyPayment = async (req, res) => {
       });
     }
     
-    // Enforce trial plan one-per-user limit
+    // Enforce trial plan one-per-user limit. Because Razorpay payments now land
+    // as a pending PaymentRequest (not a UserSubscription) until an admin
+    // approves, we must also block a trial that is already pending approval —
+    // otherwise a user could submit the trial multiple times before approval.
     if (subscription.isTrial) {
       const trialPlans = await Subscription.find({ isTrial: true }).select('_id').lean();
       const trialPlanIds = trialPlans.map(p => p._id);
@@ -845,16 +848,18 @@ export const verifyPayment = async (req, res) => {
         user: userId,
         subscription: { $in: trialPlanIds }
       });
-      if (previousTrial) {
+      const pendingTrialRequest = await PaymentRequest.findOne({
+        user: userId,
+        plan: { $in: trialPlanIds },
+        status: 'pending'
+      });
+      if (previousTrial || pendingTrialRequest) {
         return res.status(403).json({
           success: false,
           error: 'You have already claimed a trial plan. Trial plans can only be claimed once per account.'
         });
       }
     }
-
-    // Allow multiple subscriptions - no need to cancel existing ones
-    // Users can now have multiple active subscriptions simultaneously
 
     const selectedPlanOption = getSelectedPlanOption(subscription, { planOptionId, duration });
 
@@ -865,132 +870,102 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
-    // Calculate start and end dates
-    const startDate = new Date();
-    const endDate = calculateEndDate(startDate, selectedPlanOption.months);
-    
     const price = Number(selectedPlanOption.price) || 0;
-    
-    // Create new user subscription
-    const newUserSubscription = new UserSubscription({
+
+    // ── Idempotency guard ────────────────────────────────────────────────────
+    // Razorpay's success handler can fire more than once (e.g. the user refreshes
+    // the checkout on mobile after the payment is captured). Never create a
+    // duplicate payment request for the same payment/order.
+    const existingRequest = await PaymentRequest.findOne({
+      $or: [
+        { transactionId: razorpay_payment_id },
+        { orderId: razorpay_order_id }
+      ]
+    });
+
+    if (existingRequest) {
+      logger.info(`[RAZORPAY] Duplicate verify ignored for payment ${razorpay_payment_id} (request ${existingRequest._id})`);
+      return res.status(200).json({
+        success: true,
+        pending: true,
+        message: 'Payment already recorded and is pending admin approval.',
+        data: { paymentId: razorpay_payment_id, orderId: razorpay_order_id, paymentRequestId: existingRequest._id }
+      });
+    }
+
+    // ── Create a PENDING payment request (no subscription yet) ────────────────
+    // The subscription is created only when an admin approves this request, and
+    // it starts from the approval date — mirroring the QR payment flow. This
+    // prevents a captured Razorpay payment from silently activating a plan.
+    const paymentRequest = await PaymentRequest.create({
       user: userId,
-      subscription: planId,
       serviceType: subscriptionServiceType,
-      startDate,
-      endDate,
+      plan: planId,
+      planName: subscription.name,
       duration: selectedPlanOption.name,
       durationMonths: selectedPlanOption.months,
       planOptionId: String(selectedPlanOption._id || planOptionId || ''),
-      planOptionName: selectedPlanOption.name,
-      price,
-      currency: subscription.currency || 'INR',
-      paymentId: razorpay_payment_id,
+      amount: price,
+      senderName: user.name,
+      billingName: billingName || user.name,
+      billingState: billingState || '',
+      transactionId: razorpay_payment_id,
       orderId: razorpay_order_id,
-      transactionDetails: payment
+      transactionImageUrl: '',
+      transactionImagePublicId: '',
+      transactionDetails: payment,
+      paymentMethod: 'razorpay',
+      status: 'pending'
     });
-    
-    await newUserSubscription.save();
-    
-    // ── Generate and store invoice ──────────────────────────────────────────
-    let invoiceBuffer = null;
-    let invoiceNumber = null;
-    let invoicePdfUrl = null;
 
-    try {
-      let pan = null;
+    logger.info(`[RAZORPAY] Pending payment request ${paymentRequest._id} created for user ${userId} (payment ${razorpay_payment_id})`);
+
+    // ── Referral code processing (RA payments only) ──────────────────────────
+    // Mirrors the QR /submit flow: create a PENDING referral now; the reward is
+    // granted when an admin approves this payment request.
+    if (subscriptionServiceType === 'RA' && referralCode) {
       try {
-        const kyc = await KycVerification.findOne({ user: userId, status: 'completed' })
-          .sort({ createdAt: -1 }).select('pan').lean();
-        pan = kyc?.pan || null;
-      } catch {}
+        const code = String(referralCode).trim().toUpperCase();
+        const referrer = await User.findOne({ 'referral.code': code }).lean();
 
-      invoiceNumber = await generateInvoiceNumber(PaymentRequest);
-      invoiceBuffer = await generateInvoicePDF({
-        invoiceNumber,
-        date: new Date(),
-        serviceType: subscriptionServiceType,
-        billingName: billingName || user.name,
-        billingState: billingState || '',
-        pan,
-        email: user.email,
-        phone: user.profile?.phone || '',
-        transactionId: razorpay_payment_id,
-        packageName: subscription.name,
-        duration: selectedPlanOption.name,
-        amount: price,
-        coupon: 0,
-      });
+        const alreadyReferred = await Referral.findOne({ referred: userId }).lean();
+        const alreadyUsedCode = user.referral?.usedCode;
+        const isSelfReferral  = referrer && String(referrer._id) === String(userId);
 
-      const uploaded = await uploadInvoicePDF(invoiceBuffer, invoiceNumber);
-      invoicePdfUrl = uploaded.url;
+        if (referrer && !alreadyReferred && !alreadyUsedCode && !isSelfReferral) {
+          await Referral.create({
+            referrer: referrer._id,
+            referred: userId,
+            referralCode: code,
+            status: 'pending',
+          });
 
-      // Create a PaymentRequest record to persist the invoice
-      await PaymentRequest.create({
-        user: userId,
-        serviceType: subscriptionServiceType,
-        plan: planId,
-        planName: subscription.name,
-        duration: selectedPlanOption.name,
-        durationMonths: selectedPlanOption.months,
-        planOptionId: String(selectedPlanOption._id || planOptionId || ''),
-        amount: price,
-        senderName: user.name,
-        billingName: billingName || user.name,
-        billingState: billingState || '',
-        transactionId: razorpay_payment_id,
-        transactionImageUrl: '',
-        transactionImagePublicId: '',
-        paymentMethod: 'razorpay',
-        status: 'approved',
-        approvedAt: new Date(),
-        userSubscription: newUserSubscription._id,
-        invoiceNumber,
-        invoicePdfUrl: uploaded.url,
-        invoicePdfPublicId: uploaded.publicId,
-      });
+          await User.updateOne(
+            { _id: userId },
+            { $set: { 'referral.usedCode': code, 'referral.usedCodeAt': new Date(), 'referral.referredBy': referrer._id } }
+          );
 
-      logger.info(`[INVOICE] Razorpay invoice ${invoiceNumber} generated for user ${userId}`);
-    } catch (invErr) {
-      logger.error('[INVOICE] Razorpay invoice generation failed (non-blocking):', invErr.message);
+          logger.info(`[REFERRAL] Pending referral created (razorpay): referrer=${referrer._id} referred=${userId}`);
+        }
+      } catch (refErr) {
+        // Non-blocking — don't fail payment verification if referral processing errors
+        logger.error('[REFERRAL] Error processing referral code on razorpay verify:', refErr.message);
+      }
     }
 
-    // Send confirmation email with invoice attachment
-    try {
-      const endDateFmt = moment(endDate).format('MMMM Do, YYYY');
-      const emailData = {
-        to: user.email,
-        subject: 'Subscription Confirmed — InvestKaps',
-        serviceType: subscriptionServiceType,
-        html: `
-          <h2>Payment Verified — Your Plan Has Started!</h2>
-          <p>Hi ${user.name}, your Razorpay payment has been verified and your subscription is now active.</p>
-          <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-            <tr><td style="padding:6px;color:#64748b;">Plan</td><td style="padding:6px;font-weight:600;">${subscription.name}</td></tr>
-            <tr><td style="padding:6px;color:#64748b;">Duration</td><td style="padding:6px;font-weight:600;">${selectedPlanOption.name}</td></tr>
-            <tr><td style="padding:6px;color:#64748b;">Amount Paid</td><td style="padding:6px;font-weight:600;">₹${price}</td></tr>
-            <tr><td style="padding:6px;color:#64748b;">Valid Until</td><td style="padding:6px;font-weight:600;">${endDateFmt}</td></tr>
-            <tr><td style="padding:6px;color:#64748b;">Transaction ID</td><td style="padding:6px;font-weight:600;">${razorpay_payment_id}</td></tr>
-          </table>
-          ${invoicePdfUrl ? `<p>Your invoice is also attached to this email.</p>` : ''}
-          <p>Log in to your dashboard to access your plan.</p>
-        `,
-        attachments: invoiceBuffer && invoiceNumber
-          ? [{ filename: `Invoice_${invoiceNumber}.pdf`, content: invoiceBuffer, contentType: 'application/pdf' }]
-          : undefined,
-      };
+    // Send "payment received, under review" email (fire-and-forget)
+    sendPaymentRequestReceivedEmail(user, paymentRequest).catch((err) =>
+      logger.error('Error sending payment-received email:', err)
+    );
 
-      await sendEmail(emailData);
-    } catch (emailError) {
-      logger.error('Error sending subscription confirmation email:', emailError);
-    }
-    
     res.status(200).json({
       success: true,
-      message: 'Payment verified and subscription created successfully',
+      pending: true,
+      message: 'Payment received. Your subscription will start once an admin approves it.',
       data: {
         paymentId: razorpay_payment_id,
         orderId: razorpay_order_id,
-        subscriptionId: newUserSubscription._id
+        paymentRequestId: paymentRequest._id
       }
     });
   } catch (error) {

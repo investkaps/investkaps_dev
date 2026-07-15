@@ -245,6 +245,7 @@ const PaymentApproval = () => {
                 <div><span style={{ color: '#6c757d' }}>Amount</span><br /><strong style={{ color: '#059669', fontSize: '1rem' }}>₹{Number(request.amount).toLocaleString()}</strong></div>
                 <div><span style={{ color: '#6c757d' }}>Sender Name</span><br /><strong>{request.senderName}</strong></div>
                 <div><span style={{ color: '#6c757d' }}>Transaction ID</span><br /><code style={{ fontSize: '0.82rem', wordBreak: 'break-all' }}>{request.transactionId}</code></div>
+                <div><span style={{ color: '#6c757d' }}>Method</span><br /><strong>{request.paymentMethod === 'razorpay' ? 'Razorpay' : request.paymentMethod === 'bank_transfer' ? 'Bank Transfer' : 'QR / UPI'}</strong></div>
               </div>
 
               {/* Action buttons row */}
@@ -253,7 +254,7 @@ const PaymentApproval = () => {
                   className="admin-btn-small"
                   onClick={() => setSelectedRequest(request)}
                 >
-                  View Screenshot
+                  {request.paymentMethod === 'razorpay' || !request.transactionImageUrl ? 'View Details' : 'View Screenshot'}
                 </button>
                 {request.status !== 'pending' && (
                   <button
@@ -430,31 +431,53 @@ const PaymentApproval = () => {
                 </div>
               </div>
 
-              <div className="admin-details-section">
-                <h4>Transaction Screenshot</h4>
-                <div style={{ textAlign: 'center', padding: '20px' }}>
-                  <img 
-                    src={selectedRequest.transactionImageUrl} 
-                    alt="Transaction proof" 
-                    style={{ 
-                      maxWidth: '100%', 
-                      maxHeight: '500px',
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                    }}
-                  />
-                  <div style={{ marginTop: '10px' }}>
-                    <a 
-                      href={selectedRequest.transactionImageUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      style={{ color: '#667eea', textDecoration: 'none' }}
-                    >
-                      Open in new tab →
-                    </a>
+              {selectedRequest.paymentMethod === 'razorpay' ? (
+                <div className="admin-details-section">
+                  <h4>Razorpay Payment</h4>
+                  <div style={{ padding: '16px', background: '#eff6ff', border: '1.5px solid #bfdbfe', borderRadius: '8px', color: '#1e40af', fontSize: '0.9rem' }}>
+                    <p style={{ margin: '0 0 10px' }}>
+                      Paid online via Razorpay. There is no transaction screenshot — verify this payment in your{' '}
+                      <a href="https://dashboard.razorpay.com/app/payments" target="_blank" rel="noopener noreferrer" style={{ color: '#1d4ed8', fontWeight: 600 }}>Razorpay dashboard</a>{' '}
+                      before approving.
+                    </p>
+                    <div><strong>Payment ID:</strong> <code>{selectedRequest.transactionId}</code></div>
+                    {selectedRequest.orderId && <div style={{ marginTop: 4 }}><strong>Order ID:</strong> <code>{selectedRequest.orderId}</code></div>}
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="admin-details-section">
+                  <h4>Transaction Screenshot</h4>
+                  {selectedRequest.transactionImageUrl ? (
+                    <div style={{ textAlign: 'center', padding: '20px' }}>
+                      <img
+                        src={selectedRequest.transactionImageUrl}
+                        alt="Transaction proof"
+                        style={{
+                          maxWidth: '100%',
+                          maxHeight: '500px',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                        }}
+                      />
+                      <div style={{ marginTop: '10px' }}>
+                        <a
+                          href={selectedRequest.transactionImageUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#667eea', textDecoration: 'none' }}
+                        >
+                          Open in new tab →
+                        </a>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ padding: '16px', background: '#f9fafb', border: '1.5px solid #e5e7eb', borderRadius: '8px', color: '#6b7280', fontSize: '0.9rem' }}>
+                      No screenshot was provided. Verify this payment using the Transaction ID / UTR{' '}
+                      <code>{selectedRequest.transactionId}</code> before approving.
+                    </div>
+                  )}
+                </div>
+              )}
 
               {selectedRequest.status === 'pending' && (
                 <div className="admin-details-section">

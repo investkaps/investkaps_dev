@@ -162,17 +162,16 @@ const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSucce
       setError('Please enter a valid Transaction ID (6-50 characters)');
       return;
     }
-    if (!formData.transactionImage) {
-      setError('Please upload a transaction screenshot');
-      return;
-    }
-    if (!isValidImageType(formData.transactionImage)) {
-      setError('Please upload a valid image (JPEG, PNG, GIF, or WebP)');
-      return;
-    }
-    if (!isValidFileSize(formData.transactionImage, 5)) {
-      setError('Image size should be less than 5MB');
-      return;
+    // Screenshot is optional — validate type/size only when one is provided.
+    if (formData.transactionImage) {
+      if (!isValidImageType(formData.transactionImage)) {
+        setError('Please upload a valid image (JPEG, PNG, GIF, or WebP)');
+        return;
+      }
+      if (!isValidFileSize(formData.transactionImage, 5)) {
+        setError('Image size should be less than 5MB');
+        return;
+      }
     }
 
     setUploading(true);
@@ -184,7 +183,9 @@ const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSucce
       formDataToSend.append('billingName', cleanBillingName);
       formDataToSend.append('billingState', cleanBillingState);
       formDataToSend.append('transactionId', cleanTxnId);
-      formDataToSend.append('transactionImage', formData.transactionImage);
+      if (formData.transactionImage) {
+        formDataToSend.append('transactionImage', formData.transactionImage);
+      }
       formDataToSend.append('planId', plan._id);
       formDataToSend.append('planName', plan.name);
       formDataToSend.append('planOptionId', planOption?._id || '');
@@ -367,13 +368,12 @@ const QRPaymentModal = ({ plan, planOption, price, onClose, currentUser, onSucce
             </div>
 
             <div className="form-group">
-              <label htmlFor="transactionScreenshot">Transaction Screenshot *</label>
+              <label htmlFor="transactionScreenshot">Transaction Screenshot <span style={{ color: '#9ca3af', fontWeight: 400 }}>(optional)</span></label>
               <input
                 id="transactionScreenshot"
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                required
                 aria-describedby={error ? 'qr-payment-error' : undefined}
               />
               {imagePreview && (

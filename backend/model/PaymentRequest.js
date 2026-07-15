@@ -49,6 +49,17 @@ const paymentRequestSchema = new mongoose.Schema({
     required: false,
     default: ''
   },
+  // Razorpay order id (set only for razorpay payments; used for idempotency)
+  orderId: {
+    type: String,
+    required: false,
+    default: null
+  },
+  // Raw gateway payment payload (Razorpay), kept for admin verification/audit
+  transactionDetails: {
+    type: mongoose.Schema.Types.Mixed,
+    required: false
+  },
   transactionImageUrl: {
     type: String,
     required: false,
