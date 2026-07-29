@@ -16,8 +16,8 @@ const ComplaintsData = () => {
           <h2 className="section-heading">Audit FY2024-25</h2>
           <p className="audit-text">
             We are pleased to inform you that in full compliance with SEBI regulations, 
-            our audit for FY25 is duly completed. You may access the Auditor's Report by{' '}
-            <a href="/audit.png" target="_blank" rel="noopener noreferrer" className="audit-link">clicking here</a>.
+            our audit for FY24-25 is duly completed. You may access the Auditor's Report by{' '}
+            <a href="/audit-report-fy24-25" target="_blank" rel="noopener noreferrer" className="audit-link">clicking here</a>.
           </p>
           <p className="audit-text">
             <strong>investkaps</strong> maintains highest level of internal governance, 

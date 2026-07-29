@@ -14,7 +14,7 @@ const ComplaintsAndAudit = () => (
       <section id="complaints-and-audit" className="legal-section">
         <p>
           We are pleased to inform you that in full compliance with SEBI regulations,
-          our audit for FY25 is duly completed. You may access the <a href="/audit.png" target="_blank" rel="noopener noreferrer">Auditor's Report for FY25</a>.
+          our audit for FY24-25 is duly completed. You may access the <a href="/audit-report-fy24-25" target="_blank" rel="noopener noreferrer">Auditor's Report for FY24-25</a>.
         </p>
         <p>
           <strong>investkaps</strong> maintains highest level of internal governance,

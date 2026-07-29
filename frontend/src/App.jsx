@@ -159,7 +159,8 @@ function App() {
                     <Route path="code-of-conduct" element={<CodeOfConduct />} />
 
                     <Route path="/audit-report" element={<AuditReport />} />
-                    <Route path="/audit-report-2" element={<AuditReport2 />} />
+                    <Route path="/audit-report-fy24-25" element={<AuditReport2 />} />
+                    <Route path="/audit-report-2" element={<Navigate to="/audit-report-fy24-25" replace />} />
                     <Route path="/subscribe" element={<Subscribe />} />
                     <Route path="/unsubscribe" element={<Unsubscribe />} />
 
