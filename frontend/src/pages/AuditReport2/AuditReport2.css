@@ -13,7 +13,7 @@
 /* Page Header */
 .page-header {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 2.5rem;
 }
 
 .page-title {
@@ -28,57 +28,150 @@
   color: #64748b;
 }
 
-.audit-pdf-section {
+/* Carousel */
+.audit-carousel {
   margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.pdf-viewer-container {
+.audit-image-card {
   background: white;
   border-radius: 12px;
-  padding: 3rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+  width: 100%;
+  max-width: 640px;
+  /* Allow vertical scrolling while horizontal swipes drive the carousel. */
+  touch-action: pan-y;
 }
 
-.pdf-viewer {
-  border: none;
-  border-radius: 8px;
-  min-height: 800px;
+.audit-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: audit-fade-in 0.35s ease;
 }
 
-.pdf-download-section {
+@keyframes audit-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.audit-carousel-controls {
   display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
   margin-top: 1.5rem;
 }
 
-.download-button.secondary-download-button {
-  background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+.audit-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
 }
 
-.cta-box h4 {
-  font-size: 1.25rem;
-  font-weight: 700;
+.audit-nav {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: white;
   color: #1a202c;
-  margin-bottom: 0.75rem;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.cta-box p {
-  font-size: 1rem;
-  color: #4a5568;
-  margin: 0;
+.audit-nav:hover {
+  background: #0f172a;
+  color: white;
+  transform: scale(1.06);
+}
+
+.audit-nav:active {
+  transform: scale(0.94);
+}
+
+.audit-nav svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.audit-dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.audit-dot {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.25);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.audit-dot:hover {
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.audit-dot.active {
+  background: #0f172a;
+  transform: scale(1.25);
+}
+
+.audit-counter {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.audit-fullsize-link {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f172a;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.3);
+  padding-bottom: 1px;
+}
+
+.audit-fullsize-link:hover {
+  border-bottom-color: #0f172a;
 }
 
 /* Responsive Design */
 @media screen and (max-width: 768px) {
   .audit-report-page {
-    padding: 100px 0 40px;
+    padding: 90px 0 40px;
   }
 
   .audit-report-container {
     padding: 0 1rem;
+  }
+
+  .page-header {
+    margin-bottom: 1.5rem;
   }
 
   .page-title {
@@ -89,17 +182,35 @@
     font-size: 1rem;
   }
 
-  .pdf-viewer-container {
-    padding: 1.5rem;
+  .audit-image-card {
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14);
+  }
+
+  .audit-carousel-controls {
+    margin-top: 1.25rem;
+    gap: 0.625rem;
+  }
+
+  .audit-nav-row {
+    gap: 1.5rem;
   }
 }
 
 @media screen and (max-width: 480px) {
-  .page-title {
-    font-size: 1.75rem;
+  .audit-report-page {
+    padding: 80px 0 32px;
   }
 
-  .pdf-viewer-container {
-    padding: 1rem;
+  .audit-report-container {
+    padding: 0 0.75rem;
+  }
+
+  .page-title {
+    font-size: 1.625rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.9375rem;
   }
 }
