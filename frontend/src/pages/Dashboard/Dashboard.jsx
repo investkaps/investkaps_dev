@@ -133,6 +133,7 @@ function ReferralBanner({ referralData }) {
 function SubscriptionCarousel({ subscriptions }) {
   const [idx, setIdx] = React.useState(0);
   const sub = subscriptions[idx];
+  const startsLater = sub.status === 'active' && sub.startDate && new Date(sub.startDate) > new Date();
   return (
     <div className="current-subscription-section">
       <div className="subscription-carousel-nav">
@@ -164,6 +165,17 @@ function SubscriptionCarousel({ subscriptions }) {
             Your payment has been received and verified. Your subscription will start automatically as soon as you complete all remaining onboarding steps below.
           </div>
         )}
+        {startsLater && (
+          <div style={{
+            marginBottom: '1rem', padding: '1rem 1.2rem',
+            background: '#eff6ff', border: '2px solid #93c5fd',
+            borderRadius: '12px', color: '#1e40af',
+            fontSize: '0.875rem', lineHeight: '1.6',
+          }}>
+            <strong>Queued Extension</strong><br />
+            This term begins on {new Date(sub.startDate).toLocaleDateString()}, once your current plan runs out. Your access continues without a break until {new Date(sub.endDate).toLocaleDateString()}.
+          </div>
+        )}
         <div className="subscription-header">
           <div className="plan-info">
             <h3>{sub.subscription?.name || 'N/A'}</h3>
@@ -171,7 +183,7 @@ function SubscriptionCarousel({ subscriptions }) {
           </div>
           <div className="plan-status">
             <span className={`status-badge ${sub.status}`}>
-              {sub.status === 'active' ? 'Active' : sub.status === 'pending' ? 'On Hold' : sub.status}
+              {startsLater ? 'Scheduled' : sub.status === 'active' ? 'Active' : sub.status === 'pending' ? 'On Hold' : sub.status}
             </span>
           </div>
         </div>

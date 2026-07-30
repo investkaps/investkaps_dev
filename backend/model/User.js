@@ -22,6 +22,25 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  welcomeEmail: {
+    status: {
+      type: String,
+      enum: ['not_requested', 'pending', 'sending', 'sent', 'failed'],
+      default: 'not_requested'
+    },
+    sentAt: {
+      type: Date,
+      default: null
+    },
+    lastAttemptAt: {
+      type: Date,
+      default: null
+    },
+    lastError: {
+      type: String,
+      default: null
+    }
+  },
   role: {
     type: String,
     enum: ['customer', 'admin'],

@@ -1,5 +1,77 @@
 import User from '../model/User.js';
 import UserSubscription from '../model/UserSubscription.js';
+import { sendWelcomeEmail } from '../utils/emailService.js';
+
+const WELCOME_EMAIL_STALE_AFTER_MS = 15 * 60 * 1000;
+
+/**
+ * Atomically claims and sends a welcome email. The claim prevents concurrent
+ * create/sync requests from sending duplicates. Failed and stale attempts can
+ * be retried the next time the verified user is synced.
+ */
+const sendPendingWelcomeEmail = async (userId) => {
+  const now = new Date();
+  const staleBefore = new Date(now.getTime() - WELCOME_EMAIL_STALE_AFTER_MS);
+
+  const user = await User.findOneAndUpdate(
+    {
+      _id: userId,
+      isVerified: true,
+      $or: [
+        { 'welcomeEmail.status': 'pending' },
+        { 'welcomeEmail.status': 'failed' },
+        {
+          'welcomeEmail.status': 'sending',
+          'welcomeEmail.lastAttemptAt': { $lt: staleBefore }
+        }
+      ]
+    },
+    {
+      $set: {
+        'welcomeEmail.status': 'sending',
+        'welcomeEmail.lastAttemptAt': now,
+        'welcomeEmail.lastError': null
+      }
+    },
+    { new: true }
+  );
+
+  if (!user) return;
+
+  try {
+    await sendWelcomeEmail(user);
+    await User.updateOne(
+      { _id: user._id, 'welcomeEmail.status': 'sending' },
+      {
+        $set: {
+          'welcomeEmail.status': 'sent',
+          'welcomeEmail.sentAt': new Date(),
+          'welcomeEmail.lastError': null
+        }
+      }
+    );
+  } catch (error) {
+    console.error('WELCOME EMAIL FAILED:', user.email, error.message);
+    await User.updateOne(
+      { _id: user._id, 'welcomeEmail.status': 'sending' },
+      {
+        $set: {
+          'welcomeEmail.status': 'failed',
+          'welcomeEmail.lastError': String(error.message || error).slice(0, 500)
+        }
+      }
+    );
+  }
+};
+
+// Welcome delivery must never prevent account creation or synchronization.
+const attemptPendingWelcomeEmail = async (userId) => {
+  try {
+    await sendPendingWelcomeEmail(userId);
+  } catch (error) {
+    console.error('WELCOME EMAIL PROCESSING FAILED:', userId, error.message);
+  }
+};
 
 /**
  * Generate a unique 8-char uppercase alphanumeric referral code.
@@ -51,6 +123,7 @@ export const createUser = async (req, res) => {
     
     if (existingUser) {
       let updated = false;
+      const becameVerified = existingUser.isVerified !== true && isVerified === true;
 
       // Keep clerk mapping in sync (useful if the same verified email was
       // re-created in Clerk and received a new clerkId).
@@ -75,6 +148,11 @@ export const createUser = async (req, res) => {
         updated = true;
       }
 
+      if (becameVerified && (!existingUser.welcomeEmail?.status || existingUser.welcomeEmail.status === 'not_requested')) {
+        existingUser.set('welcomeEmail.status', 'pending');
+        updated = true;
+      }
+
       // Backfill referral code if missing
       if (!existingUser.referral?.code) {
         existingUser.referral = { ...existingUser.referral, code: await generateReferralCode() };
@@ -82,6 +160,7 @@ export const createUser = async (req, res) => {
       }
 
       const syncedUser = updated ? await existingUser.save() : existingUser;
+      await attemptPendingWelcomeEmail(syncedUser._id);
 
       return res.status(200).json({
         success: true,
@@ -97,11 +176,15 @@ export const createUser = async (req, res) => {
       email: normalizedEmail,
       name: name || email.split('@')[0],
       isVerified: isVerified || false,
+      welcomeEmail: {
+        status: isVerified === true ? 'pending' : 'not_requested'
+      },
       referral: { code: referralCode },
     });
 
     const savedUser = await user.save();
     console.log(' NEW USER CREATED:', savedUser.email, 'ID:', savedUser._id);
+    await attemptPendingWelcomeEmail(savedUser._id);
 
     res.status(201).json({
       success: true,
@@ -140,11 +223,17 @@ export const createOrUpdateUser = async (req, res) => {
     
     if (user) {
       // Update existing user
+      const webhookVerified = primaryEmail.verification?.status === 'verified';
+      const becameVerified = user.isVerified !== true && webhookVerified;
       user.email = primaryEmail.email_address;
       user.name = `${first_name || ''} ${last_name || ''}`.trim();
-      user.isVerified = primaryEmail.verification?.status === 'verified';
+      user.isVerified = webhookVerified;
+      if (becameVerified && (!user.welcomeEmail?.status || user.welcomeEmail.status === 'not_requested')) {
+        user.set('welcomeEmail.status', 'pending');
+      }
       
       await user.save();
+      await attemptPendingWelcomeEmail(user._id);
       
       return res.status(200).json({
         success: true,
@@ -159,10 +248,14 @@ export const createOrUpdateUser = async (req, res) => {
         email: primaryEmail.email_address,
         name: `${first_name || ''} ${last_name || ''}`.trim() || primaryEmail.email_address.split('@')[0],
         isVerified: primaryEmail.verification?.status === 'verified',
+        welcomeEmail: {
+          status: primaryEmail.verification?.status === 'verified' ? 'pending' : 'not_requested'
+        },
         referral: { code: newReferralCode },
       });
 
       await user.save();
+      await attemptPendingWelcomeEmail(user._id);
       
       return res.status(201).json({
         success: true,

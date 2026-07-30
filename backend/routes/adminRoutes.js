@@ -26,6 +26,7 @@ import ModelPortfolio from '../model/ModelPortfolio.js';
 import PaymentRequest from '../model/PaymentRequest.js';
 import { extractCAMSStatus, isKYCVerified } from '../utils/camsStatusMapper.js';
 import { generateInvoiceNumber, generateInvoicePDF, uploadInvoicePDF } from '../utils/invoiceGenerator.js';
+import { addMonths, getCoverageEndForPlan, resolveTermStart } from '../utils/subscriptionSchedule.js';
 
 const kycUpload = multer({
   storage: multer.memoryStorage(),
@@ -807,14 +808,17 @@ router.post('/users/:id/assign-plan', verifyToken, checkRole('admin'), async (re
     const months = parseInt(durationMonths, 10) || planOption?.months || 1;
     const price = planOption?.price ?? 0;
 
-    const start = startDate ? new Date(startDate) : new Date();
-    let end;
-    if (endDate) {
-      end = new Date(endDate);
+    // Without an explicit start, queue behind any time the user has already paid
+    // for on this plan so an assignment tops up instead of overlapping.
+    let start;
+    if (startDate) {
+      start = new Date(startDate);
     } else {
-      end = new Date(start);
-      end.setMonth(end.getMonth() + months);
+      const coverageEnd = await getCoverageEndForPlan(user._id, subscription._id);
+      start = resolveTermStart(coverageEnd);
     }
+
+    const end = endDate ? new Date(endDate) : addMonths(start, months);
 
     const userSub = new UserSubscription({
       user: user._id,

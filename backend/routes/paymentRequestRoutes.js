@@ -11,6 +11,7 @@ import { verifyToken  } from '../middleware/auth.js';
 import { checkRole  } from '../middleware/roleAuth.js';
 import { generateInvoiceNumber, generateInvoicePDF, uploadInvoicePDF } from '../utils/invoiceGenerator.js';
 import KycVerification from '../model/KycVerification.js';
+import { addMonths, getCoverageEndForPlan, resolveTermStart } from '../utils/subscriptionSchedule.js';
 import {
   sendPaymentRequestReceivedEmail,
   sendPaymentApprovedEmail,
@@ -350,12 +351,16 @@ router.post('/approve/:id', verifyToken, checkRole('admin'), async (req, res) =>
       const vs = payingUser?.verificationStatus || {};
       const onboardingComplete = vs.panKyc === true && vs.phone === true && vs.esign === true;
 
-      const startDate = onboardingComplete ? new Date() : null;
-      let endDate = null;
       const durationMonths = Number(paymentRequest.durationMonths) || LEGACY_PLAN_MONTHS[paymentRequest.duration] || 1;
+
+      // Buying a plan the user already holds queues the new term behind the time
+      // they have already paid for, so durations add up instead of overlapping.
+      let startDate = null;
+      let endDate = null;
       if (onboardingComplete) {
-        endDate = new Date();
-        endDate.setMonth(endDate.getMonth() + durationMonths);
+        const coverageEnd = await getCoverageEndForPlan(paymentRequest.user._id, paymentRequest.plan._id);
+        startDate = resolveTermStart(coverageEnd);
+        endDate = addMonths(startDate, durationMonths);
       }
 
       userSubscription = new UserSubscription({
@@ -556,20 +561,34 @@ router.post('/activate-pending/:clerkId', verifyToken, async (req, res) => {
       return res.json({ success: true, activated: false, message: 'Onboarding not yet complete' });
     }
 
-    // Find all pending subscriptions for this user and activate them
-    const pendingSubs = await UserSubscription.find({ user: user._id, status: 'pending' });
+    // Find all pending subscriptions for this user and activate them, oldest
+    // purchase first so terms queue in the order they were bought.
+    const pendingSubs = await UserSubscription.find({ user: user._id, status: 'pending' }).sort({ createdAt: 1 });
     if (!pendingSubs.length) {
       return res.json({ success: true, activated: false, message: 'No pending subscriptions found' });
     }
 
     const now = new Date();
+    // Running coverage end per plan, so several terms bought before onboarding
+    // finished stack up rather than all starting today.
+    const coverageByPlan = new Map();
+
     for (const sub of pendingSubs) {
+      const planKey = String(sub.subscription);
+      let coverageEnd = coverageByPlan.get(planKey);
+      if (coverageEnd === undefined) {
+        coverageEnd = await getCoverageEndForPlan(user._id, sub.subscription, { excludeSubscriptionId: sub._id });
+      }
+
+      const start = resolveTermStart(coverageEnd, now);
+      const end = addMonths(start, sub.durationMonths || 1);
+
       sub.status = 'active';
-      sub.startDate = now;
-      const end = new Date(now);
-      end.setMonth(end.getMonth() + (sub.durationMonths || 1));
+      sub.startDate = start;
       sub.endDate = end;
       await sub.save();
+
+      coverageByPlan.set(planKey, end);
 
       // Send "plan started" email (fire-and-forget)
       if (user.email) {

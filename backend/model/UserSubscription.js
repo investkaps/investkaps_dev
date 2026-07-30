@@ -27,7 +27,11 @@ const userSubscriptionSchema = new mongoose.Schema({
   },
   endDate: {
     type: Date,
-    required: true
+    // Subscriptions held until onboarding finishes have no dates yet; they get
+    // scheduled when they are activated.
+    required: function () {
+      return this.status !== 'pending';
+    }
   },
   renewalDate: {
     type: Date

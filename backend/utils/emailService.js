@@ -1,6 +1,14 @@
 import nodemailer from 'nodemailer';
+import { fileURLToPath } from 'url';
 import logger from './logger.js';
 import { getUnsubscribeFooterHtml, isEmailUnsubscribed } from '../services/emailPreferenceService.js';
+
+const investorCharterRAPath = fileURLToPath(
+  new URL('../assets/investkaps_Investor_Charter_RA.pdf', import.meta.url)
+);
+const investorCharterIAPath = fileURLToPath(
+  new URL('../assets/investkaps_Investor_Charter_IA.pdf', import.meta.url)
+);
 
 // Create a transporter (lazy initialization)
 const transporters = new Map();
@@ -178,6 +186,58 @@ const badge = (text, color, bg) =>
 
 const btn = (text, url) =>
   `<a href="${url}" style="display:inline-block;margin-top:20px;padding:12px 28px;background:#2563eb;color:#ffffff;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;">${text}</a>`;
+
+const escapeHtml = (value) => String(value || '')
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#39;');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Welcome email (sent after first verified account creation)
+// ─────────────────────────────────────────────────────────────────────────────
+const sendWelcomeEmail = async (user) => {
+  const recipientName = escapeHtml(user.name || user.email);
+  const html = wrap(`
+    <h2 style="margin:0 0 8px;color:#1e293b;font-size:22px;">Welcome to InvestKaps!</h2>
+    <p style="margin:0 0 20px;color:#64748b;font-size:14px;line-height:1.7;">
+      Hi ${recipientName}, you have successfully verified your email address and taken the first step by creating your InvestKaps account.
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:20px;">
+      <tr><td style="padding:18px 22px;">
+        <p style="margin:0 0 12px;color:#1e293b;font-size:14px;font-weight:600;">The following documents are attached for your review:</p>
+        <p style="margin:0 0 8px;color:#475569;font-size:14px;">📄 Investor Charter for Research Analyst (RA) Services</p>
+        <p style="margin:0;color:#475569;font-size:14px;">📄 Investor Charter for Investment Adviser (IA) Services</p>
+      </td></tr>
+    </table>
+
+    <p style="margin:0;color:#64748b;font-size:14px;line-height:1.7;">
+      You may now proceed with the remaining onboarding steps. By continuing, you confirm that the details you provide—including your PAN, date of birth, mobile number, and email address—are accurate and true to the best of your knowledge.
+    </p>
+  `);
+
+  return sendEmail({
+    to: user.email,
+    subject: 'Welcome to InvestKaps — Investor Charters Attached',
+    html,
+    serviceType: 'RA',
+    allowUnsubscribed: true,
+    attachments: [
+      {
+        filename: 'InvestKaps_Investor_Charter_RA.pdf',
+        path: investorCharterRAPath,
+        contentType: 'application/pdf'
+      },
+      {
+        filename: 'InvestKaps_Investor_Charter_IA.pdf',
+        path: investorCharterIAPath,
+        contentType: 'application/pdf'
+      }
+    ]
+  });
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. Payment request RECEIVED  (sent to user on submission)
@@ -759,6 +819,7 @@ const sendCallCancelledEmail = async (user, plan, slot, reason) => {
 
 export {
   sendEmail,
+  sendWelcomeEmail,
   sendPaymentRequestReceivedEmail,
   sendPaymentApprovedEmail,
   sendSubscriptionStartedEmail,
