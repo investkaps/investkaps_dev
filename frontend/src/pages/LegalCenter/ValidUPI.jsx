@@ -40,7 +40,7 @@ const ValidUPI = () => (
           </div>
           <div className="legal-upi-handle">
             <p className="legal-upi-label">Our UPI Handle</p>
-            <div className="legal-upi-id">investkaps.ra@validicici</div>
+            <div className="legal-upi-id">investkaps.upi.ra@validhdfc</div>
             <p className="legal-upi-note">For UPI payment directly to our bank account</p>
           </div>
         </div>

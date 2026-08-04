@@ -33,7 +33,6 @@ const Footer = () => {
               <li><Link to="/complaints-and-audit" onClick={scrollToTop}>Complaints and Audit</Link></li>
               <li><Link to="/cancellations-and-refunds" onClick={scrollToTop}>Cancellations and Refunds</Link></li>
               <li><Link to="/grievance-redressal" onClick={scrollToTop}>Grievance Redressal</Link></li>
-              <li><Link to="/grievance-redressal-escalation-matrix" onClick={scrollToTop}>Escalation Matrix</Link></li>
               <li><Link to="/code-of-conduct" onClick={scrollToTop}>Code of Conduct</Link></li>
             </ul>
           </div>

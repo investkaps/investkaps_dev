@@ -1,4 +1,6 @@
 import React from 'react';
+import { EscalationMatrixContent } from '../LegalCenter/GrievanceRedressalEscalationMatrix';
+import '../LegalCenter/LegalCenter.css';
 import './Contact.css';
 
 const Contact = () => {
@@ -69,7 +71,7 @@ const Contact = () => {
               </p>
               <p className="contact-info-text" style={{ marginTop: '0.75rem' }}>
                 <span className="contact-service-label">IA Services</span>
-                <a href="mailto:investkaps.ia@gmail.com">investkaps.ia@gmail.com</a>
+                <a href="mailto:investkaps_ia@zohomail.in">investkaps_ia@zohomail.in</a>
               </p>
             </div>
           </div>
@@ -101,6 +103,16 @@ const Contact = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="contact-escalation-section">
+        <div className="contact-container">
+          <div className="section-header">
+            <span className="section-subtitle">Complaints</span>
+            <h2 className="section-title">Grievance Redressal / Escalation Matrix</h2>
+          </div>
+          <EscalationMatrixContent embedded />
         </div>
       </section>
     </div>
