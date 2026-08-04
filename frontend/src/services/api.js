@@ -429,6 +429,44 @@ export const adminAPI = {
     }
   },
 
+  getWhatsAppMessages: async (params = {}) => {
+    try {
+      const res = await api.get('/admin/whatsapp/messages', { params });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching WhatsApp messages:', message);
+      throw new Error(message);
+    }
+  },
+
+  getWhatsAppTemplates: async () => {
+    try {
+      const res = await api.get('/admin/whatsapp/templates');
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error fetching WhatsApp templates:', message);
+      throw new Error(message);
+    }
+  },
+
+  sendWhatsAppTest: async ({ notificationType, phone, userId, context = {} }) => {
+    try {
+      const res = await api.post('/admin/whatsapp/test', {
+        notificationType,
+        phone,
+        userId,
+        context
+      });
+      return res.data;
+    } catch (err) {
+      const { message } = extractError(err);
+      console.error('Error sending WhatsApp test:', message);
+      throw new Error(message);
+    }
+  },
+
   /**
    * Backfill migration: fixes users who completed RA/IA esigning before
    * clientTypes.{RA|IA}.isCompleted was introduced.

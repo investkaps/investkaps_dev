@@ -18,6 +18,11 @@ import {
   sendSubscriptionStartedEmail,
   sendPaymentRejectedEmail
 } from '../utils/emailService.js';
+import {
+  sendPaymentSuccessfulWhatsApp,
+  sendPaymentFailedWhatsApp,
+  sendSubscriptionActivatedWhatsApp
+} from '../services/whatsappService.js';
 
 const generateReferralCode = async () => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -500,6 +505,37 @@ router.post('/approve/:id', verifyToken, checkRole('admin'), async (req, res) =>
       ).catch(err => console.error('Failed to send payment-approved email:', err));
     }
 
+    // WhatsApp: payment success always; activation only when the plan is live now
+    try {
+      const waUser = await User.findById(paymentRequest.user._id)
+        .select('name email profile verificationStatus');
+      if (waUser) {
+        sendPaymentSuccessfulWhatsApp(waUser, {
+          paymentRequest,
+          context: {
+            userName: waUser.name,
+            planName: paymentRequest.planName,
+            amount: paymentRequest.amount,
+            transactionId: paymentRequest.transactionId
+          }
+        });
+        if (userSubscription?.status === 'active') {
+          sendSubscriptionActivatedWhatsApp(waUser, {
+            paymentRequest,
+            subscription: userSubscription,
+            context: {
+              userName: waUser.name,
+              planName: paymentRequest.planName || userSubscription.subscription?.name,
+              duration: userSubscription.duration || paymentRequest.duration,
+              endDate: userSubscription.endDate
+            }
+          });
+        }
+      }
+    } catch (waErr) {
+      console.error('Failed to queue payment WhatsApp notifications:', waErr.message);
+    }
+
     const subStatus = userSubscription?.status || 'active';
     res.json({
       success: true,
@@ -553,7 +589,7 @@ router.post('/activate-pending/:clerkId', verifyToken, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
 
-    const user = await User.findOne({ clerkId }).select('name email verificationStatus');
+    const user = await User.findOne({ clerkId }).select('name email verificationStatus profile');
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
     const vs = user.verificationStatus || {};
@@ -596,6 +632,15 @@ router.post('/activate-pending/:clerkId', verifyToken, async (req, res) => {
         sendSubscriptionStartedEmail(user, populatedSub).catch(err =>
           console.error('Failed to send subscription-started email:', err)
         );
+        sendSubscriptionActivatedWhatsApp(user, {
+          subscription: populatedSub,
+          context: {
+            userName: user.name,
+            planName: populatedSub?.subscription?.name,
+            duration: populatedSub?.duration,
+            endDate: populatedSub?.endDate
+          }
+        });
       }
     }
 
@@ -647,6 +692,24 @@ router.post('/reject/:id', verifyToken, checkRole('admin'), async (req, res) => 
       sendPaymentRejectedEmail(userForEmail, paymentRequest).catch(err =>
         console.error('Failed to send payment-rejected email:', err)
       );
+    }
+
+    try {
+      const waUser = await User.findById(paymentRequest.user)
+        .select('name email profile verificationStatus');
+      if (waUser) {
+        sendPaymentFailedWhatsApp(waUser, {
+          paymentRequest,
+          context: {
+            userName: waUser.name,
+            planName: paymentRequest.planName,
+            amount: paymentRequest.amount,
+            reason: paymentRequest.adminNotes || 'Payment verification failed'
+          }
+        });
+      }
+    } catch (waErr) {
+      console.error('Failed to queue payment-failed WhatsApp:', waErr.message);
     }
 
     res.json({

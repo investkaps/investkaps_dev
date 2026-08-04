@@ -33,6 +33,7 @@ import questionnaireRoutes from './routes/questionnaireRoutes.js';
 import testimonialRoutes from './routes/testimonialRoutes.js';
 import referralRoutes from './routes/referralRoutes.js';
 import callRoutes from './routes/callRoutes.js';
+import whatsappRoutes from './routes/whatsappRoutes.js';
 
 // Connect to MongoDB
 connectDB();
@@ -80,7 +81,10 @@ app.use('/api/kyc', express.json({ limit: '10kb' }));
 app.use(express.json({
   limit: '10mb',
   verify: (req, res, buf) => {
-    if (req.originalUrl === '/api/payment/webhook') {
+    if (
+      req.originalUrl === '/api/payment/webhook' ||
+      req.originalUrl === '/api/whatsapp/webhook'
+    ) {
       req.rawBody = buf;
     }
   }
@@ -119,6 +123,7 @@ app.use('/api/subscriptions', consolidatedSubscriptionRoutes);
 app.use('/api/strategies', strategyRoutes);
 app.use('/api/recommendations', stockRecommendationRoutes);
 app.use('/api/payment-requests', paymentRequestRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/email', emailPreferenceRoutes);
 app.use('/api/symbols', symbolRoutes);

@@ -62,7 +62,16 @@ const userSubscriptionSchema = new mongoose.Schema({
     type: [{
       type: {
         type: String,
-        enum: ['expiring_soon', 'expired', 'renewal_failed', 'renewal_success']
+        enum: [
+          'expiring_soon',
+          'expiring_7',
+          'expiring_3',
+          'expiring_1',
+          'expired',
+          'renewal_reminder',
+          'renewal_failed',
+          'renewal_success'
+        ]
       },
       sentAt: {
         type: Date,

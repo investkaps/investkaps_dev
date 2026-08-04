@@ -9,6 +9,11 @@ import { sendRecommendationToTelegram, sendUpdatedRecommendationToTelegram  } fr
 import { sendNewRecommendationEmail, sendUpdatedRecommendationEmail } from '../utils/emailService.js';
 import { isEmailUnsubscribed } from '../services/emailPreferenceService.js';
 import Subscription from '../model/Subscription.js';
+import {
+  sendRecommendationNewWhatsApp,
+  sendRecommendationUpdatedWhatsApp,
+  sendRecommendationClosedWhatsApp
+} from '../services/whatsappService.js';
 
 const EMAIL_TRIGGER_FIELDS = new Set([
   'targetPrice',
@@ -117,6 +122,7 @@ const createRecommendation = async (req, res) => {
           const serviceType = us.serviceType || us.subscription?.serviceType || 'RA';
           await sendNewRecommendationEmail(u, recommendation, serviceType);
           logger.info(`New-recommendation email sent to ${u.email}: ${recommendation.stockSymbol}`);
+          sendRecommendationNewWhatsApp(u, recommendation);
         }
       } catch (emailError) {
         logger.error('Failed to send new-recommendation emails:', emailError);
@@ -285,6 +291,7 @@ const updateRecommendation = async (req, res) => {
           const serviceType = us.serviceType || us.subscription?.serviceType || 'RA';
           await sendNewRecommendationEmail(u, recommendation, serviceType);
           logger.info(`New-recommendation email sent to ${u.email}: ${recommendation.stockSymbol}`);
+          sendRecommendationNewWhatsApp(u, recommendation);
         }
       } catch (emailError) {
         logger.error('Failed to send new-recommendation emails:', emailError);
@@ -303,6 +310,24 @@ const updateRecommendation = async (req, res) => {
       }
     } else if (wasPublished && req.body.status === 'published' && !hasAnyChanges) {
       logger.info(`Skipped update notifications because no fields changed: ${recommendation.stockSymbol}`);
+    }
+
+    // Recommendation closed (archived) or manually deactivated while published
+    const becameArchived =
+      wasPublished &&
+      originalRecommendation.status === 'published' &&
+      recommendation.status === 'archived';
+    const becameInactive =
+      wasPublished &&
+      recommendation.status === 'published' &&
+      originalRecommendation.isActive !== false &&
+      recommendation.isActive === false &&
+      Object.prototype.hasOwnProperty.call(req.body, 'isActive');
+
+    if (becameArchived || becameInactive) {
+      notifyRecommendationClosed(recommendation, {
+        reason: becameArchived ? 'Archived' : 'Closed'
+      }).catch((err) => logger.error('Closed-recommendation WhatsApp fanout failed:', err));
     }
 
     res.status(200).json({
@@ -334,29 +359,58 @@ async function sendUpdateNotifications(recommendation, options = {}) {
       logger.info(`Update notification sent to Telegram chat ${subscription.telegramChatId}: ${recommendation.stockSymbol}`);
     }
 
-    // Email
-    if (sendEmailNotifications) {
-      const userSubscriptions = await UserSubscription.find({
-        subscription: { $in: subscriptionIds },
-        status: 'active'
-      }).populate('user', 'name email');
+    const userSubscriptions = await UserSubscription.find({
+      subscription: { $in: subscriptionIds },
+      status: 'active'
+    }).populate('user', 'name email profile verificationStatus');
 
-      for (const us of userSubscriptions) {
-        const u = us.user;
-        if (!u?.email) continue;
+    for (const us of userSubscriptions) {
+      const u = us.user;
+      if (!u) continue;
 
-        if (await isEmailUnsubscribed(u.email)) {
-          logger.info(`Skipping updated recommendation email for unsubscribed user ${u.email}`);
-          continue;
-        }
+      // WhatsApp update for all subscribers with a verified phone
+      sendRecommendationUpdatedWhatsApp(u, recommendation);
 
-        const serviceType = us.serviceType || us.subscription?.serviceType || 'RA';
-        await sendUpdatedRecommendationEmail(u, recommendation, serviceType);
-        logger.info(`Update-recommendation email sent to ${u.email}: ${recommendation.stockSymbol}`);
+      if (!sendEmailNotifications || !u.email) continue;
+
+      if (await isEmailUnsubscribed(u.email)) {
+        logger.info(`Skipping updated recommendation email for unsubscribed user ${u.email}`);
+        continue;
       }
+
+      const serviceType = us.serviceType || us.subscription?.serviceType || 'RA';
+      await sendUpdatedRecommendationEmail(u, recommendation, serviceType);
+      logger.info(`Update-recommendation email sent to ${u.email}: ${recommendation.stockSymbol}`);
     }
   } catch (err) {
     logger.error('Failed to send update notifications:', err);
+  }
+}
+
+/** Fan-out WhatsApp when a recommendation is closed/archived */
+async function notifyRecommendationClosed(recommendation, options = {}) {
+  try {
+    const strategies = recommendation.targetStrategies || [];
+    if (!strategies.length) return;
+
+    const subscriptions = await Subscription.find({
+      strategies: { $in: strategies }
+    }).select('_id');
+    if (!subscriptions.length) return;
+
+    const userSubscriptions = await UserSubscription.find({
+      subscription: { $in: subscriptions.map((s) => s._id) },
+      status: 'active'
+    }).populate('user', 'name email profile verificationStatus');
+
+    for (const us of userSubscriptions) {
+      if (!us.user) continue;
+      sendRecommendationClosedWhatsApp(us.user, recommendation, {
+        context: { reason: options.reason || 'Closed' }
+      });
+    }
+  } catch (err) {
+    logger.error('Failed to send closed-recommendation WhatsApp:', err);
   }
 }
 
@@ -554,6 +608,7 @@ const sendRecommendationToUsers = async (recommendationId) => {
       try {
         // Send notification
         await sendNewRecommendationEmail(user, recommendation, userServiceTypes.get(user._id.toString()) || 'RA');
+        sendRecommendationNewWhatsApp(user, recommendation);
         
         // Track sent status
         recommendation.sentTo.push({

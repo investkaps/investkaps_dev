@@ -14,6 +14,7 @@ import EsignManagement from './EsignManagement';
 import TestimonialsManagement from '../../components/Admin/TestimonialsManagement';
 import ModelPortfolioManagement from './ModelPortfolioManagement';
 import MeetingManagement from '../../components/Admin/MeetingManagement';
+import WhatsAppManagement from './WhatsAppManagement';
 import './AdminDashboard.css';
 
 /* ─────────────────────────── Settings / Maintenance tab ─── */
@@ -525,7 +526,7 @@ const AdminDashboard = () => {
   const [error, setError] = useState(null);
   const getInitialTab = () => {
     const hash = window.location.hash.slice(1);
-    const valid = ['overview','users','kyc','subscriptions','strategies','recommendations','payment-approval','documents','testimonials','questionnaire-management','questionnaire-responses','model-portfolios','meetings','settings'];
+    const valid = ['overview','users','kyc','subscriptions','strategies','recommendations','payment-approval','documents','testimonials','questionnaire-management','questionnaire-responses','model-portfolios','meetings','whatsapp','settings'];
     return valid.includes(hash) ? hash : 'overview';
   };
   const [activeTab, setActiveTab] = useState(getInitialTab);
@@ -624,6 +625,9 @@ const AdminDashboard = () => {
             <li className={activeTab === 'meetings' ? 'active' : ''}>
               <button onClick={() => switchTab('meetings')}>Meetings</button>
             </li>
+            <li className={activeTab === 'whatsapp' ? 'active' : ''}>
+              <button onClick={() => switchTab('whatsapp')}>WhatsApp</button>
+            </li>
             <li className={activeTab === 'settings' ? 'active' : ''}>
               <button onClick={() => switchTab('settings')}>Settings</button>
             </li>
@@ -654,6 +658,7 @@ const AdminDashboard = () => {
             {activeTab === 'testimonials' && 'Testimonials'}
             {activeTab === 'model-portfolios' && 'Model Portfolios'}
             {activeTab === 'meetings' && 'Meeting Requests & Schedule'}
+            {activeTab === 'whatsapp' && 'WhatsApp Messages'}
           </h1>
           <div className="admin-header-actions">
             <span className="admin-date">{new Date().toLocaleDateString()}</span>
@@ -774,6 +779,9 @@ const AdminDashboard = () => {
         )}
         {activeTab === 'meetings' && (
           <MeetingManagement />
+        )}
+        {activeTab === 'whatsapp' && (
+          <WhatsAppManagement />
         )}
       </div>
     </div>

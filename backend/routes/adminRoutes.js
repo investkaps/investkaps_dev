@@ -27,6 +27,12 @@ import PaymentRequest from '../model/PaymentRequest.js';
 import { extractCAMSStatus, isKYCVerified } from '../utils/camsStatusMapper.js';
 import { generateInvoiceNumber, generateInvoicePDF, uploadInvoicePDF } from '../utils/invoiceGenerator.js';
 import { addMonths, getCoverageEndForPlan, resolveTermStart } from '../utils/subscriptionSchedule.js';
+import WhatsAppMessage from '../model/WhatsAppMessage.js';
+import {
+  sendWhatsAppNotification,
+  normalizeWhatsAppPhone
+} from '../services/whatsappService.js';
+import { listWhatsAppTemplates, WHATSAPP_NOTIFICATION_TYPES } from '../config/whatsappTemplates.js';
 
 const kycUpload = multer({
   storage: multer.memoryStorage(),
@@ -439,6 +445,124 @@ router.get('/mail-types', verifyToken, checkRole('admin'), async (_req, res) => 
       success: false,
       error: 'Server error'
     });
+  }
+});
+
+/**
+ * @route   GET /api/admin/whatsapp/templates
+ * @desc    List registered WhatsApp notification templates
+ * @access  Private (Admin only)
+ */
+router.get('/whatsapp/templates', verifyToken, checkRole('admin'), async (_req, res) => {
+  return res.status(200).json({
+    success: true,
+    data: listWhatsAppTemplates()
+  });
+});
+
+/**
+ * @route   GET /api/admin/whatsapp/messages
+ * @desc    Paginated WhatsApp outbound message log
+ * @access  Private (Admin only)
+ */
+router.get('/whatsapp/messages', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+    const skip = (page - 1) * limit;
+    const filter = {};
+
+    if (req.query.status) filter.status = req.query.status;
+    if (req.query.notificationType) filter.notificationType = req.query.notificationType;
+    if (req.query.to) {
+      const phone = normalizeWhatsAppPhone(req.query.to) || String(req.query.to).replace(/\D/g, '');
+      filter.to = phone;
+    }
+    if (req.query.userId) filter.user = req.query.userId;
+
+    const [total, data] = await Promise.all([
+      WhatsAppMessage.countDocuments(filter),
+      WhatsAppMessage.find(filter)
+        .populate('user', 'name email profile.phone')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean()
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      count: data.length,
+      total,
+      pages: Math.ceil(total / limit),
+      currentPage: page,
+      data
+    });
+  } catch (error) {
+    console.error('Error listing WhatsApp messages:', error);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+/**
+ * @route   POST /api/admin/whatsapp/test
+ * @desc    Send a WhatsApp template notification for validation
+ * @access  Private (Admin only)
+ */
+router.post('/whatsapp/test', verifyToken, checkRole('admin'), async (req, res) => {
+  try {
+    const { notificationType, phone, userId, context = {} } = req.body || {};
+
+    if (!notificationType || !WHATSAPP_NOTIFICATION_TYPES.includes(notificationType)) {
+      return res.status(400).json({
+        success: false,
+        error: `notificationType must be one of: ${WHATSAPP_NOTIFICATION_TYPES.join(', ')}`
+      });
+    }
+
+    let user = null;
+    if (userId) {
+      user = await User.findById(userId).select('name email profile verificationStatus');
+      if (!user) {
+        return res.status(404).json({ success: false, error: 'User not found' });
+      }
+    }
+
+    if (!phone && !user) {
+      return res.status(400).json({
+        success: false,
+        error: 'Provide phone or userId'
+      });
+    }
+
+    const result = await sendWhatsAppNotification(notificationType, {
+      user,
+      phone: phone || undefined,
+      context: {
+        userName: user?.name || context.userName || 'Investor',
+        planName: context.planName || 'Test Plan',
+        duration: context.duration || '1 month',
+        endDate: context.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        amount: context.amount ?? 1000,
+        transactionId: context.transactionId || `TEST_${Date.now()}`,
+        daysRemaining: context.daysRemaining || '7',
+        message: context.message || 'Your subscription has expired.',
+        stockSymbol: context.stockSymbol || 'RELIANCE',
+        recommendationType: context.recommendationType || 'buy',
+        updateType: context.updateType || 'Recommendation Updated',
+        additionalInfo: context.additionalInfo || 'Current Price: ₹3,200',
+        reason: context.reason || 'Admin test',
+        ...context
+      }
+    });
+
+    return res.status(200).json({
+      success: !!result.success,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error sending WhatsApp test:', error);
+    return res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 

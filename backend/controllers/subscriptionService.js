@@ -9,6 +9,11 @@ import crypto from 'crypto';
 import { sendEmail, sendPaymentRequestReceivedEmail  } from '../utils/emailService.js';
 import { generateInvoiceNumber, generateInvoicePDF, uploadInvoicePDF } from '../utils/invoiceGenerator.js';
 import logger from '../utils/logger.js';
+import {
+  sendSubscriptionExpiringWhatsApp,
+  sendSubscriptionExpiredWhatsApp,
+  sendRenewalReminderWhatsApp
+} from '../services/whatsappService.js';
 
 // Initialize Razorpay lazily to ensure environment variables are loaded
 let razorpay = null;
@@ -1322,6 +1327,20 @@ export const getSubscriptionStats = async (req, res) => {
 
 // ===== SUBSCRIPTION MAINTENANCE (CRON JOBS) =====
 
+const hasNotification = (subscription, type) =>
+  Array.isArray(subscription.notificationsSent) &&
+  subscription.notificationsSent.some((entry) => entry.type === type);
+
+const recordNotification = async (subscription, type, message) => {
+  subscription.notificationsSent = subscription.notificationsSent || [];
+  subscription.notificationsSent.push({
+    type,
+    sentAt: new Date(),
+    message
+  });
+  await subscription.save();
+};
+
 // Check and update expired subscriptions
 export const checkExpiredSubscriptions = async () => {
   try {
@@ -1339,35 +1358,65 @@ export const checkExpiredSubscriptions = async () => {
     for (const subscription of expiredSubscriptions) {
       subscription.status = 'expired';
       await subscription.save();
+
+      const user = subscription.user;
+      const planName = subscription.subscription?.name || 'your plan';
       
       // Send expiration notification
       try {
-        const emailData = {
-          to: subscription.user.email,
-          subject: 'Your Subscription Has Expired - InvestKaps',
-          serviceType: normalizeServiceType(subscription.subscription?.serviceType || subscription.serviceType),
-          text: `Your subscription to ${subscription.subscription.name} has expired. Please renew to continue enjoying our services.`,
-          html: `
-            <h2>Subscription Expired</h2>
-            <p>Dear ${subscription.user.name},</p>
-            <p>Your subscription to <strong>${subscription.subscription.name}</strong> has expired.</p>
-            <p>To continue enjoying our services, please renew your subscription from your dashboard.</p>
-            <p>Thank you for choosing InvestKaps!</p>
-          `
-        };
+        if (user?.email) {
+          const emailData = {
+            to: user.email,
+            subject: 'Your Subscription Has Expired - InvestKaps',
+            serviceType: normalizeServiceType(subscription.subscription?.serviceType || subscription.serviceType),
+            text: `Your subscription to ${planName} has expired. Please renew to continue enjoying our services.`,
+            html: `
+              <h2>Subscription Expired</h2>
+              <p>Dear ${user.name},</p>
+              <p>Your subscription to <strong>${planName}</strong> has expired.</p>
+              <p>To continue enjoying our services, please renew your subscription from your dashboard.</p>
+              <p>Thank you for choosing InvestKaps!</p>
+            `
+          };
+          
+          await sendEmail(emailData);
+        }
+
+        if (user) {
+          sendSubscriptionExpiredWhatsApp(user, {
+            subscription,
+            context: {
+              userName: user.name,
+              planName,
+              endDate: subscription.endDate
+            }
+          });
+
+          if (!hasNotification(subscription, 'renewal_reminder')) {
+            sendRenewalReminderWhatsApp(user, {
+              subscription,
+              context: {
+                userName: user.name,
+                planName
+              }
+            });
+            await recordNotification(
+              subscription,
+              'renewal_reminder',
+              'Renewal reminder sent after expiry'
+            );
+          }
+        }
         
-        await sendEmail(emailData);
-        
-        // Record notification
-        subscription.notificationsSent.push({
-          type: 'expired',
-          sentAt: now,
-          message: 'Subscription expiration notification sent'
-        });
-        
-        await subscription.save();
+        if (!hasNotification(subscription, 'expired')) {
+          await recordNotification(
+            subscription,
+            'expired',
+            'Subscription expiration notification sent'
+          );
+        }
       } catch (emailError) {
-        logger.error(`Error sending expiration email to ${subscription.user.email}:`, emailError);
+        logger.error(`Error sending expiration notifications to ${user?.email}:`, emailError);
       }
     }
     
@@ -1378,60 +1427,105 @@ export const checkExpiredSubscriptions = async () => {
   }
 };
 
-// Send notifications for subscriptions expiring soon
+/**
+ * Send 7 / 3 / 1 day expiry reminders (email + WhatsApp).
+ * Each window is tracked separately so a user can receive all three when applicable.
+ */
 export const sendExpirationReminders = async () => {
   try {
     const now = new Date();
-    const threeDaysLater = new Date(now);
-    threeDaysLater.setDate(now.getDate() + 3);
-    
-    // Find subscriptions expiring in the next 3 days that haven't received a notification yet
-    const expiringSubscriptions = await UserSubscription.find({
+    const sevenDaysLater = new Date(now);
+    sevenDaysLater.setDate(now.getDate() + 7);
+
+    const candidates = await UserSubscription.find({
       status: 'active',
       endDate: {
         $gt: now,
-        $lte: threeDaysLater
-      },
-      'notificationsSent.type': { $ne: 'expiring_soon' }
+        $lte: sevenDaysLater
+      }
     }).populate('user subscription');
-    
-    logger.info(`Found ${expiringSubscriptions.length} subscriptions expiring soon to notify`);
-    
-    // Send notification for each expiring subscription
-    for (const subscription of expiringSubscriptions) {
+
+    logger.info(`Found ${candidates.length} subscriptions expiring within 7 days`);
+
+    let notifiedCount = 0;
+
+    for (const subscription of candidates) {
       try {
-        const daysRemaining = Math.ceil((subscription.endDate - now) / (1000 * 60 * 60 * 24));
-        
-        const emailData = {
-          to: subscription.user.email,
-          subject: 'Your Subscription is Expiring Soon - InvestKaps',
-          serviceType: normalizeServiceType(subscription.subscription?.serviceType || subscription.serviceType),
-          text: `Your subscription to ${subscription.subscription.name} will expire in ${daysRemaining} days. Please renew to avoid interruption.`,
-          html: `
-            <h2>Subscription Expiring Soon</h2>
-            <p>Dear ${subscription.user.name},</p>
-            <p>Your subscription to <strong>${subscription.subscription.name}</strong> will expire in <strong>${daysRemaining} days</strong>.</p>
-            <p>To avoid any interruption in service, please renew your subscription from your dashboard.</p>
-            <p>Thank you for choosing InvestKaps!</p>
-          `
-        };
-        
-        await sendEmail(emailData);
-        
-        // Record notification
-        subscription.notificationsSent.push({
-          type: 'expiring_soon',
-          sentAt: now,
-          message: `Subscription expiring in ${daysRemaining} days notification sent`
+        const user = subscription.user;
+        if (!user) continue;
+
+        const daysRemaining = Math.max(
+          1,
+          Math.ceil((subscription.endDate - now) / (1000 * 60 * 60 * 24))
+        );
+
+        let window = null;
+        if (daysRemaining <= 1) {
+          window = { days: 1, type: 'expiring_1' };
+        } else if (daysRemaining <= 3) {
+          window = { days: 3, type: 'expiring_3' };
+        } else if (daysRemaining <= 7) {
+          window = { days: 7, type: 'expiring_7' };
+        }
+
+        if (!window || hasNotification(subscription, window.type)) {
+          continue;
+        }
+
+        const planName = subscription.subscription?.name || 'your plan';
+
+        if (user.email) {
+          const emailData = {
+            to: user.email,
+            subject: `Your Subscription Expires in ${daysRemaining} Day${daysRemaining === 1 ? '' : 's'} - InvestKaps`,
+            serviceType: normalizeServiceType(subscription.subscription?.serviceType || subscription.serviceType),
+            text: `Your subscription to ${planName} will expire in ${daysRemaining} days. Please renew to avoid interruption.`,
+            html: `
+              <h2>Subscription Expiring Soon</h2>
+              <p>Dear ${user.name},</p>
+              <p>Your subscription to <strong>${planName}</strong> will expire in <strong>${daysRemaining} day${daysRemaining === 1 ? '' : 's'}</strong>.</p>
+              <p>To avoid any interruption in service, please renew your subscription from your dashboard.</p>
+              <p>Thank you for choosing InvestKaps!</p>
+            `
+          };
+          await sendEmail(emailData);
+        }
+
+        sendSubscriptionExpiringWhatsApp(user, window.days, {
+          subscription,
+          planName,
+          endDate: subscription.endDate,
+          userName: user.name,
+          context: {
+            daysRemaining: String(daysRemaining),
+            planName,
+            endDate: subscription.endDate,
+            userName: user.name
+          }
         });
-        
-        await subscription.save();
+
+        await recordNotification(
+          subscription,
+          window.type,
+          `Subscription expiring in ~${window.days} day(s) notification sent`
+        );
+
+        // Keep legacy flag for backwards compatibility with older queries
+        if (window.days === 3 && !hasNotification(subscription, 'expiring_soon')) {
+          await recordNotification(
+            subscription,
+            'expiring_soon',
+            `Legacy expiring_soon flag for ${daysRemaining} days`
+          );
+        }
+
+        notifiedCount++;
       } catch (emailError) {
-        logger.error(`Error sending expiration reminder to ${subscription.user.email}:`, emailError);
+        logger.error(`Error sending expiry reminder to ${subscription.user?.email}:`, emailError);
       }
     }
     
-    return expiringSubscriptions.length;
+    return notifiedCount;
   } catch (error) {
     logger.error('Error sending expiration reminders:', error);
     throw error;

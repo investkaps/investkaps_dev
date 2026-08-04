@@ -33,6 +33,7 @@ import FAQs from './pages/LegalCenter/FAQs';
 import ComplaintsAndAudit from './pages/LegalCenter/ComplaintsAndAudit';
 import CancellationsAndRefunds from './pages/LegalCenter/CancellationsAndRefunds';
 import GrievanceRedressal from './pages/LegalCenter/GrievanceRedressal';
+import GrievanceRedressalEscalationMatrix from './pages/LegalCenter/GrievanceRedressalEscalationMatrix';
 import Contact from './pages/Contact/Contact';
 import CodeOfConduct from './pages/LegalCenter/CodeOfConduct';
 import AuditReport from './pages/AuditReport/AuditReport';
@@ -156,6 +157,7 @@ function App() {
                     <Route path="complaints-data" element={<Navigate to="/complaints-and-audit" replace />} />
                     <Route path="cancellations-and-refunds" element={<CancellationsAndRefunds />} />
                     <Route path="grievance-redressal" element={<GrievanceRedressal />} />
+                    <Route path="grievance-redressal-escalation-matrix" element={<GrievanceRedressalEscalationMatrix />} />
                     <Route path="code-of-conduct" element={<CodeOfConduct />} />
 
                     <Route path="/audit-report" element={<AuditReport />} />

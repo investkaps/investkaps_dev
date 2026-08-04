@@ -426,6 +426,40 @@
   width: 180px;
 }
 
+.legal-table--escalation {
+  min-width: 1100px;
+}
+
+.legal-table--escalation th:first-child,
+.legal-table--escalation td:first-child {
+  width: 180px;
+}
+
+.legal-table--escalation th:nth-child(2),
+.legal-table--escalation td:nth-child(2) {
+  width: 140px;
+}
+
+.legal-table--escalation th:nth-child(3),
+.legal-table--escalation td:nth-child(3) {
+  width: 200px;
+}
+
+.legal-table--escalation th:nth-child(4),
+.legal-table--escalation td:nth-child(4) {
+  width: 130px;
+}
+
+.legal-table--escalation th:nth-child(5),
+.legal-table--escalation td:nth-child(5) {
+  width: 220px;
+}
+
+.legal-table--escalation th:nth-child(6),
+.legal-table--escalation td:nth-child(6) {
+  width: 180px;
+}
+
 .vision-mission-grid,
 .dos-donts-grid,
 .info-cards {

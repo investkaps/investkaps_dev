@@ -117,6 +117,71 @@ const ValidUPI = () => (
         <p>
           <a href="https://siportal.sebi.gov.in/intermediary/sebi-check" target="_blank" rel="noopener noreferrer">Visit SEBI Check Portal →</a>
         </p>
+
+        <h3>Frequently Asked Questions (for Investors)</h3>
+        <div className="faq-item">
+          <h4>Q. Is it compulsory for investors to use the new handle only?</h4>
+          <p>
+            Investors can choose their preferred mode of payment, such as UPI, IMPS, NEFT, RTGS,
+            or Cheques. If an investor opts to use UPI for payment to registered intermediaries,
+            then they have to do so only using the new UPI IDs allotted to registered intermediaries.
+          </p>
+        </div>
+        <div className="faq-item">
+          <h4>Q. What should I check while making payment using the new UPI IDs / QR Code?</h4>
+          <p>Investors need to keep the following things into consideration:</p>
+          <ol className="legal-ordered-list">
+            <li>
+              The UPI ID should properly show the name of the intermediary, followed by the short
+              abbreviation of their category (for example <code>brk</code> for Brokers,{' '}
+              <code>mf</code> for Mutual Funds, <code>ra</code> for Research Analysts) to the left
+              of the <code>@</code> character.
+            </li>
+            <li>
+              On the right side of the <code>@</code>, the new and exclusive handle{' '}
+              <code>@valid</code> should be present, followed by the bank name.
+            </li>
+            <li>
+              On the confirmation screen, the app should show a white thumbs-up icon inside a green
+              triangle.
+            </li>
+            <li>
+              The QR code generated using the utility will have a white thumbs-up icon inside a
+              green triangle. It will also display the UPI ID just below the QR code.
+            </li>
+          </ol>
+        </div>
+        <div className="faq-item">
+          <h4>Q. Do investors also need to obtain new UPI handles to transact in the securities market?</h4>
+          <p>
+            No. The new UPI IDs are only for intermediaries to obtain. Investors can continue to
+            use their existing UPI IDs.
+          </p>
+        </div>
+        <div className="faq-item">
+          <h4>Q. Whom to approach if my transaction / payment fails with the new UPI ID?</h4>
+          <p>
+            The secure validated UPI ID of intermediaries will use the same banking channel as the
+            earlier generic UPI handles. In case of any technical difficulty, investors are
+            requested to approach their respective bank.
+          </p>
+        </div>
+
+        <h3>Further Information</h3>
+        <p>
+          For complete details on standardised, validated and exclusive UPI IDs for payment
+          collection by SEBI-registered intermediaries, please refer to the SEBI circular:
+        </p>
+        <p>
+          <a
+            href="https://www.sebi.gov.in/legal/circulars/jun-2025/adoption-of-standardised-validated-and-exclusive-upi-ids-for-payment-collection-by-sebi-registered-intermediaries-from-investors_94535.html"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            SEBI Circular (Jun 11, 2025) — Adoption of Standardised, Validated and Exclusive UPI IDs →
+          </a>
+        </p>
+
         <h3>Your Security is Our Priority</h3>
         <p>
           Always verify the @valid UPI handle before making payments. Look for the green

@@ -1,6 +1,7 @@
 import User from '../model/User.js';
 import UserSubscription from '../model/UserSubscription.js';
 import { sendWelcomeEmail } from '../utils/emailService.js';
+import { sendWelcomeWhatsApp } from '../services/whatsappService.js';
 
 const WELCOME_EMAIL_STALE_AFTER_MS = 15 * 60 * 1000;
 
@@ -40,6 +41,7 @@ const sendPendingWelcomeEmail = async (userId) => {
 
   try {
     await sendWelcomeEmail(user);
+    sendWelcomeWhatsApp(user);
     await User.updateOne(
       { _id: user._id, 'welcomeEmail.status': 'sending' },
       {

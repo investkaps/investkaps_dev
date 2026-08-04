@@ -5,6 +5,10 @@ import ltpService from './ltpService.js';
 import { sendPriceAlertEmail } from '../utils/emailService.js';
 import { isEmailUnsubscribed } from './emailPreferenceService.js';
 import logger from '../utils/logger.js';
+import {
+  sendTargetAchievedWhatsApp,
+  sendStopLossTriggeredWhatsApp
+} from './whatsappService.js';
 
 // IST offset is UTC+5:30
 const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
@@ -40,10 +44,10 @@ async function getUsersForRecommendation(recommendation) {
   const userSubs = await UserSubscription.find({
     subscription: { $in: subscriptionIds },
     status: 'active'
-  }).populate('user', 'email name').select('user subscription serviceType');
+  }).populate('user', 'email name profile verificationStatus').select('user subscription serviceType');
 
   return userSubs
-    .filter(us => us.user?.email)
+    .filter(us => us.user)
     .map(us => ({
       user: us.user,
       serviceType: us.serviceType || serviceTypeMap.get(us.subscription?.toString()) || 'RA'
@@ -54,13 +58,40 @@ async function sendAlertsToUsers(recommendation, alertType, ltp) {
   const entries = await getUsersForRecommendation(recommendation);
   let sent = 0;
 
+  const isStopLoss = alertType === 'stopLoss';
+  const alertLabel = alertType === 'target1'
+    ? 'Target 1'
+    : alertType === 'target2'
+      ? 'Target 2'
+      : alertType === 'target3'
+        ? 'Target 3'
+        : 'Stop Loss';
+
   for (const { user, serviceType } of entries) {
     try {
-      if (await isEmailUnsubscribed(user.email)) continue;
-      await sendPriceAlertEmail(user, recommendation, alertType, ltp, serviceType);
-      sent++;
+      if (user.email && !(await isEmailUnsubscribed(user.email))) {
+        await sendPriceAlertEmail(user, recommendation, alertType, ltp, serviceType);
+        sent++;
+      }
     } catch (err) {
       logger.error(`Price alert email failed for ${user.email} (${alertType} ${recommendation.stockSymbol}):`, err);
+    }
+
+    try {
+      if (isStopLoss) {
+        sendStopLossTriggeredWhatsApp(user, recommendation, {
+          ltp,
+          alertLabel,
+          stopLoss: recommendation.stopLoss
+        });
+      } else {
+        sendTargetAchievedWhatsApp(user, recommendation, {
+          ltp,
+          alertLabel
+        });
+      }
+    } catch (waErr) {
+      logger.error(`Price alert WhatsApp failed for user ${user._id}:`, waErr.message);
     }
   }
 
